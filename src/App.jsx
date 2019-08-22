@@ -1,6 +1,5 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
-import styled from "styled-components";
 import QLearningPage from "./pages/QLearningPage";
 
 function Home() {
