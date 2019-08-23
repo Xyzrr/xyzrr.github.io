@@ -15,8 +15,6 @@ export default class NumberObject extends SceneObject {
   }
 
   onAnimationFinish() {
-    console.log("just finished" + Math.random());
-    // this.initAnimatedProperty("newValOpacity", 1);
     this.setAnimatedProperty("newValOpacity", 0, { duration: 2000 });
     this.initAnimatedProperty("valOpacity", 1);
     this.initAnimatedProperty("valOffset", 0);

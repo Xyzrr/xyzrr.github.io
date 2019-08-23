@@ -1,15 +1,6 @@
 import EasingFunctions from "../util/easing";
 
 export default class SceneObject {
-  // Example
-  // animatedProperties: {
-  //     x: {
-  //         current: 50
-  //         target: 100
-  //         startTime: 12125124
-  //         duration: 500
-  //     }
-  // }
   animatedProperties = {};
 
   initAnimatedProperty(key, val) {
