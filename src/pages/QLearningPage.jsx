@@ -5,12 +5,18 @@ import useWindowSize from "../util/useWindowSize";
 import NChainEnv from "../envs/NChain";
 import QLearningAgent from "../agents/QLearningAgent";
 import Game from "../Game";
+import Table from "../scene-objects/Table";
+import ChainEnvironment from "../scene-objects/ChainEnvironment";
+import AgentObject from "../scene-objects/Agent";
+import Scene from "../Scene";
 
 const env = new NChainEnv();
-const agent = new QLearningAgent();
+const agent = new QLearningAgent({ x: 0, y: 0 });
 const game = new Game(env, agent);
 
-const capturer = new window.CCapture({ format: "webm" });
+const tableObject = new Table(agent.qTable);
+const environmentObject = new ChainEnvironment();
+const agentObject = new AgentObject();
 
 const Button = styled.button`
   outline: none;
@@ -39,54 +45,9 @@ const Page = styled.div`
 function QLearningPage() {
   const canvasRef = React.useRef(null);
   const size = useWindowSize();
+  const sceneRef = React.useRef();
 
-  const [qTable, setQTable] = React.useState(agent.qTable);
   const [state, setState] = React.useState(0);
-
-  const drawEnvironment = ctx => {
-    const RADIUS = 30;
-    const DIST = 100;
-    ctx.strokeStyle = "gray";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let i = 0; i < 5; i++) {
-      ctx.lineTo(size.width / 2 - DIST * 2 + DIST * i - RADIUS, 400);
-      ctx.stroke();
-      //   ctx.moveTo(size.width / 2 - DIST * 2 + DIST * i + RADIUS, 400);
-      ctx.beginPath();
-      ctx.arc(
-        size.width / 2 - DIST * 2 + DIST * i,
-        400,
-        RADIUS,
-        0,
-        2 * Math.PI
-      );
-      ctx.stroke();
-      if (state === i) {
-        ctx.fillStyle = "cyan";
-        ctx.fill();
-      }
-    }
-  };
-
-  const drawQTable = ctx => {
-    ctx.lineWidth = 1;
-    ctx.font = "30px Inconsolata";
-    for (let i = 0; i < 5; i++) {
-      for (let j = 0; j < 2; j++) {
-        ctx.beginPath();
-        ctx.rect(size.width / 2 - 100 + 100 * j, 50 + 50 * i, 100, 50);
-        ctx.strokeStyle = "gray";
-        ctx.stroke();
-        ctx.fillStyle = "cyan";
-        ctx.fillText(
-          qTable[i][j].toFixed(2),
-          size.width / 2 - 88 + 100 * j,
-          85 + 50 * i
-        );
-      }
-    }
-  };
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
@@ -94,13 +55,15 @@ function QLearningPage() {
     canvas.height = size.height * window.devicePixelRatio;
     const ctx = canvas.getContext("2d");
     ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-    ctx.clearRect(0, 0, size.width, size.height);
 
-    drawEnvironment(ctx);
-    drawQTable(ctx);
+    sceneRef.current = new Scene(canvas, ctx, size, [
+      environmentObject,
+      tableObject,
+      agentObject
+    ]);
 
-    capturer.capture(canvas);
-  });
+    sceneRef.current.render();
+  }, []);
 
   React.useEffect(() => {
     game.reset();
@@ -114,16 +77,23 @@ function QLearningPage() {
 
   const step = () => {
     game.step();
-    setQTable(agent.qTable);
     setState(env.state);
   };
 
   const startRecording = () => {
-    capturer.start();
+    if (sceneRef.current) {
+      sceneRef.current.startRecording();
+    }
   };
   const stopRecording = () => {
-    capturer.stop();
-    capturer.save();
+    if (sceneRef.current) {
+      sceneRef.current.stopRecording();
+    }
+  };
+
+  agentObject.position = {
+    x: size.width / 2 - 100 * 2 + 100 * state,
+    y: 400
   };
 
   return (
