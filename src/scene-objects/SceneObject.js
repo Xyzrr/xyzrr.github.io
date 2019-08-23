@@ -51,10 +51,10 @@ export default class SceneObject {
           easingFunction((Date.now() - prop.startTime) / prop.duration)
       );
     } else {
+      prop.current = prop.target;
       if (prop.onFinished) {
         prop.onFinished();
       }
-      prop.current = prop.target;
       return prop.current;
     }
   }
