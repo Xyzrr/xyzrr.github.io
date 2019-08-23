@@ -4,7 +4,7 @@ export default class Scene {
     this.ctx = ctx;
     this.size = size;
     this.sceneObjects = sceneObjects;
-    this.capturer = new window.CCapture({ format: "webm" });
+    this.capturer = new window.CCapture({ format: "png", quality: 99 });
   }
 
   startRecording() {
@@ -17,6 +17,7 @@ export default class Scene {
   }
 
   render() {
+    console.log("render frame");
     requestAnimationFrame(this.render.bind(this));
 
     this.ctx.clearRect(0, 0, this.size.width, this.size.height);

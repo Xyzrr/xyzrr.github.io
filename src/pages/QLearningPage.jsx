@@ -11,12 +11,12 @@ import AgentObject from "../scene-objects/Agent";
 import Scene from "../Scene";
 
 const env = new NChainEnv();
-const agent = new QLearningAgent({ x: 0, y: 0 });
+const agent = new QLearningAgent();
 const game = new Game(env, agent);
 
 const tableObject = new Table(agent.qTable);
 const environmentObject = new ChainEnvironment();
-const agentObject = new AgentObject();
+const agentObject = new AgentObject({ x: 0, y: 0 });
 
 const Button = styled.button`
   outline: none;
@@ -107,6 +107,12 @@ function QLearningPage() {
     x: size.width / 2 - 100 * 2 + 100 * state,
     y: 400
   };
+
+  agentObject.setAnimatedProperty(
+    "x",
+    size.width / 2 - 100 * 2 + 100 * state,
+    100
+  );
 
   return (
     <Page>
