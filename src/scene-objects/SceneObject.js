@@ -17,14 +17,35 @@ export default class SceneObject {
       current: val,
       target: val,
       startTime: 0,
-      duration: 0
+      duration: 0,
+      onFinished: undefined
     };
   }
 
-  setAnimatedProperty(key, val, duration = 100) {
-    this.animatedProperties[key].target = val;
-    this.animatedProperties[key].startTime = Date.now();
-    this.animatedProperties[key].duration = duration;
+  setAnimatedProperty(key, val, options) {
+    options = {
+      duration: 150,
+      ...options
+    };
+    const prop = this.animatedProperties[key];
+
+    // if (val === prop.target) {
+    //   prop.startTime = Date.now();
+    //   prop.duration = options.duration;
+    //   prop.onFinished = options.onFinished;
+    //   return;
+    // }
+
+    if (Date.now() < prop.startTime + prop.duration) {
+      if (prop.onFinished) {
+        prop.onFinished();
+      }
+      prop.current = prop.target;
+    }
+    prop.target = val;
+    prop.startTime = Date.now();
+    prop.duration = options.duration;
+    prop.onFinished = options.onFinished;
   }
 
   getTempVal(key, easingFunction = EasingFunctions.easeOutQuad) {
@@ -36,6 +57,9 @@ export default class SceneObject {
           easingFunction((Date.now() - prop.startTime) / prop.duration)
       );
     } else {
+      if (prop.onFinished) {
+        prop.onFinished();
+      }
       prop.current = prop.target;
       return prop.current;
     }

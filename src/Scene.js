@@ -17,7 +17,6 @@ export default class Scene {
   }
 
   render() {
-    console.log("render frame");
     requestAnimationFrame(this.render.bind(this));
 
     this.ctx.clearRect(0, 0, this.size.width, this.size.height);

@@ -9,12 +9,14 @@ import Table from "../scene-objects/Table";
 import ChainEnvironment from "../scene-objects/ChainEnvironment";
 import AgentObject from "../scene-objects/Agent";
 import Scene from "../Scene";
+import NumberObject from "../scene-objects/Number";
 
 const env = new NChainEnv();
 const agent = new QLearningAgent();
 const game = new Game(env, agent);
 
 const tableObject = new Table(agent.qTable);
+const rewardNumberObject = new NumberObject({ x: 50, y: 80 }, 0);
 const environmentObject = new ChainEnvironment();
 const agentObject = new AgentObject({ x: 0, y: 0 });
 
@@ -91,7 +93,8 @@ function QLearningPage() {
     sceneRef.current = new Scene(canvas, ctx, size, [
       environmentObject,
       tableObject,
-      agentObject
+      agentObject,
+      rewardNumberObject
     ]);
 
     sceneRef.current.render();
@@ -111,8 +114,12 @@ function QLearningPage() {
   agentObject.setAnimatedProperty(
     "x",
     size.width / 2 - 100 * 2 + 100 * state,
-    100
+    150
   );
+
+  tableObject.updateData(agent.qTable);
+
+  rewardNumberObject.updateVal(game.totalReward);
 
   return (
     <Page>
