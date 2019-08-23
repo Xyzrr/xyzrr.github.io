@@ -49,26 +49,6 @@ function QLearningPage() {
 
   const [state, setState] = React.useState(0);
 
-  React.useEffect(() => {
-    const canvas = canvasRef.current;
-    canvas.width = size.width * window.devicePixelRatio;
-    canvas.height = size.height * window.devicePixelRatio;
-    const ctx = canvas.getContext("2d");
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-
-    sceneRef.current = new Scene(canvas, ctx, size, [
-      environmentObject,
-      tableObject,
-      agentObject
-    ]);
-
-    sceneRef.current.render();
-  }, []);
-
-  React.useEffect(() => {
-    game.reset();
-  }, []);
-
   //   const takeAction = action => {
   //     const { newState, reward } = env.step(action);
   //     console.log("new state", newState);
@@ -90,6 +70,38 @@ function QLearningPage() {
       sceneRef.current.stopRecording();
     }
   };
+
+  const resizeCanvas = () => {
+    if (canvasRef.current) {
+      canvasRef.current.width = size.width * window.devicePixelRatio;
+      canvasRef.current.height = size.height * window.devicePixelRatio;
+      const ctx = canvasRef.current.getContext("2d");
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      if (sceneRef.current) {
+        sceneRef.current.size = size;
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    resizeCanvas();
+
+    sceneRef.current = new Scene(canvas, ctx, size, [
+      environmentObject,
+      tableObject,
+      agentObject
+    ]);
+
+    sceneRef.current.render();
+  }, []);
+
+  React.useEffect(() => {
+    game.reset();
+  }, []);
+
+  resizeCanvas();
 
   agentObject.position = {
     x: size.width / 2 - 100 * 2 + 100 * state,
