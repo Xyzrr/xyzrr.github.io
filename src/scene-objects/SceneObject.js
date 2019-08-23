@@ -27,20 +27,14 @@ export default class SceneObject {
       duration: 150,
       ...options
     };
+
     const prop = this.animatedProperties[key];
 
-    // if (val === prop.target) {
-    //   prop.startTime = Date.now();
-    //   prop.duration = options.duration;
-    //   prop.onFinished = options.onFinished;
-    //   return;
-    // }
-
     if (Date.now() < prop.startTime + prop.duration) {
-      if (prop.onFinished) {
-        prop.onFinished();
-      }
       prop.current = prop.target;
+    }
+    if (options.start != null) {
+      prop.current = options.start;
     }
     prop.target = val;
     prop.startTime = Date.now();

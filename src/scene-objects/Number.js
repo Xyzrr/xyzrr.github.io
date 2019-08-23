@@ -22,7 +22,7 @@ export default class NumberObject extends SceneObject {
     this.val = this.newVal;
   }
 
-  updateVal(newVal) {
+  updateVal(newVal, animationDuration = 400) {
     if (newVal === this.newVal) {
       return;
     }
@@ -30,32 +30,44 @@ export default class NumberObject extends SceneObject {
       this.val = this.newVal;
       this.newVal = newVal;
       this.newValColor = colors.green;
-      this.initAnimatedProperty("valOpacity", 1);
-      this.setAnimatedProperty("valOpacity", 0, { duration: 400 });
-      this.initAnimatedProperty("newValOpacity", 0);
+      this.setAnimatedProperty("valOpacity", 0, {
+        start: 1,
+        duration: animationDuration
+      });
       this.setAnimatedProperty("newValOpacity", 1, {
-        duration: 400,
+        start: 0,
+        duration: animationDuration,
         onFinished: this.onAnimationFinish.bind(this)
       });
-      this.initAnimatedProperty("valOffset", 0);
-      this.setAnimatedProperty("valOffset", 25, { duration: 400 });
-      this.initAnimatedProperty("newValOffset", -25);
-      this.setAnimatedProperty("newValOffset", 0, { duration: 400 });
+      this.setAnimatedProperty("valOffset", 25, {
+        start: 0,
+        duration: animationDuration
+      });
+      this.setAnimatedProperty("newValOffset", 0, {
+        start: -25,
+        duration: animationDuration
+      });
     } else if (newVal < this.val) {
       this.val = this.newVal;
       this.newVal = newVal;
       this.newValColor = colors.red;
-      this.initAnimatedProperty("valOpacity", 1);
-      this.setAnimatedProperty("valOpacity", 0, { duration: 400 });
-      this.initAnimatedProperty("newValOpacity", 0);
+      this.setAnimatedProperty("valOpacity", 0, {
+        start: 1,
+        duration: animationDuration
+      });
       this.setAnimatedProperty("newValOpacity", 1, {
-        duration: 400,
+        start: 0,
+        duration: animationDuration,
         onFinished: this.onAnimationFinish.bind(this)
       });
-      this.initAnimatedProperty("valOffset", 0);
-      this.setAnimatedProperty("valOffset", -25, { duration: 400 });
-      this.initAnimatedProperty("newValOffset", 25);
-      this.setAnimatedProperty("newValOffset", 0, { duration: 400 });
+      this.setAnimatedProperty("valOffset", -25, {
+        start: 0,
+        duration: animationDuration
+      });
+      this.setAnimatedProperty("newValOffset", 0, {
+        start: 25,
+        duration: animationDuration
+      });
     }
   }
 
