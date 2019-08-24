@@ -8,16 +8,16 @@ export default class NumberObject extends SceneObject {
     this.val = val;
     this.newVal = 0;
     this.newValColor = colors.red;
-    this.initAnimation("newValOpacity", 0);
-    this.initAnimation("newValOffset", 0);
-    this.initAnimation("valOpacity", 1);
-    this.initAnimation("valOffset", 0);
+    this.newValOpacity = 0;
+    this.newValOffset = 0;
+    this.valOpacity = 1;
+    this.valOffset = 0;
   }
 
   onAnimationFinish() {
     this.animate("newValOpacity", 0, { duration: 2000 });
-    this.initAnimation("valOpacity", 1);
-    this.initAnimation("valOffset", 0);
+    this.animate("valOpacity", 1, { duration: 0 });
+    this.animate("valOffset", 1, { duration: 0 });
     this.val = this.newVal;
   }
 
@@ -72,23 +72,17 @@ export default class NumberObject extends SceneObject {
 
   render(ctx, size) {
     ctx.font = "30px Inconsolata";
-    ctx.fillStyle = colors.withOpacity(
-      colors.blue,
-      this.getTempVal("valOpacity")
-    );
+    ctx.fillStyle = colors.withOpacity(colors.blue, this.valOpacity);
     ctx.fillText(
       this.val.toFixed(2),
       this.position.x,
-      this.position.y + this.getTempVal("valOffset")
+      this.position.y + this.valOffset
     );
-    ctx.fillStyle = colors.withOpacity(
-      this.newValColor,
-      this.getTempVal("newValOpacity")
-    );
+    ctx.fillStyle = colors.withOpacity(this.newValColor, this.newValOpacity);
     ctx.fillText(
       this.newVal.toFixed(2),
       this.position.x,
-      this.position.y + this.getTempVal("newValOffset")
+      this.position.y + this.newValOffset
     );
   }
 }

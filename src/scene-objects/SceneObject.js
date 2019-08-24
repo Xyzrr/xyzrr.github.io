@@ -3,50 +3,49 @@ import EasingFunctions from "../util/easing";
 export default class SceneObject {
   animatedProperties = {};
 
-  initAnimation(key, val) {
-    this.animatedProperties[key] = {
-      current: val,
-      target: val,
-      startTime: 0,
-      duration: 0,
-      onFinished: undefined
-    };
-  }
-
   animate(key, val, options) {
     options = {
       duration: 150,
+      easingFunc: EasingFunctions.easeOutQuad,
       ...options
     };
 
     const prop = this.animatedProperties[key];
 
-    if (Date.now() < prop.startTime + prop.duration) {
-      prop.current = prop.target;
+    if (prop != null && Date.now() < prop.startTime + prop.duration) {
+      this[key] = prop.target;
     }
-    if (options.start != null) {
-      prop.current = options.start;
-    }
-    prop.target = val;
-    prop.startTime = Date.now();
-    prop.duration = options.duration;
-    prop.onFinished = options.onFinished;
+
+    this.animatedProperties[key] = {
+      start: options.start != null ? options.start : this[key],
+      target: val,
+      startTime: Date.now(),
+      duration: options.duration,
+      onFinished: options.onFinished,
+      easingFunc: options.easingFunc
+    };
   }
 
-  getTempVal(key, easingFunction = EasingFunctions.easeOutQuad) {
+  getTempVal(key) {
     const prop = this.animatedProperties[key];
     if (Date.now() < prop.startTime + prop.duration) {
       return (
-        prop.current +
-        (prop.target - prop.current) *
-          easingFunction((Date.now() - prop.startTime) / prop.duration)
+        prop.start +
+        (prop.target - prop.start) *
+          prop.easingFunc((Date.now() - prop.startTime) / prop.duration)
       );
     } else {
-      prop.current = prop.target;
+      prop.start = prop.target;
       if (prop.onFinished) {
         prop.onFinished();
       }
-      return prop.current;
+      return prop.start;
+    }
+  }
+
+  updateVals() {
+    for (const [key, value] of Object.entries(this.animatedProperties)) {
+      this[key] = this.getTempVal(key);
     }
   }
 }

@@ -111,7 +111,7 @@ function QLearningPage() {
     y: 400
   };
 
-  agentObject.animate("x", size.width / 2 - 100 * 2 + 100 * state);
+  agentObject.move(size.width / 2 - 100 * 2 + 100 * state);
 
   tableObject.updateData(agent.qTable);
 

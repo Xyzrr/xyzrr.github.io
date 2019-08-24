@@ -1,4 +1,6 @@
-export default class ChainEnvironment {
+import SceneObject from "./SceneObject";
+
+export default class ChainEnvironment extends SceneObject {
   render(ctx, size) {
     const RADIUS = 30;
     const DIST = 100;

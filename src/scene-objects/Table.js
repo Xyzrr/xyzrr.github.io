@@ -1,7 +1,9 @@
 import NumberObject from "./Number";
+import SceneObject from "./SceneObject";
 
-export default class Table {
+export default class Table extends SceneObject {
   constructor(data) {
+    super();
     this.data = data;
     this.numbersObjects = [];
     for (let i = 0; i < 5; i++) {
@@ -42,6 +44,7 @@ export default class Table {
         ctx.strokeStyle = "gray";
         ctx.stroke();
         ctx.fillStyle = "cyan";
+        this.numbersObjects[i][j].updateVals();
         this.numbersObjects[i][j].render(ctx, size);
       }
     }
