@@ -13,13 +13,14 @@ export default class ButtonObject extends SceneObject {
   click() {
     this.animate("fillOpacity", 0, {
       start: 1,
-      easingFunc: EasingFunctions.easeInQuad
+      duration: 200,
+      easingFunc: EasingFunctions.easeInCubic
     });
   }
 
   render(ctx) {
-    ctx.fillStyle = colors.withOpacity(colors.blue, this.fillOpacity);
-    ctx.strokeSTyle = colors.blue;
+    ctx.fillStyle = colors.withOpacity(colors.gray, this.fillOpacity);
+    ctx.strokeStyle = colors.gray;
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, 30, 0, 2 * Math.PI);
     ctx.fill();

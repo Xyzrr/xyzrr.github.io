@@ -1,5 +1,6 @@
 import NumberObject from "./Number";
 import SceneObject from "./SceneObject";
+import * as colors from "../colors";
 
 export default class Table extends SceneObject {
   constructor(position, data) {
@@ -42,9 +43,9 @@ export default class Table extends SceneObject {
       for (let j = 0; j < 2; j++) {
         ctx.beginPath();
         ctx.rect(this.position.x + 100 * j, this.position.y + 70 * i, 100, 70);
-        ctx.strokeStyle = "gray";
+        ctx.strokeStyle = colors.gray;
         ctx.stroke();
-        ctx.fillStyle = "cyan";
+        ctx.fillStyle = colors.blue;
         this.numbersObjects[i][j].updateVals();
         this.numbersObjects[i][j].render(ctx);
       }

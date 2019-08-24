@@ -1,4 +1,5 @@
 import SceneObject from "./SceneObject";
+import * as colors from "../colors";
 
 export default class ChainEnvironment extends SceneObject {
   constructor(position) {
@@ -9,7 +10,7 @@ export default class ChainEnvironment extends SceneObject {
   render(ctx) {
     const RADIUS = 30;
     const DIST = 70;
-    ctx.strokeStyle = "gray";
+    ctx.strokeStyle = colors.gray;
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let i = 0; i < 5; i++) {

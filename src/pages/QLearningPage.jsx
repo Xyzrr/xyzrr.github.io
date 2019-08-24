@@ -61,7 +61,12 @@ function QLearningPage() {
   //   };
 
   const step = () => {
-    game.step();
+    const { action, done } = game.step();
+    if (action) {
+      downActionObject.click();
+    } else {
+      upActionObject.click();
+    }
     setState(env.state);
   };
 
@@ -113,7 +118,7 @@ function QLearningPage() {
 
   agentObject.move(465 - 70 * state);
 
-  tableObject.updateData(agent.qTable);
+  tableObject.updateData(agent.qTable.slice().reverse());
 
   rewardNumberObject.updateVal(game.totalReward);
 

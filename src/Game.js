@@ -16,6 +16,6 @@ export default class Game {
     this.totalReward += reward;
     this.agent.update(this.state, action, newState, reward, done);
     this.state = newState;
-    return done;
+    return { action, done };
   }
 }
