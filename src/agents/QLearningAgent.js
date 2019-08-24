@@ -42,7 +42,7 @@ export default class QLearningAgent {
     this.qTable[state][action] +=
       this.lr *
       (reward +
-        (done ? 0 : this.y * argMax(this.qTable[newState])) -
+        (done ? 0 : this.y * Math.max(...this.qTable[newState])) -
         this.qTable[state][action]);
   }
 
