@@ -2,10 +2,21 @@ import SceneObject from "./SceneObject";
 import * as colors from "../colors";
 
 export default class NumberObject extends SceneObject {
-  constructor(position, val) {
+  constructor(position, val, options) {
     super();
+
+    options = {
+      font: "30px Inconsolata",
+      textAlign: "center",
+      precision: 2,
+      ...options
+    };
+
     this.position = position;
     this.val = val;
+    this.font = options.font;
+    this.textAlign = options.textAlign;
+    this.precision = options.precision;
     this.newVal = 0;
     this.newValColor = colors.red;
     this.newValOpacity = 0;
@@ -15,7 +26,7 @@ export default class NumberObject extends SceneObject {
   }
 
   onAnimationFinish() {
-    this.animate("newValOpacity", 0, { duration: 20000 });
+    this.animate("newValOpacity", 0, { duration: 2000 });
     this.animate("valOpacity", 1, { duration: 0 });
     this.animate("valOffset", 0, { duration: 0 });
     this.val = this.newVal;
@@ -71,17 +82,17 @@ export default class NumberObject extends SceneObject {
   }
 
   render(ctx) {
-    ctx.textAlign = "center";
-    ctx.font = "30px Inconsolata";
+    ctx.textAlign = this.textAlign;
+    ctx.font = this.font;
     ctx.fillStyle = colors.withOpacity(colors.blue, this.valOpacity);
     ctx.fillText(
-      this.val.toFixed(2),
+      this.val.toFixed(this.precision),
       this.position.x,
       this.position.y + this.valOffset
     );
     ctx.fillStyle = colors.withOpacity(this.newValColor, this.newValOpacity);
     ctx.fillText(
-      this.newVal.toFixed(2),
+      this.newVal.toFixed(this.precision),
       this.position.x,
       this.position.y + this.newValOffset
     );

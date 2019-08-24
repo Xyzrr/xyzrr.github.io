@@ -17,7 +17,11 @@ const agent = new QLearningAgent();
 const game = new Game(env, agent);
 
 const tableObject = new Table({ x: 50, y: 150 }, agent.qTable);
-const rewardNumberObject = new NumberObject({ x: 430, y: 330 }, 0);
+const rewardNumberObject = new NumberObject({ x: 430, y: 330 }, 0, {
+  textAlign: "left",
+  font: "40px Inconsolata",
+  precision: 0
+});
 const environmentObject = new ChainEnvironment({ x: 320, y: 185 });
 const agentObject = new AgentObject({ x: 320, y: 500 });
 const upActionObject = new ButtonObject({ x: 100, y: 100 }, "UP");
