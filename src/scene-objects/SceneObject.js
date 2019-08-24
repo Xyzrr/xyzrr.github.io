@@ -3,7 +3,7 @@ import EasingFunctions from "../util/easing";
 export default class SceneObject {
   animatedProperties = {};
 
-  initAnimatedProperty(key, val) {
+  initAnimation(key, val) {
     this.animatedProperties[key] = {
       current: val,
       target: val,
@@ -13,7 +13,7 @@ export default class SceneObject {
     };
   }
 
-  setAnimatedProperty(key, val, options) {
+  animate(key, val, options) {
     options = {
       duration: 150,
       ...options

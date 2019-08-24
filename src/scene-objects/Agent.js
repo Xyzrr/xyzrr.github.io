@@ -4,7 +4,7 @@ export default class Agent extends SceneObject {
   constructor(position) {
     super();
     this.position = position;
-    this.initAnimatedProperty("x", position.x);
+    this.initAnimation("x", position.x);
   }
 
   render(ctx, size) {
