@@ -10,15 +10,18 @@ import ChainEnvironment from "../scene-objects/ChainEnvironment";
 import AgentObject from "../scene-objects/Agent";
 import Scene from "../Scene";
 import NumberObject from "../scene-objects/Number";
+import ButtonObject from "../scene-objects/ButtonObject";
 
 const env = new NChainEnv();
 const agent = new QLearningAgent();
 const game = new Game(env, agent);
 
-const tableObject = new Table({ x: 50, y: 100 }, agent.qTable);
-const rewardNumberObject = new NumberObject({ x: 430, y: 280 }, 0);
-const environmentObject = new ChainEnvironment({ x: 320, y: 135 });
+const tableObject = new Table({ x: 50, y: 150 }, agent.qTable);
+const rewardNumberObject = new NumberObject({ x: 430, y: 330 }, 0);
+const environmentObject = new ChainEnvironment({ x: 320, y: 185 });
 const agentObject = new AgentObject({ x: 320, y: 500 });
+const upActionObject = new ButtonObject({ x: 100, y: 100 }, "UP");
+const downActionObject = new ButtonObject({ x: 200, y: 100 }, "DOWN");
 
 const Button = styled.button`
   outline: none;
@@ -94,7 +97,9 @@ function QLearningPage() {
       environmentObject,
       tableObject,
       agentObject,
-      rewardNumberObject
+      rewardNumberObject,
+      downActionObject,
+      upActionObject
     ]);
 
     sceneRef.current.render();
@@ -106,7 +111,7 @@ function QLearningPage() {
 
   resizeCanvas();
 
-  agentObject.move(415 - 70 * state);
+  agentObject.move(465 - 70 * state);
 
   tableObject.updateData(agent.qTable);
 

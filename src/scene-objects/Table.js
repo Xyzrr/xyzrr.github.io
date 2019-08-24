@@ -28,7 +28,7 @@ export default class Table extends SceneObject {
     for (let i = 0; i < 5; i++) {
       for (let j = 0; j < 2; j++) {
         this.numbersObjects[i][j].position = {
-          x: this.position.x + 19 + 100 * j,
+          x: this.position.x + 50 + 100 * j,
           y: this.position.y + 45 + 70 * i
         };
       }
