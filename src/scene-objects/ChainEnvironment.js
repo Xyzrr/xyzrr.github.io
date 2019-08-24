@@ -14,11 +14,18 @@ export default class ChainEnvironment extends SceneObject {
     ctx.lineWidth = 1;
     ctx.beginPath();
     for (let i = 0; i < 5; i++) {
-      // ctx.lineTo(
-      //   this.position.x,
-      //   4 * DIST + this.position.y - DIST * i - RADIUS
-      // );
-      // ctx.stroke();
+      if (i < 4) {
+        ctx.beginPath();
+        ctx.moveTo(
+          this.position.x,
+          4 * DIST + this.position.y - DIST * i - RADIUS
+        );
+        ctx.lineTo(
+          this.position.x,
+          4 * DIST + this.position.y - DIST * i - DIST + RADIUS
+        );
+      }
+      ctx.stroke();
       ctx.beginPath();
       ctx.arc(
         this.position.x,
