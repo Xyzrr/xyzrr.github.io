@@ -7,12 +7,14 @@ export default class Agent extends SceneObject {
     this.position = position;
   }
 
-  move(newX) {
-    this.animate("position.x", newX);
+  move(newY) {
+    this.animate("position.y", newY);
   }
 
-  render(ctx, size) {
+  render(ctx) {
     ctx.fillStyle = colors.blue;
-    ctx.fillRect(this.position.x - 10, this.position.y - 10, 20, 20);
+    ctx.beginPath();
+    ctx.arc(this.position.x, this.position.y, 20, 0, 2 * Math.PI);
+    ctx.fill();
   }
 }

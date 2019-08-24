@@ -70,7 +70,7 @@ export default class NumberObject extends SceneObject {
     }
   }
 
-  render(ctx, size) {
+  render(ctx) {
     ctx.font = "30px Inconsolata";
     ctx.fillStyle = colors.withOpacity(colors.blue, this.valOpacity);
     ctx.fillText(

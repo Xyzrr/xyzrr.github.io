@@ -15,10 +15,10 @@ const env = new NChainEnv();
 const agent = new QLearningAgent();
 const game = new Game(env, agent);
 
-const tableObject = new Table(agent.qTable);
-const rewardNumberObject = new NumberObject({ x: 50, y: 80 }, 0);
-const environmentObject = new ChainEnvironment();
-const agentObject = new AgentObject({ x: 0, y: 400 });
+const tableObject = new Table({ x: 50, y: 100 }, agent.qTable);
+const rewardNumberObject = new NumberObject({ x: 430, y: 280 }, 0);
+const environmentObject = new ChainEnvironment({ x: 320, y: 135 });
+const agentObject = new AgentObject({ x: 320, y: 500 });
 
 const Button = styled.button`
   outline: none;
@@ -106,7 +106,7 @@ function QLearningPage() {
 
   resizeCanvas();
 
-  agentObject.move(size.width / 2 - 100 * 2 + 100 * state);
+  agentObject.move(415 - 70 * state);
 
   tableObject.updateData(agent.qTable);
 

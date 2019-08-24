@@ -2,8 +2,9 @@ import NumberObject from "./Number";
 import SceneObject from "./SceneObject";
 
 export default class Table extends SceneObject {
-  constructor(data) {
+  constructor(position, data) {
     super();
+    this.position = position;
     this.data = data;
     this.numbersObjects = [];
     for (let i = 0; i < 5; i++) {
@@ -23,29 +24,29 @@ export default class Table extends SceneObject {
     }
   }
 
-  repositionNumbers(size) {
+  repositionNumbers() {
     for (let i = 0; i < 5; i++) {
       for (let j = 0; j < 2; j++) {
         this.numbersObjects[i][j].position = {
-          x: size.width / 2 - 88 + 100 * j,
-          y: 85 + 50 * i
+          x: this.position.x + 19 + 100 * j,
+          y: this.position.y + 45 + 70 * i
         };
       }
     }
   }
 
-  render(ctx, size) {
+  render(ctx) {
     ctx.lineWidth = 1;
-    this.repositionNumbers(size);
+    this.repositionNumbers();
     for (let i = 0; i < 5; i++) {
       for (let j = 0; j < 2; j++) {
         ctx.beginPath();
-        ctx.rect(size.width / 2 - 100 + 100 * j, 50 + 50 * i, 100, 50);
+        ctx.rect(this.position.x + 100 * j, this.position.y + 70 * i, 100, 70);
         ctx.strokeStyle = "gray";
         ctx.stroke();
         ctx.fillStyle = "cyan";
         this.numbersObjects[i][j].updateVals();
-        this.numbersObjects[i][j].render(ctx, size);
+        this.numbersObjects[i][j].render(ctx);
       }
     }
   }
