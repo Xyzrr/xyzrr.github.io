@@ -56,7 +56,7 @@ function QLearningPage() {
   const size = useWindowSize();
   const sceneRef = React.useRef();
 
-  const [state, setState] = React.useState(0);
+  const [stepCount, setStepCount] = React.useState(0);
 
   //   const takeAction = action => {
   //     const { newState, reward } = env.step(action);
@@ -64,14 +64,18 @@ function QLearningPage() {
   //     setState(newState);
   //   };
 
-  const step = () => {
-    const { action, done } = game.step();
+  const agentTookAction = action => {
     if (action) {
       downActionObject.click();
     } else {
       upActionObject.click();
     }
-    setState(env.state);
+    setStepCount(stepCount + 1);
+  };
+
+  const step = () => {
+    const { action, done } = game.step();
+    agentTookAction(action);
   };
 
   const startRecording = () => {
@@ -97,6 +101,21 @@ function QLearningPage() {
     }
   };
 
+  const handleKeyDown = e => {
+    if (e.keyCode === 38) {
+      // up arrow
+      e.preventDefault();
+      game.agentTakeAction(0);
+      agentTookAction(0);
+    }
+    if (e.keyCode === 40) {
+      // down arrow
+      e.preventDefault();
+      game.agentTakeAction(1);
+      agentTookAction(1);
+    }
+  };
+
   React.useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -118,9 +137,16 @@ function QLearningPage() {
     game.reset();
   }, []);
 
+  React.useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  });
+
   resizeCanvas();
 
-  agentObject.move(465 - 70 * state);
+  agentObject.move(465 - 70 * (game.state || 0));
 
   tableObject.updateData(agent.qTable.slice().reverse());
 
