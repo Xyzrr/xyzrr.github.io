@@ -15,9 +15,9 @@ export default class NumberObject extends SceneObject {
   }
 
   onAnimationFinish() {
-    this.animate("newValOpacity", 0, { duration: 2000 });
+    this.animate("newValOpacity", 0, { duration: 20000 });
     this.animate("valOpacity", 1, { duration: 0 });
-    this.animate("valOffset", 1, { duration: 0 });
+    this.animate("valOffset", 0, { duration: 0 });
     this.val = this.newVal;
   }
 
