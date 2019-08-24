@@ -3,6 +3,24 @@ import EasingFunctions from "../util/easing";
 export default class SceneObject {
   animatedProperties = {};
 
+  getVal(key) {
+    const arr = key.split(".");
+    let obj = this;
+    for (let i = 0; i < arr.length - 1; i++) {
+      obj = obj[arr[i]];
+    }
+    return obj[arr.pop()];
+  }
+
+  setVal(key, val) {
+    const arr = key.split(".");
+    let obj = this;
+    for (let i = 0; i < arr.length - 1; i++) {
+      obj = obj[arr[i]];
+    }
+    obj[arr.pop()] = val;
+  }
+
   animate(key, val, options) {
     options = {
       duration: 150,
@@ -13,11 +31,11 @@ export default class SceneObject {
     const prop = this.animatedProperties[key];
 
     if (prop != null && Date.now() < prop.startTime + prop.duration) {
-      this[key] = prop.target;
+      this.setVal(key, prop.target);
     }
 
     this.animatedProperties[key] = {
-      start: options.start != null ? options.start : this[key],
+      start: options.start != null ? options.start : this.getVal(key),
       target: val,
       startTime: Date.now(),
       duration: options.duration,
@@ -45,7 +63,7 @@ export default class SceneObject {
 
   updateVals() {
     for (const [key, value] of Object.entries(this.animatedProperties)) {
-      this[key] = this.getTempVal(key);
+      this.setVal(key, this.getTempVal(key));
     }
   }
 }
