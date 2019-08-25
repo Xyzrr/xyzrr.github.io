@@ -12,7 +12,7 @@ import AgentObject from "../scene-objects/Agent";
 import Scene from "../Scene";
 import NumberObject from "../scene-objects/Number";
 import ButtonObject from "../scene-objects/ButtonObject";
-import DatGui, { DatNumber, DatButton } from "react-dat-gui";
+import DatGui, { DatNumber, DatButton, DatBoolean } from "react-dat-gui";
 
 const initialAgentOptions = {
   gamma: 0.95,
@@ -46,7 +46,10 @@ function QLearningPage() {
   const sceneRef = React.useRef();
 
   const [stepCount, setStepCount] = React.useState(0);
-  const [data, setData] = React.useState(initialAgentOptions);
+  const [data, setData] = React.useState({
+    autoPlay: false,
+    ...initialAgentOptions
+  });
 
   //   const takeAction = action => {
   //     const { newState, reward } = env.step(action);
@@ -138,6 +141,10 @@ function QLearningPage() {
     };
   });
 
+  if (data.autoPlay) {
+    window.setTimeout(step, 150);
+  }
+
   agent.gamma = data.gamma;
   agent.lr = data.lr;
   agent.eps = data.eps;
@@ -182,6 +189,7 @@ function QLearningPage() {
           max={1}
           step={0.01}
         ></DatNumber>
+        <DatBoolean path="autoPlay" label="Auto-play"></DatBoolean>
         <DatButton label="Step" onClick={step} />
         <DatButton label="Record" onClick={startRecording} />
         <DatButton label="Stop" onClick={stopRecording} />
