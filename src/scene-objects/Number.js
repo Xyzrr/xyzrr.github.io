@@ -9,6 +9,7 @@ export default class NumberObject extends SceneObject {
       font: "30px Inconsolata",
       textAlign: "center",
       precision: 2,
+      modifier: v => v,
       ...options
     };
 
@@ -17,6 +18,7 @@ export default class NumberObject extends SceneObject {
     this.font = options.font;
     this.textAlign = options.textAlign;
     this.precision = options.precision;
+    this.modifier = options.modifier;
     this.newVal = 0;
     this.newValColor = colors.red;
     this.newValOpacity = 0;
@@ -86,13 +88,13 @@ export default class NumberObject extends SceneObject {
     ctx.font = this.font;
     ctx.fillStyle = colors.withOpacity(colors.blue, this.valOpacity);
     ctx.fillText(
-      this.val.toFixed(this.precision),
+      this.modifier(this.val.toFixed(this.precision)),
       this.position.x,
       this.position.y + this.valOffset
     );
     ctx.fillStyle = colors.withOpacity(this.newValColor, this.newValOpacity);
     ctx.fillText(
-      this.newVal.toFixed(this.precision),
+      this.modifier(this.newVal.toFixed(this.precision)),
       this.position.x,
       this.position.y + this.newValOffset
     );

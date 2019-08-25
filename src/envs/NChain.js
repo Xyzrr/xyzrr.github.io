@@ -1,5 +1,5 @@
 export default class NChainEnv {
-  constructor(n = 5, slip = 0.2, small = 2, large = 10, episode_length = 1000) {
+  constructor(n = 5, slip = 0.2, small = 2, large = 10, episode_length = 100) {
     this.n = n;
     this.slip = slip;
     this.small = small;
@@ -29,6 +29,7 @@ export default class NChainEnv {
       reward = this.large;
     }
     this.stepCount += 1;
+    console.log(this.stepCount);
     return {
       newState: this.state,
       reward: reward,

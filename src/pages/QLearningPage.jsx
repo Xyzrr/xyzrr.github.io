@@ -26,10 +26,16 @@ const agent = new QLearningAgent(initialAgentOptions);
 const game = new Game(env, agent);
 
 const tableObject = new Table({ x: 50, y: 150 }, agent.qTable);
-const rewardNumberObject = new NumberObject({ x: 430, y: 330 }, 0, {
+const rewardNumberObject = new NumberObject({ x: 430, y: 320 }, 0, {
   textAlign: "left",
   font: "40px Inconsolata",
   precision: 0
+});
+const bestRewardNumberObject = new NumberObject({ x: 430, y: 350 }, 0, {
+  textAlign: "left",
+  font: "20px Inconsolata",
+  precision: 0,
+  modifier: v => "Best: " + v
 });
 const environmentObject = new ChainEnvironment({ x: 320, y: 185 });
 const agentObject = new AgentObject({ x: 320, y: 500 });
@@ -69,6 +75,9 @@ function QLearningPage() {
   const step = () => {
     const { action, done } = game.step();
     if (done) {
+      if (game.totalReward > bestRewardNumberObject.val) {
+        bestRewardNumberObject.updateVal(game.totalReward);
+      }
       game.reset();
       console.log("RESET");
     }
@@ -127,6 +136,7 @@ function QLearningPage() {
       tableObject,
       agentObject,
       rewardNumberObject,
+      bestRewardNumberObject,
       downActionObject,
       upActionObject
     ]);
