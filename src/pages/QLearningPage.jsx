@@ -68,6 +68,10 @@ function QLearningPage() {
 
   const step = () => {
     const { action, done } = game.step();
+    if (done) {
+      game.reset();
+      console.log("RESET");
+    }
     agentTookAction(action);
   };
 
