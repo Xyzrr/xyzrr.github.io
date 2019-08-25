@@ -15,11 +15,18 @@ function getRndInteger(min, max) {
 }
 
 export default class QLearningAgent {
-  constructor() {
-    this.y = 0.95;
-    this.lr = 0.1;
-    this.eps = 0.5;
-    this.decayFactor = 0.999;
+  constructor(options) {
+    options = {
+      gamma: 0.95,
+      lr: 0.1,
+      eps: 0.5,
+      epsDecay: 0.99,
+      ...options
+    };
+    this.gamma = options.gamma;
+    this.lr = options.lr;
+    this.eps = options.eps;
+    this.epsDecay = options.epsDecay;
   }
 
   initToEnvironment(stateSpace, actionSpace) {
@@ -42,11 +49,11 @@ export default class QLearningAgent {
     this.qTable[state][action] +=
       this.lr *
       (reward +
-        (done ? 0 : this.y * Math.max(...this.qTable[newState])) -
+        (done ? 0 : this.gamma * Math.max(...this.qTable[newState])) -
         this.qTable[state][action]);
   }
 
   finishEpisode() {
-    this.eps *= this.decayFactor;
+    this.eps *= this.epsDecay;
   }
 }

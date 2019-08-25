@@ -14,8 +14,15 @@ import NumberObject from "../scene-objects/Number";
 import ButtonObject from "../scene-objects/ButtonObject";
 import DatGui, { DatNumber, DatButton } from "react-dat-gui";
 
+const initialAgentOptions = {
+  gamma: 0.95,
+  lr: 0.1,
+  eps: 0.5,
+  epsDecay: 0.99
+};
+
 const env = new NChainEnv();
-const agent = new QLearningAgent();
+const agent = new QLearningAgent(initialAgentOptions);
 const game = new Game(env, agent);
 
 const tableObject = new Table({ x: 50, y: 150 }, agent.qTable);
@@ -39,7 +46,7 @@ function QLearningPage() {
   const sceneRef = React.useRef();
 
   const [stepCount, setStepCount] = React.useState(0);
-  const [data, setData] = React.useState({});
+  const [data, setData] = React.useState(initialAgentOptions);
 
   //   const takeAction = action => {
   //     const { newState, reward } = env.step(action);
@@ -131,6 +138,11 @@ function QLearningPage() {
     };
   });
 
+  agent.gamma = data.gamma;
+  agent.lr = data.lr;
+  agent.eps = data.eps;
+  agent.epsDecay = data.epsDecay;
+
   resizeCanvas();
 
   agentObject.move(465 - 70 * (game.state || 0));
@@ -150,15 +162,22 @@ function QLearningPage() {
           step={0.01}
         />
         <DatNumber
-          path="epsilon"
+          path="eps"
           label="Rnd chance (ε)"
           min={0}
           max={1}
           step={0.01}
         />
         <DatNumber
-          path="discountRate"
+          path="gamma"
           label="Discount rate (γ)"
+          min={0}
+          max={1}
+          step={0.01}
+        ></DatNumber>
+        <DatNumber
+          path="epsDecay"
+          label="ε decay"
           min={0}
           max={1}
           step={0.01}
