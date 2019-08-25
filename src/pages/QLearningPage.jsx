@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import "react-dat-gui/build/react-dat-gui.css";
 import * as colors from "../colors";
 import useWindowSize from "../util/useWindowSize";
 import NChainEnv from "../envs/NChain";
@@ -11,6 +12,7 @@ import AgentObject from "../scene-objects/Agent";
 import Scene from "../Scene";
 import NumberObject from "../scene-objects/Number";
 import ButtonObject from "../scene-objects/ButtonObject";
+import DatGui, { DatNumber, DatButton } from "react-dat-gui";
 
 const env = new NChainEnv();
 const agent = new QLearningAgent();
@@ -27,26 +29,6 @@ const agentObject = new AgentObject({ x: 320, y: 500 });
 const upActionObject = new ButtonObject({ x: 100, y: 100 }, "UP");
 const downActionObject = new ButtonObject({ x: 200, y: 100 }, "DOWN");
 
-const Button = styled.button`
-  outline: none;
-  padding: 8px;
-  background-color: ${colors.veryLightGray};
-  border: none;
-  border-radius: 6px;
-  :hover {
-    background-color: ${colors.lightGray};
-  }
-`;
-
-const ControlPanel = styled.div`
-  background-color: rgba(255, 255, 255, 0.3);
-  color: white;
-  position: fixed;
-  top: 8px;
-  left: 8px;
-  padding: 8px;
-`;
-
 const Page = styled.div`
   background-color: ${colors.darkGray};
 `;
@@ -57,6 +39,7 @@ function QLearningPage() {
   const sceneRef = React.useRef();
 
   const [stepCount, setStepCount] = React.useState(0);
+  const [data, setData] = React.useState({});
 
   //   const takeAction = action => {
   //     const { newState, reward } = env.step(action);
@@ -116,6 +99,10 @@ function QLearningPage() {
     }
   };
 
+  const handleUpdate = data => {
+    setData(data);
+  };
+
   React.useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -154,13 +141,32 @@ function QLearningPage() {
 
   return (
     <Page>
-      <ControlPanel>
-        {/* <Button onClick={() => takeAction(false)}>A</Button>
-        <Button onClick={() => takeAction(true)}>B</Button> */}
-        <Button onClick={() => step()}>Step</Button>
-        <Button onClick={startRecording}>Record</Button>
-        <Button onClick={stopRecording}>Stop</Button>
-      </ControlPanel>
+      <DatGui data={data} onUpdate={handleUpdate}>
+        <DatNumber
+          path="lr"
+          label="Learning rate (α)"
+          min={0}
+          max={1}
+          step={0.01}
+        />
+        <DatNumber
+          path="epsilon"
+          label="Rnd chance (ε)"
+          min={0}
+          max={1}
+          step={0.01}
+        />
+        <DatNumber
+          path="discountRate"
+          label="Discount rate (γ)"
+          min={0}
+          max={1}
+          step={0.01}
+        ></DatNumber>
+        <DatButton label="Step" onClick={step} />
+        <DatButton label="Record" onClick={startRecording} />
+        <DatButton label="Stop" onClick={stopRecording} />
+      </DatGui>
       <canvas
         style={{
           width: "100%",
