@@ -63,17 +63,12 @@ function QLearningPage() {
   //     setState(newState);
   //   };
 
-  const agentTookAction = action => {
+  const agentTookAction = (action, done) => {
     if (action) {
       downActionObject.click();
     } else {
       upActionObject.click();
     }
-    setStepCount(stepCount + 1);
-  };
-
-  const step = () => {
-    const { action, done } = game.step();
     if (done) {
       if (game.totalReward > bestRewardNumberObject.val) {
         bestRewardNumberObject.updateVal(game.totalReward);
@@ -81,7 +76,12 @@ function QLearningPage() {
       game.reset();
       console.log("RESET");
     }
-    agentTookAction(action);
+    setStepCount(stepCount + 1);
+  };
+
+  const step = () => {
+    const { action, done } = game.step();
+    agentTookAction(action, done);
   };
 
   const startRecording = () => {
@@ -111,14 +111,14 @@ function QLearningPage() {
     if (e.keyCode === 38) {
       // up arrow
       e.preventDefault();
-      game.agentTakeAction(0);
-      agentTookAction(0);
+      const { done } = game.agentTakeAction(0);
+      agentTookAction(0, done);
     }
     if (e.keyCode === 40) {
       // down arrow
       e.preventDefault();
-      game.agentTakeAction(1);
-      agentTookAction(1);
+      const { done } = game.agentTakeAction(1);
+      agentTookAction(1, done);
     }
   };
 
