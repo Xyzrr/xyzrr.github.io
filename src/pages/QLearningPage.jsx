@@ -73,7 +73,7 @@ function QLearningPage() {
       if (game.totalReward > bestRewardNumberObject.val) {
         bestRewardNumberObject.updateVal(game.totalReward);
       }
-      game.reset();
+      setData({ ...data, eps: agent.eps });
       console.log("RESET");
     }
     setStepCount(stepCount + 1);
