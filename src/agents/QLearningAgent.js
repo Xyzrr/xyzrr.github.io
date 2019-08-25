@@ -46,23 +46,11 @@ export default class QLearningAgent {
   }
 
   update(state, action, newState, reward, done) {
-    console.log("from", this.qTable[state][action]);
-    console.log(
-      "lr",
-      this.lr,
-      "reward",
-      reward,
-      "gamma",
-      this.gamma,
-      "fut",
-      Math.max(...this.qTable[newState])
-    );
     this.qTable[state][action] +=
       this.lr *
       (reward +
         (done ? 0 : this.gamma * Math.max(...this.qTable[newState])) -
         this.qTable[state][action]);
-    console.log("to", this.qTable[state][action]);
   }
 
   finishEpisode() {

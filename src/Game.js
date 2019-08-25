@@ -15,11 +15,12 @@ export default class Game {
     this.totalReward += reward;
     this.agent.update(this.state, action, newState, reward, done);
     this.state = newState;
+    const totalReward = this.totalReward;
     if (done) {
       this.agent.finishEpisode();
       this.reset();
     }
-    return { action, newState, reward, done };
+    return { action, newState, reward, done, totalReward };
   }
 
   step() {
