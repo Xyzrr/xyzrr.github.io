@@ -6,16 +6,6 @@ export default class Scene {
     this.ctx = ctx;
     this.size = size;
     this.sceneObjects = sceneObjects;
-    this.capturer = new window.CCapture({ format: "png", quality: 99 });
-  }
-
-  startRecording() {
-    this.capturer.start();
-  }
-
-  stopRecording() {
-    this.capturer.stop();
-    this.capturer.save();
   }
 
   render() {
@@ -27,7 +17,5 @@ export default class Scene {
     });
 
     TWEEN.update();
-
-    this.capturer.capture(this.canvas);
   }
 }

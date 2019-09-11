@@ -83,17 +83,6 @@ function QLearningPage() {
     agentTookAction(action, done, totalReward);
   };
 
-  const startRecording = () => {
-    if (sceneRef.current) {
-      sceneRef.current.startRecording();
-    }
-  };
-  const stopRecording = () => {
-    if (sceneRef.current) {
-      sceneRef.current.stopRecording();
-    }
-  };
-
   const resizeCanvas = () => {
     if (canvasRef.current) {
       canvasRef.current.width = size.width * window.devicePixelRatio;
@@ -202,8 +191,6 @@ function QLearningPage() {
         ></DatNumber>
         <DatBoolean path="autoPlay" label="Auto-play"></DatBoolean>
         <DatButton label="Step" onClick={step} />
-        <DatButton label="Record" onClick={startRecording} />
-        <DatButton label="Stop" onClick={stopRecording} />
       </DatGui>
       <canvas
         style={{

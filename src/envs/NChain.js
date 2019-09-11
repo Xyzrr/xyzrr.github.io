@@ -13,8 +13,10 @@ export default class NChainEnv {
   }
 
   step(action) {
+    let slipped = false;
     if (Math.random() < this.slip) {
       action = !action;
+      slipped = true;
     }
     let reward = 0;
     if (action) {
@@ -33,7 +35,8 @@ export default class NChainEnv {
     return {
       newState: this.state,
       reward: reward,
-      done: this.stepCount >= this.episode_length
+      done: this.stepCount >= this.episode_length,
+      info: { slipped }
     };
   }
 
