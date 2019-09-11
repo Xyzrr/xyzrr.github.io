@@ -46,7 +46,6 @@ export default class Table extends SceneObject {
         ctx.strokeStyle = colors.gray;
         ctx.stroke();
         ctx.fillStyle = colors.blue;
-        this.numbersObjects[i][j].updateVals();
         this.numbersObjects[i][j].render(ctx);
       }
     }

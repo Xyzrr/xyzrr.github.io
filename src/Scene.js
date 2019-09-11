@@ -23,9 +23,9 @@ export default class Scene {
 
     this.ctx.clearRect(0, 0, this.size.width, this.size.height);
     this.sceneObjects.forEach(obj => {
-      obj.updateVals();
       obj.render(this.ctx, this.size);
     });
+
     TWEEN.update();
 
     this.capturer.capture(this.canvas);

@@ -1,6 +1,5 @@
 import SceneObject from "./SceneObject";
 import * as colors from "../colors";
-import EasingFunctions from "../util/easing";
 import TWEEN from "@tweenjs/tween.js";
 
 export default class ButtonObject extends SceneObject {
