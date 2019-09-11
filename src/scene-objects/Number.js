@@ -1,5 +1,6 @@
 import SceneObject from "./SceneObject";
 import * as colors from "../colors";
+import TWEEN from "@tweenjs/tween.js";
 
 export default class NumberObject extends SceneObject {
   constructor(position, val, options) {
@@ -28,9 +29,11 @@ export default class NumberObject extends SceneObject {
   }
 
   onAnimationFinish() {
-    this.animate("newValOpacity", 0, { duration: 2000 });
-    this.animate("valOpacity", 1, { duration: 0 });
-    this.animate("valOffset", 0, { duration: 0 });
+    this.activeTween = new TWEEN.Tween(this)
+      .to({ newValOpacity: 0 }, 2000)
+      .start();
+    this.valOpacity = 1;
+    this.valOffset = 0;
     this.val = this.newVal;
   }
 
@@ -38,48 +41,52 @@ export default class NumberObject extends SceneObject {
     if (newVal === this.newVal) {
       return;
     }
+    if (this.activeTween) {
+      this.activeTween.stop();
+    }
+
     if (newVal > this.val) {
       this.val = this.newVal;
       this.newVal = newVal;
       this.newValColor = colors.green;
-      this.animate("valOpacity", 0, {
-        start: 1,
-        duration: animationDuration
-      });
-      this.animate("newValOpacity", 1, {
-        start: 0,
-        duration: animationDuration,
-        onFinished: this.onAnimationFinish.bind(this)
-      });
-      this.animate("valOffset", 25, {
-        start: 0,
-        duration: animationDuration
-      });
-      this.animate("newValOffset", 0, {
-        start: -25,
-        duration: animationDuration
-      });
+      this.valOpacity = 1;
+      this.newValOpacity = 0;
+      this.valOffset = 0;
+      this.newValOffset = -25;
+      this.activeTween = new TWEEN.Tween(this)
+        .to(
+          {
+            valOpacity: 0,
+            newValOpacity: 1,
+            valOffset: 25,
+            newValOffset: 0
+          },
+          animationDuration
+        )
+        .onStop(this.onAnimationFinish.bind(this))
+        .onComplete(this.onAnimationFinish.bind(this))
+        .start();
     } else if (newVal < this.val) {
       this.val = this.newVal;
       this.newVal = newVal;
       this.newValColor = colors.red;
-      this.animate("valOpacity", 0, {
-        start: 1,
-        duration: animationDuration
-      });
-      this.animate("newValOpacity", 1, {
-        start: 0,
-        duration: animationDuration,
-        onFinished: this.onAnimationFinish.bind(this)
-      });
-      this.animate("valOffset", -25, {
-        start: 0,
-        duration: animationDuration
-      });
-      this.animate("newValOffset", 0, {
-        start: 25,
-        duration: animationDuration
-      });
+      this.valOpacity = 1;
+      this.newValOpacity = 0;
+      this.valOffset = 0;
+      this.newValOffset = 25;
+      this.activeTween = new TWEEN.Tween(this)
+        .to(
+          {
+            valOpacity: 0,
+            newValOpacity: 1,
+            valOffset: -25,
+            newValOffset: 0
+          },
+          animationDuration
+        )
+        .onStop(this.onAnimationFinish.bind(this))
+        .onComplete(this.onAnimationFinish.bind(this))
+        .start();
     }
   }
 

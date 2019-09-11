@@ -1,6 +1,7 @@
 import SceneObject from "./SceneObject";
 import * as colors from "../colors";
 import EasingFunctions from "../util/easing";
+import TWEEN from "@tweenjs/tween.js";
 
 export default class ButtonObject extends SceneObject {
   constructor(position, content) {
@@ -11,11 +12,8 @@ export default class ButtonObject extends SceneObject {
   }
 
   click() {
-    this.animate("fillOpacity", 0, {
-      start: 1,
-      duration: 200,
-      easingFunc: EasingFunctions.easeInCubic
-    });
+    this.fillOpacity = 1;
+    new TWEEN.Tween(this).to({ fillOpacity: 0 }, 200).start();
   }
 
   render(ctx) {

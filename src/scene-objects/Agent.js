@@ -1,5 +1,7 @@
 import SceneObject from "./SceneObject";
 import * as colors from "../colors";
+import constants from "jest-haste-map/build/constants";
+import TWEEN from "@tweenjs/tween.js";
 
 export default class Agent extends SceneObject {
   constructor(position) {
@@ -8,7 +10,7 @@ export default class Agent extends SceneObject {
   }
 
   move(newY) {
-    this.animate("position.y", newY);
+    new TWEEN.Tween(this.position).to({ y: newY }, 150).start();
   }
 
   render(ctx) {

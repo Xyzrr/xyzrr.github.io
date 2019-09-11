@@ -138,9 +138,7 @@ function QLearningPage() {
       bestRewardNumberObject,
       downActionObject,
       upActionObject
-    ]);
-
-    sceneRef.current.render();
+    ]).render();
   }, []);
 
   React.useEffect(() => {

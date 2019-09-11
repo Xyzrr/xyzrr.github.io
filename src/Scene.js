@@ -1,3 +1,5 @@
+import TWEEN from "@tweenjs/tween.js";
+
 export default class Scene {
   constructor(canvas, ctx, size, sceneObjects) {
     this.canvas = canvas;
@@ -24,6 +26,7 @@ export default class Scene {
       obj.updateVals();
       obj.render(this.ctx, this.size);
     });
+    TWEEN.update();
 
     this.capturer.capture(this.canvas);
   }
