@@ -11,7 +11,7 @@ export default class Game {
   }
 
   agentTakeAction(action) {
-    const { newState, reward, done } = this.env.step(action);
+    const { newState, reward, done, info } = this.env.step(action);
     this.totalReward += reward;
     this.agent.update(this.state, action, newState, reward, done);
     this.state = newState;
@@ -20,7 +20,7 @@ export default class Game {
       this.agent.finishEpisode();
       this.reset();
     }
-    return { action, newState, reward, done, totalReward };
+    return { action, newState, reward, done, totalReward, info };
   }
 
   step() {

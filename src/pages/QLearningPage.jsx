@@ -63,11 +63,14 @@ function QLearningPage() {
   //     setState(newState);
   //   };
 
-  const agentTookAction = (action, done, totalReward) => {
+  const agentTookAction = (action, done, totalReward, info) => {
     if (action) {
       downActionObject.click();
     } else {
       upActionObject.click();
+    }
+    if (info.slipped) {
+      agentObject.slip();
     }
     if (done) {
       if (totalReward > bestRewardNumberObject.val) {
@@ -79,8 +82,8 @@ function QLearningPage() {
   };
 
   const step = () => {
-    const { action, done, totalReward } = game.step();
-    agentTookAction(action, done, totalReward);
+    const { action, done, totalReward, info } = game.step();
+    agentTookAction(action, done, totalReward, info);
   };
 
   const resizeCanvas = () => {
@@ -99,14 +102,14 @@ function QLearningPage() {
     if (e.keyCode === 38) {
       // up arrow
       e.preventDefault();
-      const { done, totalReward } = game.agentTakeAction(0);
-      agentTookAction(0, done, totalReward);
+      const { done, totalReward, info } = game.agentTakeAction(0);
+      agentTookAction(0, done, totalReward, info);
     }
     if (e.keyCode === 40) {
       // down arrow
       e.preventDefault();
-      const { done, totalReward } = game.agentTakeAction(1);
-      agentTookAction(1, done, totalReward);
+      const { done, totalReward, info } = game.agentTakeAction(1);
+      agentTookAction(1, done, totalReward, info);
     }
   };
 
