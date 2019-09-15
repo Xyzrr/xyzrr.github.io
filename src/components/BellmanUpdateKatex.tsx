@@ -13,9 +13,13 @@ import {
 import Katex from '../components/Katex';
 
 interface BellmanUpdateKatexProps {
-  state: number;
+  state?: number;
   nextState: number;
-  reward: number;
+  reward?: number;
+  action?: string;
+  nextAction?: string;
+  gamma: number;
+  lr: number;
 }
 
 const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {

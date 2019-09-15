@@ -5,8 +5,10 @@ export default class Game {
   env: Env;
   agent: Agent;
   state!: number;
-  prevState?: number = undefined;
+  prevState?: number;
+  lastReward?: number;
   totalReward: number = 0;
+  lastAction: any;
 
   constructor(env: Env, agent: Agent) {
     this.env = env;
@@ -22,6 +24,7 @@ export default class Game {
 
   agentTakeAction(action: any) {
     const { newState, reward, done, info } = this.env.step(action);
+    this.lastReward = reward;
     this.totalReward += reward;
     this.agent.update(this.state, action, newState, reward, done);
     this.prevState = this.state;

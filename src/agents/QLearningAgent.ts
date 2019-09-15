@@ -1,21 +1,6 @@
 import Env from '../envs/Env';
+import {argMax, randInt, zero2D} from '../util/helpers';
 import Agent from './Agent';
-
-function zero2D(rows: number, cols: number) {
-  var array = [],
-    row = [];
-  while (cols--) row.push(0);
-  while (rows--) array.push(row.slice());
-  return array;
-}
-
-function argMax(array: number[]) {
-  return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
-}
-
-function getRndInteger(min: number, max: number) {
-  return Math.floor(Math.random() * (max - min)) + min;
-}
 
 export default class QLearningAgent implements Agent {
   gamma: number;
@@ -49,7 +34,7 @@ export default class QLearningAgent implements Agent {
     }
 
     if (Math.random() < this.eps) {
-      return getRndInteger(0, this.qTable[0].length);
+      return randInt(0, this.qTable[0].length);
     } else {
       return argMax(this.qTable[state]);
     }

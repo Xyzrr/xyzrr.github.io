@@ -1,19 +1,22 @@
-import React from "react";
-import styled from "styled-components";
-import "react-dat-gui/build/react-dat-gui.css";
-import * as colors from "../colors";
-import useWindowSize from "../util/useWindowSize";
-import NChainEnv from "../envs/NChain";
-import QLearningAgent from "../agents/QLearningAgent";
-import Game from "../Game";
-import Table from "../scene-objects/Table";
-import ChainEnvironment from "../scene-objects/ChainEnvironment";
-import AgentObject from "../scene-objects/AgentObject";
-import Scene from "../Scene";
-import NumberObject from "../scene-objects/Number";
-import ButtonObject from "../scene-objects/ButtonObject";
-import DatGui, { DatNumber, DatButton, DatBoolean } from "react-dat-gui";
-import BellmanUpdateKatex from "../components/BellmanUpdateKatex";
+import 'react-dat-gui/build/react-dat-gui.css';
+
+import React from 'react';
+import DatGui, {DatBoolean, DatButton, DatNumber} from 'react-dat-gui';
+import styled from 'styled-components';
+
+import QLearningAgent from '../agents/QLearningAgent';
+import * as colors from '../colors';
+import BellmanUpdateKatex from '../components/BellmanUpdateKatex';
+import NChainEnv from '../envs/NChain';
+import Game from '../Game';
+import Scene from '../Scene';
+import AgentObject from '../scene-objects/AgentObject';
+import ButtonObject from '../scene-objects/ButtonObject';
+import ChainEnvironment from '../scene-objects/ChainEnvironment';
+import NumberObject from '../scene-objects/Number';
+import Table from '../scene-objects/Table';
+import {argMax} from '../util/helpers';
+import useWindowSize from '../util/useWindowSize';
 
 const initialAgentOptions = {
   gamma: 0.95,
@@ -37,7 +40,7 @@ const bestRewardNumberObject = new NumberObject({ x: 430, y: 350 }, 0, {
   textAlign: "left",
   font: "20px Inconsolata",
   precision: 0,
-  modifier: v => "Best: " + v
+  modifier: (v: number) => "Best: " + v
 });
 const environmentObject = new ChainEnvironment({ x: 320, y: 185 });
 const agentObject = new AgentObject({ x: 320, y: 500 });
@@ -49,12 +52,12 @@ const Page = styled.div`
 `;
 
 function QLearningPage() {
-  const canvasRef = React.useRef(null);
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const sceneRef = React.useRef<Scene>();
   const size = useWindowSize();
-  const sceneRef = React.useRef();
 
   const [stepCount, setStepCount] = React.useState(0);
-  const [data, setData] = React.useState({
+  const [options, setOptions] = React.useState({
     autoPlay: false,
     ...initialAgentOptions
   });
@@ -65,7 +68,12 @@ function QLearningPage() {
   //     setState(newState);
   //   };
 
-  const agentTookAction = (action, done, totalReward, info) => {
+  const agentTookAction = (
+    action: any,
+    done: boolean,
+    totalReward: number,
+    info: any
+  ) => {
     if (action) {
       downActionObject.click();
     } else {
@@ -78,7 +86,7 @@ function QLearningPage() {
       if (totalReward > bestRewardNumberObject.val) {
         bestRewardNumberObject.updateVal(totalReward);
       }
-      setData({ ...data, eps: agent.eps });
+      setOptions({ ...options, eps: agent.eps });
     }
     setStepCount(stepCount + 1);
   };
@@ -89,18 +97,20 @@ function QLearningPage() {
   };
 
   const resizeCanvas = () => {
-    if (canvasRef.current) {
+    if (canvasRef.current && size.width && size.height) {
       canvasRef.current.width = size.width * window.devicePixelRatio;
       canvasRef.current.height = size.height * window.devicePixelRatio;
       const ctx = canvasRef.current.getContext("2d");
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      if (ctx) {
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      }
       if (sceneRef.current) {
         sceneRef.current.size = size;
       }
     }
   };
 
-  const handleKeyDown = e => {
+  const handleKeyDown = (e: any) => {
     if (e.keyCode === 38) {
       // up arrow
       e.preventDefault();
@@ -115,13 +125,13 @@ function QLearningPage() {
     }
   };
 
-  const handleUpdate = data => {
-    setData(data);
+  const handleUpdate = (data: any) => {
+    setOptions(data);
   };
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas && canvas.getContext("2d");
     resizeCanvas();
 
     sceneRef.current = new Scene(canvas, ctx, size, [
@@ -132,7 +142,9 @@ function QLearningPage() {
       bestRewardNumberObject,
       downActionObject,
       upActionObject
-    ]).render();
+    ]);
+
+    sceneRef.current.render();
   }, []);
 
   React.useEffect(() => {
@@ -146,26 +158,28 @@ function QLearningPage() {
     };
   });
 
-  if (data.autoPlay) {
+  if (options.autoPlay) {
     window.setTimeout(step, 150);
   }
 
-  agent.gamma = data.gamma;
-  agent.lr = data.lr;
-  agent.eps = data.eps;
-  agent.epsDecay = data.epsDecay;
+  agent.gamma = options.gamma;
+  agent.lr = options.lr;
+  agent.eps = options.eps;
+  agent.epsDecay = options.epsDecay;
 
   resizeCanvas();
 
   agentObject.move(465 - 70 * (game.state || 0));
 
-  tableObject.updateData(agent.qTable.slice().reverse());
+  if (agent.qTable) {
+    tableObject.updateData(agent.qTable.slice().reverse());
+  }
 
   rewardNumberObject.updateVal(game.totalReward);
 
   return (
     <Page>
-      <DatGui data={data} onUpdate={handleUpdate}>
+      <DatGui data={options} onUpdate={handleUpdate}>
         <DatNumber
           path="lr"
           label="Learning rate (α)"
@@ -205,7 +219,17 @@ function QLearningPage() {
         }}
         ref={canvasRef}
       />
-      <BellmanUpdateKatex state={game.state}></BellmanUpdateKatex>
+      <BellmanUpdateKatex
+        state={game.prevState}
+        nextState={game.state}
+        reward={game.lastReward}
+        action={game.lastAction ? "DOWN" : "UP"}
+        nextAction={
+          agent.qTable && (argMax(agent.qTable[game.state]) ? "DOWN" : "UP")
+        }
+        gamma={options.gamma}
+        lr={options.lr}
+      ></BellmanUpdateKatex>
     </Page>
   );
 }
