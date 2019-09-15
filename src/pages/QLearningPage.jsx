@@ -13,7 +13,7 @@ import Scene from "../Scene";
 import NumberObject from "../scene-objects/Number";
 import ButtonObject from "../scene-objects/ButtonObject";
 import DatGui, { DatNumber, DatButton, DatBoolean } from "react-dat-gui";
-import Katex from "../components/Katex";
+import BellmanUpdateKatex from "../components/BellmanUpdateKatex";
 
 const initialAgentOptions = {
   gamma: 0.95,
@@ -204,10 +204,7 @@ function QLearningPage() {
         }}
         ref={canvasRef}
       />
-      <Katex
-        position={{ x: 50, y: 540 }}
-        expression="Q(\textcolor{#00ff00}{s}, a) \leftarrow Q(s, a) + \alpha(r + \gamma \max_{a'}Q(s', a') - Q(s, a))"
-      ></Katex>
+      <BellmanUpdateKatex></BellmanUpdateKatex>
     </Page>
   );
 }
