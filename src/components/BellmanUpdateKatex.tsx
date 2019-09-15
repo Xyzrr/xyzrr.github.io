@@ -25,8 +25,12 @@ const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {
     return <></>;
   }
 
-  const actionString = data.action ? "DOWN" : "UP";
-  const nextActionString = data.nextAction ? "DOWN" : "UP";
+  const actionString = data.action
+    ? String.raw`\mathit{down}`
+    : String.raw`\mathit{up}`;
+  const nextActionString = data.nextAction
+    ? String.raw`\mathit{down}`
+    : String.raw`\mathit{up}`;
 
   const stateColor = toHex(purple);
   const nextStateColor = toHex(darkBlue);
