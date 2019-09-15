@@ -219,17 +219,7 @@ function QLearningPage() {
         }}
         ref={canvasRef}
       />
-      <BellmanUpdateKatex
-        state={game.prevState}
-        nextState={game.state}
-        reward={game.lastReward}
-        action={game.lastAction ? "DOWN" : "UP"}
-        nextAction={
-          agent.qTable && (argMax(agent.qTable[game.state]) ? "DOWN" : "UP")
-        }
-        gamma={options.gamma}
-        lr={options.lr}
-      ></BellmanUpdateKatex>
+      <BellmanUpdateKatex updateData={agent.updateData}></BellmanUpdateKatex>
     </Page>
   );
 }

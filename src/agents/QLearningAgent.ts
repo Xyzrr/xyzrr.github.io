@@ -2,12 +2,27 @@ import Env from '../envs/Env';
 import {argMax, randInt, zero2D} from '../util/helpers';
 import Agent from './Agent';
 
+export interface QLearningAgentUpdateData {
+  state: number;
+  action: number;
+  lr: number;
+  reward: number;
+  done: boolean;
+  gamma: number;
+  newState: number;
+  nextAction: number;
+  currentQ: number;
+  nextQ: number;
+}
+
 export default class QLearningAgent implements Agent {
   gamma: number;
   lr: number;
   eps: number;
   epsDecay: number;
   qTable?: number[][];
+
+  updateData?: QLearningAgentUpdateData;
 
   constructor(options: any) {
     options = {
@@ -51,6 +66,19 @@ export default class QLearningAgent implements Agent {
       console.error("Q learning agent not prepared");
       return;
     }
+
+    this.updateData = {
+      state,
+      action,
+      lr: this.lr,
+      reward,
+      done,
+      gamma: this.gamma,
+      newState,
+      nextAction: argMax(this.qTable[newState]),
+      currentQ: this.qTable[state][action],
+      nextQ: Math.max(...this.qTable[newState])
+    };
 
     this.qTable[state][action] +=
       this.lr *

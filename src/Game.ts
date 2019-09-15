@@ -24,6 +24,7 @@ export default class Game {
 
   agentTakeAction(action: any) {
     const { newState, reward, done, info } = this.env.step(action);
+    this.lastAction = action;
     this.lastReward = reward;
     this.totalReward += reward;
     this.agent.update(this.state, action, newState, reward, done);
