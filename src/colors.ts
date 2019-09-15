@@ -11,8 +11,8 @@ export const purple = "rgb(197, 134, 192)";
 export const yellow = "rgb(220, 220, 170)";
 export const brown = "rgb(206, 145, 120)";
 
-export const bgBrown = "rgb(43, 36, 13)";
-export const bgGreen = "rgb(13, 36, 23)";
+export const bgBrown = "rgb(69, 55, 21)";
+export const bgGreen = "rgb(21, 69, 55)";
 
 export const toHex = (color: string) =>
   "#" +
