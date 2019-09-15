@@ -1,6 +1,5 @@
 import SceneObject from "./SceneObject";
 import * as colors from "../colors";
-import constants from "jest-haste-map/build/constants";
 import TWEEN from "@tweenjs/tween.js";
 
 export default class Agent extends SceneObject {

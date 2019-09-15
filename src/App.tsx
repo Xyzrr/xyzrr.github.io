@@ -1,6 +1,7 @@
-import React from "react";
-import { BrowserRouter as Router, Route } from "react-router-dom";
-import QLearningPage from "./pages/QLearningPage";
+import React from 'react';
+import {BrowserRouter as Router, Route} from 'react-router-dom';
+
+import QLearningPage from './pages/QLearningPage';
 
 function Home() {
   return <div>Home</div>;
