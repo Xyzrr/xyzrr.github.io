@@ -43,13 +43,21 @@ const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {
         expression={String.raw`Q(\textcolor{${stateColor}}{${data.state}}, \textcolor{${actionColor}}{${actionString}}) \leftarrow Q(\textcolor{${stateColor}}{${data.state}}, \textcolor{${actionColor}}{${actionString}}) + ${data.lr}(\textcolor{${rewardColor}}{${data.reward}} + ${data.gamma} Q(\textcolor{${nextStateColor}}{${data.newState}}, \textcolor{${nextActionColor}}{${nextActionString}}) - Q(\textcolor{${stateColor}}{${data.state}}, \textcolor{${actionColor}}{${actionString}}))`}
       ></Katex>
       <Katex
-        expression={String.raw`Q(\textcolor{${stateColor}}{${data.state}}, \textcolor{${actionColor}}{${actionString}}) \leftarrow ${data.currentQ} + ${data.lr}(\textcolor{${rewardColor}}{${data.reward}} + ${data.gamma} * ${data.nextQ} - ${data.currentQ})`}
+        expression={String.raw`Q(\textcolor{${stateColor}}{${
+          data.state
+        }}, \textcolor{${actionColor}}{${actionString}}) \leftarrow ${data.currentQ.toFixed(
+          2
+        )} + ${data.lr}(\textcolor{${rewardColor}}{${data.reward}} + ${
+          data.gamma
+        } * ${data.nextQ.toFixed(2)} - ${data.currentQ.toFixed(2)})`}
       ></Katex>
       <Katex
         expression={String.raw`Q(\textcolor{${stateColor}}{${
           data.state
-        }}, \textcolor{${actionColor}}{${actionString}}) \leftarrow ${data.currentQ +
-          data.lr * (data.reward + data.gamma * data.nextQ - data.currentQ)}`}
+        }}, \textcolor{${actionColor}}{${actionString}}) \leftarrow ${(
+          data.currentQ +
+          data.lr * (data.reward + data.gamma * data.nextQ - data.currentQ)
+        ).toFixed(2)}`}
       ></Katex>
     </div>
   );
