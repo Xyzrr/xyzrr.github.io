@@ -5,16 +5,13 @@ import {QLearningAgentUpdateData} from '../agents/QLearningAgent';
 import {
   bgBrown,
   bgGreen,
-  blue,
   brown,
   darkBlue,
   darkGreen,
   purple,
-  toHex,
   yellow,
 } from '../colors';
 import Katex from '../components/Katex';
-import {argMax} from '../util/helpers';
 
 interface BellmanUpdateKatexProps {
   updateData?: QLearningAgentUpdateData;
@@ -34,13 +31,13 @@ const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {
     ? String.raw`\mathit{dn}`
     : String.raw`\mathit{up}`;
 
-  const stateColor = toHex(purple);
-  const nextStateColor = toHex(darkBlue);
-  const rewardColor = toHex(yellow);
-  const actionColor = toHex(brown);
-  const nextActionColor = toHex(darkGreen);
-  const currentQColor = toHex(bgBrown);
-  const nextQColor = toHex(bgGreen);
+  const stateColor = purple.hex();
+  const nextStateColor = darkBlue.hex();
+  const rewardColor = yellow.hex();
+  const actionColor = brown.hex();
+  const nextActionColor = darkGreen.hex();
+  const currentQColor = bgBrown.hex();
+  const nextQColor = bgGreen.hex();
 
   const colorbox = (color: string, text: string) =>
     String.raw`\colorbox{${color}}{$${text}$}`;

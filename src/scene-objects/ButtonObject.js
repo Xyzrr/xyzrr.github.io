@@ -14,7 +14,7 @@ export default class ButtonObject {
   }
 
   render(ctx) {
-    ctx.fillStyle = colors.withOpacity(colors.gray, this.fillOpacity);
+    ctx.fillStyle = colors.gray.fade(1 - this.fillOpacity);
     ctx.strokeStyle = colors.gray;
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, 30, 0, 2 * Math.PI);

@@ -48,7 +48,7 @@ const upActionObject = new ButtonObject({ x: 100, y: 100 }, "UP");
 const downActionObject = new ButtonObject({ x: 200, y: 100 }, "DN");
 
 const Page = styled.div`
-  background-color: ${colors.darkGray};
+  background-color: ${colors.darkGray.toString()};
 `;
 
 function QLearningPage() {

@@ -90,13 +90,13 @@ export default class NumberObject {
   render(ctx) {
     ctx.textAlign = this.textAlign;
     ctx.font = this.font;
-    ctx.fillStyle = colors.withOpacity(colors.blue, this.valOpacity);
+    ctx.fillStyle = colors.blue.fade(1 - this.valOpacity);
     ctx.fillText(
       this.modifier(this.val.toFixed(this.precision)),
       this.position.x,
       this.position.y + this.valOffset
     );
-    ctx.fillStyle = colors.withOpacity(this.newValColor, this.newValOpacity);
+    ctx.fillStyle = this.newValColor.fade(1 - this.newValOpacity);
     ctx.fillText(
       this.modifier(this.newVal.toFixed(this.precision)),
       this.position.x,

@@ -4,7 +4,7 @@ import styled from "styled-components";
 import * as colors from "../colors";
 
 const KatexDiv = styled.div`
-  color: ${colors.lightGray};
+  color: ${colors.lightGray.toString()};
   font-size: ${props => props.fontSize}px;
 `;
 

@@ -26,7 +26,7 @@ export default class AgentObject implements SceneObject {
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, 20, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.fillStyle = colors.withOpacity(colors.red, this.redness);
+    ctx.fillStyle = colors.red.fade(1 - this.redness);
     ctx.fill();
   }
 }
