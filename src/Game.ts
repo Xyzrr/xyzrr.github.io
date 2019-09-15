@@ -1,19 +1,30 @@
+import Agent from './agents/Agent';
+import Env from './envs/Env';
+
 export default class Game {
-  constructor(env, agent) {
+  env: Env;
+  agent: Agent;
+  state!: number;
+  prevState?: number = undefined;
+  totalReward: number = 0;
+
+  constructor(env: Env, agent: Agent) {
     this.env = env;
     this.agent = agent;
-    agent.initToEnvironment(env.stateSpace, env.actionSpace);
+    this.reset();
   }
 
   reset() {
     this.state = this.env.reset();
+    this.prevState = undefined;
     this.totalReward = 0;
   }
 
-  agentTakeAction(action) {
+  agentTakeAction(action: any) {
     const { newState, reward, done, info } = this.env.step(action);
     this.totalReward += reward;
     this.agent.update(this.state, action, newState, reward, done);
+    this.prevState = this.state;
     this.state = newState;
     const totalReward = this.totalReward;
     if (done) {

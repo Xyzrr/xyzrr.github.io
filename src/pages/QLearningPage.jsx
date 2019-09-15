@@ -23,7 +23,7 @@ const initialAgentOptions = {
 };
 
 const env = new NChainEnv();
-const agent = new QLearningAgent(initialAgentOptions);
+const agent = new QLearningAgent(env, initialAgentOptions);
 const game = new Game(env, agent);
 
 const tableObject = new Table({ x: 50, y: 150 }, agent.qTable);
@@ -204,7 +204,7 @@ function QLearningPage() {
         }}
         ref={canvasRef}
       />
-      <BellmanUpdateKatex></BellmanUpdateKatex>
+      <BellmanUpdateKatex state={game.state}></BellmanUpdateKatex>
     </Page>
   );
 }

@@ -1,4 +1,17 @@
-export default class NChainEnv {
+import Env from './Env';
+
+export default class NChainEnv implements Env {
+  n: number;
+  slip: number;
+  small: number;
+  large: number;
+  episode_length: number;
+  state: number;
+  stepCount: number;
+
+  stateSpace: number;
+  actionSpace: number;
+
   constructor(n = 5, slip = 0.2, small = 2, large = 10, episode_length = 100) {
     this.n = n;
     this.slip = slip;
@@ -12,7 +25,7 @@ export default class NChainEnv {
     this.actionSpace = 2;
   }
 
-  step(action) {
+  step(action: boolean) {
     let slipped = false;
     if (Math.random() < this.slip) {
       action = !action;

@@ -1,4 +1,7 @@
-function zero2D(rows, cols) {
+import Env from '../envs/Env';
+import Agent from './Agent';
+
+function zero2D(rows: number, cols: number) {
   var array = [],
     row = [];
   while (cols--) row.push(0);
@@ -6,16 +9,22 @@ function zero2D(rows, cols) {
   return array;
 }
 
-function argMax(array) {
+function argMax(array: number[]) {
   return array.map((x, i) => [x, i]).reduce((r, a) => (a[0] > r[0] ? a : r))[1];
 }
 
-function getRndInteger(min, max) {
+function getRndInteger(min: number, max: number) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-export default class QLearningAgent {
-  constructor(options) {
+export default class QLearningAgent implements Agent {
+  gamma: number;
+  lr: number;
+  eps: number;
+  epsDecay: number;
+  qTable: number[][];
+
+  constructor(env: Env, options: any) {
     options = {
       gamma: 0.95,
       lr: 0.1,
@@ -27,13 +36,11 @@ export default class QLearningAgent {
     this.lr = options.lr;
     this.eps = options.eps;
     this.epsDecay = options.epsDecay;
+
+    this.qTable = zero2D(env.stateSpace, env.actionSpace);
   }
 
-  initToEnvironment(stateSpace, actionSpace) {
-    this.qTable = zero2D(stateSpace, actionSpace);
-  }
-
-  getAction(state) {
+  getAction(state: number) {
     if (this.qTable == null) {
       console.error("Q learning agent not initialized");
     }
@@ -45,7 +52,13 @@ export default class QLearningAgent {
     }
   }
 
-  update(state, action, newState, reward, done) {
+  update(
+    state: number,
+    action: number,
+    newState: number,
+    reward: number,
+    done: boolean
+  ) {
     this.qTable[state][action] +=
       this.lr *
       (reward +

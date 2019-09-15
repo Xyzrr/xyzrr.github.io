@@ -14,7 +14,7 @@ import Katex from '../components/Katex';
 
 interface BellmanUpdateKatexProps {
   state: number;
-  next_state: number;
+  nextState: number;
   reward: number;
 }
 
