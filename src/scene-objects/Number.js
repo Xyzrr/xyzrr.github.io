@@ -1,11 +1,8 @@
-import SceneObject from "./SceneObject";
 import * as colors from "../colors";
 import TWEEN from "@tweenjs/tween.js";
 
-export default class NumberObject extends SceneObject {
+export default class NumberObject {
   constructor(position, val, options) {
-    super();
-
     options = {
       font: "30px Inconsolata",
       textAlign: "center",

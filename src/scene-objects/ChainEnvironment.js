@@ -1,9 +1,7 @@
-import SceneObject from "./SceneObject";
 import * as colors from "../colors";
 
-export default class ChainEnvironment extends SceneObject {
+export default class ChainEnvironment {
   constructor(position) {
-    super();
     this.position = position;
   }
 

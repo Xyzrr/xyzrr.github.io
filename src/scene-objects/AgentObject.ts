@@ -1,15 +1,18 @@
-import SceneObject from "./SceneObject";
-import * as colors from "../colors";
-import TWEEN from "@tweenjs/tween.js";
+import TWEEN from '@tweenjs/tween.js';
 
-export default class Agent extends SceneObject {
-  constructor(position) {
-    super();
+import * as colors from '../colors';
+import Position from '../util/Position';
+import SceneObject from './SceneObject';
+
+export default class AgentObject implements SceneObject {
+  position: Position;
+  redness: number;
+  constructor(position: Position) {
     this.position = position;
     this.redness = 0;
   }
 
-  move(newY) {
+  move(newY: number) {
     new TWEEN.Tween(this.position).to({ y: newY }, 150).start();
   }
 
@@ -18,7 +21,7 @@ export default class Agent extends SceneObject {
     new TWEEN.Tween(this).to({ redness: 0 }, 500).start();
   }
 
-  render(ctx) {
+  render(ctx: any) {
     ctx.fillStyle = colors.blue;
     ctx.beginPath();
     ctx.arc(this.position.x, this.position.y, 20, 0, 2 * Math.PI);

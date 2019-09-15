@@ -1,10 +1,8 @@
-import SceneObject from "./SceneObject";
 import * as colors from "../colors";
 import TWEEN from "@tweenjs/tween.js";
 
-export default class ButtonObject extends SceneObject {
+export default class ButtonObject {
   constructor(position, content) {
-    super();
     this.position = position;
     this.content = content;
     this.fillOpacity = 0;

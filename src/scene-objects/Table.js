@@ -1,10 +1,8 @@
 import NumberObject from "./Number";
-import SceneObject from "./SceneObject";
 import * as colors from "../colors";
 
-export default class Table extends SceneObject {
+export default class Table {
   constructor(position, data) {
-    super();
     this.position = position;
     this.data = data;
     this.numbersObjects = [];

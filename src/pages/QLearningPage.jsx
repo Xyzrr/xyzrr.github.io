@@ -8,7 +8,7 @@ import QLearningAgent from "../agents/QLearningAgent";
 import Game from "../Game";
 import Table from "../scene-objects/Table";
 import ChainEnvironment from "../scene-objects/ChainEnvironment";
-import AgentObject from "../scene-objects/Agent";
+import AgentObject from "../scene-objects/AgentObject";
 import Scene from "../Scene";
 import NumberObject from "../scene-objects/Number";
 import ButtonObject from "../scene-objects/ButtonObject";
