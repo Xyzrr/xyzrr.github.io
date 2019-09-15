@@ -22,9 +22,9 @@ export default class QLearningAgent implements Agent {
   lr: number;
   eps: number;
   epsDecay: number;
-  qTable: number[][];
+  qTable?: number[][];
 
-  constructor(env: Env, options: any) {
+  constructor(options: any) {
     options = {
       gamma: 0.95,
       lr: 0.1,
@@ -36,13 +36,16 @@ export default class QLearningAgent implements Agent {
     this.lr = options.lr;
     this.eps = options.eps;
     this.epsDecay = options.epsDecay;
+  }
 
+  prepareForEnv(env: Env) {
     this.qTable = zero2D(env.stateSpace, env.actionSpace);
   }
 
   getAction(state: number) {
     if (this.qTable == null) {
-      console.error("Q learning agent not initialized");
+      console.error("Q learning agent not prepared");
+      return;
     }
 
     if (Math.random() < this.eps) {
@@ -59,6 +62,11 @@ export default class QLearningAgent implements Agent {
     reward: number,
     done: boolean
   ) {
+    if (this.qTable == null) {
+      console.error("Q learning agent not prepared");
+      return;
+    }
+
     this.qTable[state][action] +=
       this.lr *
       (reward +

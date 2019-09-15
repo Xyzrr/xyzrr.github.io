@@ -23,7 +23,8 @@ const initialAgentOptions = {
 };
 
 const env = new NChainEnv();
-const agent = new QLearningAgent(env, initialAgentOptions);
+const agent = new QLearningAgent(initialAgentOptions);
+agent.prepareForEnv(env);
 const game = new Game(env, agent);
 
 const tableObject = new Table({ x: 50, y: 150 }, agent.qTable);

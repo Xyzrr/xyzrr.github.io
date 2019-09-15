@@ -1,4 +1,7 @@
+import Env from '../envs/Env';
+
 export default interface Agent {
+  prepareForEnv(env: Env): void;
   getAction(state: number): any;
   update(
     state: number,
