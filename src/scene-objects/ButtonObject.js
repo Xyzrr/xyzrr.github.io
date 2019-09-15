@@ -20,7 +20,7 @@ export default class ButtonObject {
     ctx.arc(this.position.x, this.position.y, 30, 0, 2 * Math.PI);
     ctx.fill();
     ctx.stroke();
-    ctx.font = "20px Inconsolata";
+    ctx.font = "20px KaTeX_Main";
     ctx.fillStyle = colors.blue;
     ctx.textAlign = "center";
     ctx.fillText(this.content, this.position.x, this.position.y + 6);

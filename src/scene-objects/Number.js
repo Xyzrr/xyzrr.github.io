@@ -4,7 +4,7 @@ import TWEEN from "@tweenjs/tween.js";
 export default class NumberObject {
   constructor(position, val, options) {
     options = {
-      font: "30px Inconsolata",
+      font: "30px KaTeX_Main",
       textAlign: "center",
       precision: 2,
       modifier: v => v,

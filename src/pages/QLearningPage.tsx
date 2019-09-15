@@ -33,19 +33,19 @@ const game = new Game(env, agent);
 const tableObject = new Table({ x: 50, y: 150 }, agent.qTable);
 const rewardNumberObject = new NumberObject({ x: 430, y: 320 }, 0, {
   textAlign: "left",
-  font: "40px Inconsolata",
+  font: "40px KaTeX_Main",
   precision: 0
 });
 const bestRewardNumberObject = new NumberObject({ x: 430, y: 350 }, 0, {
   textAlign: "left",
-  font: "20px Inconsolata",
+  font: "20px KaTeX_Main",
   precision: 0,
   modifier: (v: number) => "Best: " + v
 });
 const environmentObject = new ChainEnvironment({ x: 320, y: 185 });
 const agentObject = new AgentObject({ x: 320, y: 500 });
-const upActionObject = new ButtonObject({ x: 100, y: 100 }, "UP");
-const downActionObject = new ButtonObject({ x: 200, y: 100 }, "DN");
+const upActionObject = new ButtonObject({ x: 100, y: 100 }, "up");
+const downActionObject = new ButtonObject({ x: 200, y: 100 }, "dn");
 
 const Page = styled.div`
   background-color: ${colors.darkGray.toString()};

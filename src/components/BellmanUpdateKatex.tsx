@@ -17,11 +17,11 @@ const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {
     return <></>;
   }
   const actionString = data.action
-    ? String.raw`\mathit{dn}`
-    : String.raw`\mathit{up}`;
+    ? String.raw`\text{dn}`
+    : String.raw`\text{up}`;
   const nextActionString = data.nextAction
-    ? String.raw`\mathit{dn}`
-    : String.raw`\mathit{up}`;
+    ? String.raw`\text{dn}`
+    : String.raw`\text{up}`;
 
   const colorbox = (color: Color, text: string) =>
     String.raw`\colorbox{${color.hex()}}{$${text}$}`;
