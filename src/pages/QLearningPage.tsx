@@ -45,7 +45,7 @@ const bestRewardNumberObject = new NumberObject({ x: 430, y: 350 }, 0, {
 const environmentObject = new ChainEnvironment({ x: 320, y: 185 });
 const agentObject = new AgentObject({ x: 320, y: 500 });
 const upActionObject = new ButtonObject({ x: 100, y: 100 }, "UP");
-const downActionObject = new ButtonObject({ x: 200, y: 100 }, "DOWN");
+const downActionObject = new ButtonObject({ x: 200, y: 100 }, "DN");
 
 const Page = styled.div`
   background-color: ${colors.darkGray};
