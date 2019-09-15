@@ -3,6 +3,8 @@ import React from 'react';
 
 import {QLearningAgentUpdateData} from '../agents/QLearningAgent';
 import {
+  bgBrown,
+  bgGreen,
   blue,
   brown,
   darkBlue,
@@ -37,28 +39,50 @@ const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {
   const rewardColor = toHex(yellow);
   const actionColor = toHex(brown);
   const nextActionColor = toHex(darkGreen);
+  const currentQColor = toHex(bgBrown);
+  const nextQColor = toHex(bgGreen);
+
+  const colorbox = (color: string, text: string) =>
+    String.raw`\colorbox{${color}}{$${text}$}`;
+
+  const Qsa = colorbox(
+    currentQColor,
+    String.raw`Q(\textcolor{${stateColor}}{s}, \textcolor{${actionColor}}{a})`
+  );
+  const Qsa2 = colorbox(
+    currentQColor,
+    String.raw`Q(\textcolor{${stateColor}}{${data.state}}, \textcolor{${actionColor}}{${actionString}})`
+  );
+  const Qsan = colorbox(
+    nextQColor,
+    String.raw`\max_{\textcolor{${nextActionColor}}{a'}}Q(\textcolor{${nextStateColor}}{s'}, \textcolor{${nextActionColor}}{a'})`
+  );
+  const Qsan2 = colorbox(
+    nextQColor,
+    String.raw`Q(\textcolor{${nextStateColor}}{${data.newState}}, \textcolor{${nextActionColor}}{${nextActionString}})`
+  );
 
   return (
     <div style={{ position: "fixed", left: 50, top: 540 }}>
       <Katex
-        expression={String.raw`Q(\textcolor{${stateColor}}{s}, \textcolor{${actionColor}}{a}) \leftarrow Q(\textcolor{${stateColor}}{s}, \textcolor{${actionColor}}{a}) + \alpha(\textcolor{${rewardColor}}{r} + \gamma \max_{\textcolor{${nextActionColor}}{a'}}Q(\textcolor{${nextStateColor}}{s'}, \textcolor{${nextActionColor}}{a'}) - Q(\textcolor{${stateColor}}{s}, \textcolor{${actionColor}}{a}))`}
+        expression={String.raw`${Qsa} \leftarrow ${Qsa} + \alpha(\textcolor{${rewardColor}}{r} + \gamma ${Qsan} - ${Qsa})`}
       ></Katex>
       <Katex
-        expression={String.raw`Q(\textcolor{${stateColor}}{${data.state}}, \textcolor{${actionColor}}{${actionString}}) \leftarrow Q(\textcolor{${stateColor}}{${data.state}}, \textcolor{${actionColor}}{${actionString}}) + ${data.lr}(\textcolor{${rewardColor}}{${data.reward}} + ${data.gamma} Q(\textcolor{${nextStateColor}}{${data.newState}}, \textcolor{${nextActionColor}}{${nextActionString}}) - Q(\textcolor{${stateColor}}{${data.state}}, \textcolor{${actionColor}}{${actionString}}))`}
+        expression={String.raw`${Qsa2} \leftarrow ${Qsa2} + ${data.lr}(\textcolor{${rewardColor}}{${data.reward}} + ${data.gamma} ${Qsan2} - ${Qsa2})`}
       ></Katex>
       <Katex
-        expression={String.raw`Q(\textcolor{${stateColor}}{${
-          data.state
-        }}, \textcolor{${actionColor}}{${actionString}}) \leftarrow ${data.currentQ.toFixed(
-          2
+        expression={String.raw`${Qsa2} \leftarrow ${colorbox(
+          currentQColor,
+          data.currentQ.toFixed(2)
         )} + ${data.lr}(\textcolor{${rewardColor}}{${data.reward}} + ${
           data.gamma
-        } * ${data.nextQ.toFixed(2)} - ${data.currentQ.toFixed(2)})`}
+        } * ${colorbox(nextQColor, data.nextQ.toFixed(2))} - ${colorbox(
+          currentQColor,
+          data.currentQ.toFixed(2)
+        )})`}
       ></Katex>
       <Katex
-        expression={String.raw`Q(\textcolor{${stateColor}}{${
-          data.state
-        }}, \textcolor{${actionColor}}{${actionString}}) \leftarrow ${(
+        expression={String.raw`${Qsa2} \leftarrow ${(
           data.currentQ +
           data.lr * (data.reward + data.gamma * data.nextQ - data.currentQ)
         ).toFixed(2)}`}
