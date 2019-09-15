@@ -23,6 +23,10 @@ export default class Table {
     }
   }
 
+  highlightCells(cells) {
+    this.highlightedCells = cells;
+  }
+
   repositionNumbers() {
     for (let i = 0; i < 5; i++) {
       for (let j = 0; j < 2; j++) {
@@ -37,6 +41,18 @@ export default class Table {
   render(ctx) {
     ctx.lineWidth = 1;
     this.repositionNumbers();
+    if (this.highlightedCells) {
+      this.highlightedCells.forEach(cell => {
+        ctx.beginPath();
+        ctx.fillStyle = cell.color;
+        ctx.fillRect(
+          this.position.x + 100 * cell.col,
+          this.position.y + 70 * cell.row,
+          100,
+          70
+        );
+      });
+    }
     for (let i = 0; i < 5; i++) {
       for (let j = 0; j < 2; j++) {
         ctx.beginPath();

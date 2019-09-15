@@ -177,6 +177,21 @@ function QLearningPage() {
 
   rewardNumberObject.updateVal(game.totalReward);
 
+  if (agent.updateData) {
+    tableObject.highlightCells([
+      {
+        row: 4 - agent.updateData.state,
+        col: agent.updateData.action,
+        color: colors.QLearningColors.currentQ
+      },
+      {
+        row: 4 - agent.updateData.newState,
+        col: agent.updateData.nextAction,
+        color: colors.QLearningColors.nextQ
+      }
+    ]);
+  }
+
   return (
     <Page>
       <DatGui data={options} onUpdate={handleUpdate}>
