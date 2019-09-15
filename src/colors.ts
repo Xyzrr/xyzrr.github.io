@@ -1,6 +1,6 @@
-export const darkGray = "rgb(50, 50, 50)";
+export const darkGray = "rgb(30, 30, 30)";
 export const gray = "rgb(110, 110, 110)";
-export const lightGray = "rgb(200, 205, 220)";
+export const lightGray = "rgb(212, 212, 212)";
 export const veryLightGray = "rgb(224, 224, 224)";
 export const green = "rgb(186, 200, 146)";
 export const darkGreen = "rgb(78, 201, 176)";

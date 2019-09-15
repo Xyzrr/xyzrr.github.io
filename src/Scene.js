@@ -1,4 +1,5 @@
 import TWEEN from "@tweenjs/tween.js";
+import { darkGray } from "./colors";
 
 export default class Scene {
   constructor(canvas, ctx, size, sceneObjects) {
@@ -11,7 +12,8 @@ export default class Scene {
   render() {
     requestAnimationFrame(this.render.bind(this));
 
-    this.ctx.clearRect(0, 0, this.size.width, this.size.height);
+    this.ctx.fillStyle = darkGray;
+    this.ctx.fillRect(0, 0, this.size.width, this.size.height);
     this.sceneObjects.forEach(obj => {
       obj.render(this.ctx, this.size);
     });
