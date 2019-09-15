@@ -1,16 +1,9 @@
+import Color from 'color';
 import {number} from 'prop-types';
 import React from 'react';
 
 import {QLearningAgentUpdateData} from '../agents/QLearningAgent';
-import {
-  bgBrown,
-  bgGreen,
-  brown,
-  darkBlue,
-  darkGreen,
-  purple,
-  yellow,
-} from '../colors';
+import {QLearningColors as colors} from '../colors';
 import Katex from '../components/Katex';
 
 interface BellmanUpdateKatexProps {
@@ -23,7 +16,6 @@ const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {
   if (data == null) {
     return <></>;
   }
-
   const actionString = data.action
     ? String.raw`\mathit{dn}`
     : String.raw`\mathit{up}`;
@@ -31,50 +23,64 @@ const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {
     ? String.raw`\mathit{dn}`
     : String.raw`\mathit{up}`;
 
-  const stateColor = purple.hex();
-  const nextStateColor = darkBlue.hex();
-  const rewardColor = yellow.hex();
-  const actionColor = brown.hex();
-  const nextActionColor = darkGreen.hex();
-  const currentQColor = bgBrown.hex();
-  const nextQColor = bgGreen.hex();
+  const colorbox = (color: Color, text: string) =>
+    String.raw`\colorbox{${color.hex()}}{$${text}$}`;
 
-  const colorbox = (color: string, text: string) =>
-    String.raw`\colorbox{${color}}{$${text}$}`;
+  const textcolor = (color: Color, text: string) =>
+    String.raw`\textcolor{${color.hex()}}{${text}}`;
 
   const Qsa = colorbox(
-    currentQColor,
-    String.raw`Q(\textcolor{${stateColor}}{s}, \textcolor{${actionColor}}{a})`
+    colors.currentQ,
+    String.raw`Q(${textcolor(colors.state, "s")}, ${textcolor(
+      colors.action,
+      "a"
+    )})`
   );
   const Qsa2 = colorbox(
-    currentQColor,
-    String.raw`Q(\textcolor{${stateColor}}{${data.state}}, \textcolor{${actionColor}}{${actionString}})`
+    colors.currentQ,
+    String.raw`Q(${textcolor(colors.state, data.state.toString())}, ${textcolor(
+      colors.action,
+      actionString
+    )})`
   );
   const Qsan = colorbox(
-    nextQColor,
-    String.raw`\max_{\textcolor{${nextActionColor}}{a'}}Q(\textcolor{${nextStateColor}}{s'}, \textcolor{${nextActionColor}}{a'})`
+    colors.nextQ,
+    String.raw`\max_{${textcolor(colors.nextAction, "a'")}}Q(${textcolor(
+      colors.nextState,
+      "s'"
+    )}, ${textcolor(colors.nextAction, "a'")})`
   );
   const Qsan2 = colorbox(
-    nextQColor,
-    String.raw`Q(\textcolor{${nextStateColor}}{${data.newState}}, \textcolor{${nextActionColor}}{${nextActionString}})`
+    colors.nextQ,
+    String.raw`Q(${textcolor(
+      colors.nextState,
+      data.newState.toString()
+    )}, ${textcolor(colors.nextAction, nextActionString.toString())})`
   );
 
   return (
     <div style={{ position: "fixed", left: 50, top: 540 }}>
       <Katex
-        expression={String.raw`${Qsa} \leftarrow ${Qsa} + \alpha(\textcolor{${rewardColor}}{r} + \gamma ${Qsan} - ${Qsa})`}
+        expression={String.raw`${Qsa} \leftarrow ${Qsa} + \alpha(${textcolor(
+          colors.reward,
+          "r"
+        )} + \gamma ${Qsan} - ${Qsa})`}
       ></Katex>
       <Katex
-        expression={String.raw`${Qsa2} \leftarrow ${Qsa2} + ${data.lr}(\textcolor{${rewardColor}}{${data.reward}} + ${data.gamma} ${Qsan2} - ${Qsa2})`}
+        expression={String.raw`${Qsa2} \leftarrow ${Qsa2} + ${
+          data.lr
+        }(${textcolor(colors.reward, data.reward.toString())} + ${
+          data.gamma
+        } ${Qsan2} - ${Qsa2})`}
       ></Katex>
       <Katex
         expression={String.raw`${Qsa2} \leftarrow ${colorbox(
-          currentQColor,
+          colors.currentQ,
           data.currentQ.toFixed(2)
-        )} + ${data.lr}(\textcolor{${rewardColor}}{${data.reward}} + ${
+        )} + ${data.lr}(${textcolor(colors.reward, data.reward.toString())} + ${
           data.gamma
-        } * ${colorbox(nextQColor, data.nextQ.toFixed(2))} - ${colorbox(
-          currentQColor,
+        } * ${colorbox(colors.nextQ, data.nextQ.toFixed(2))} - ${colorbox(
+          colors.currentQ,
           data.currentQ.toFixed(2)
         )})`}
       ></Katex>

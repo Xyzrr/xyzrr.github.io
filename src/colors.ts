@@ -15,3 +15,13 @@ export const brown = Color.rgb(206, 145, 120);
 
 export const bgBrown = Color.rgb(69, 55, 21);
 export const bgGreen = Color.rgb(21, 69, 55);
+
+export const QLearningColors = {
+  state: purple,
+  nextState: darkBlue,
+  reward: yellow,
+  action: brown,
+  nextAction: darkGreen,
+  currentQ: bgBrown,
+  nextQ: bgGreen
+};
