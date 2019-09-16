@@ -59,7 +59,6 @@ export default class Table {
         ctx.rect(this.position.x + 100 * j, this.position.y + 70 * i, 100, 70);
         ctx.strokeStyle = colors.gray;
         ctx.stroke();
-        ctx.fillStyle = colors.blue;
         this.numbersObjects[i][j].render(ctx);
       }
     }

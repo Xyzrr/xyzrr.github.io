@@ -90,7 +90,7 @@ export default class NumberObject {
   render(ctx) {
     ctx.textAlign = this.textAlign;
     ctx.font = this.font;
-    ctx.fillStyle = colors.blue.fade(1 - this.valOpacity);
+    ctx.fillStyle = colors.lightGray.fade(1 - this.valOpacity);
     ctx.fillText(
       this.modifier(this.val.toFixed(this.precision)),
       this.position.x,

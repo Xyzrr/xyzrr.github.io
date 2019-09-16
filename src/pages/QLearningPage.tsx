@@ -44,8 +44,8 @@ const bestRewardNumberObject = new NumberObject({ x: 430, y: 350 }, 0, {
 });
 const environmentObject = new ChainEnvironment({ x: 320, y: 185 });
 const agentObject = new AgentObject({ x: 320, y: 500 });
-const upActionObject = new ButtonObject({ x: 100, y: 100 }, "up");
-const downActionObject = new ButtonObject({ x: 200, y: 100 }, "dn");
+const upActionObject = new ButtonObject({ x: 100, y: 120 }, "up");
+const downActionObject = new ButtonObject({ x: 200, y: 120 }, "dn");
 
 const Page = styled.div`
   background-color: ${colors.darkGray.toString()};
@@ -191,7 +191,6 @@ function QLearningPage() {
       }
     ]);
 
-    console.log(environmentObject);
     environmentObject.highlightStates([
       {
         index: agent.updateData.state,
@@ -202,6 +201,24 @@ function QLearningPage() {
         color: colors.QLearningColors.nextState
       }
     ]);
+
+    console.log(agent.updateData);
+
+    upActionObject.setColor(
+      agent.updateData.action === 0
+        ? colors.QLearningColors.action
+        : agent.updateData.nextAction === 0
+        ? colors.QLearningColors.nextAction
+        : colors.lightGray
+    );
+
+    downActionObject.setColor(
+      agent.updateData.action === 1
+        ? colors.QLearningColors.action
+        : agent.updateData.nextAction === 1
+        ? colors.QLearningColors.nextAction
+        : colors.lightGray
+    );
   }
 
   return (

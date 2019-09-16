@@ -2,10 +2,16 @@ import * as colors from "../colors";
 import TWEEN from "@tweenjs/tween.js";
 
 export default class ButtonObject {
+  textColor = colors.lightGray;
+
   constructor(position, content) {
     this.position = position;
     this.content = content;
     this.fillOpacity = 0;
+  }
+
+  setColor(color) {
+    this.textColor = color;
   }
 
   click() {
@@ -17,12 +23,12 @@ export default class ButtonObject {
     ctx.fillStyle = colors.gray.fade(1 - this.fillOpacity);
     ctx.strokeStyle = colors.gray;
     ctx.beginPath();
-    ctx.arc(this.position.x, this.position.y, 30, 0, 2 * Math.PI);
+    ctx.arc(this.position.x, this.position.y, 20, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.stroke();
+    // ctx.stroke();
     ctx.font = "20px KaTeX_Main";
-    ctx.fillStyle = colors.blue;
+    ctx.fillStyle = this.textColor;
     ctx.textAlign = "center";
-    ctx.fillText(this.content, this.position.x, this.position.y + 6);
+    ctx.fillText(this.content, this.position.x, this.position.y + 5);
   }
 }
