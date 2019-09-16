@@ -190,6 +190,18 @@ function QLearningPage() {
         color: colors.QLearningColors.nextQ
       }
     ]);
+
+    console.log(environmentObject);
+    environmentObject.highlightStates([
+      {
+        index: agent.updateData.state,
+        color: colors.QLearningColors.state
+      },
+      {
+        index: agent.updateData.newState,
+        color: colors.QLearningColors.nextState
+      }
+    ]);
   }
 
   return (

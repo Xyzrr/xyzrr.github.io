@@ -5,6 +5,10 @@ export default class ChainEnvironment {
     this.position = position;
   }
 
+  highlightStates(states) {
+    this.highlightedStates = states;
+  }
+
   render(ctx) {
     const RADIUS = 30;
     const DIST = 70;
@@ -33,6 +37,20 @@ export default class ChainEnvironment {
         2 * Math.PI
       );
       ctx.stroke();
+    }
+    if (this.highlightedStates) {
+      this.highlightedStates.forEach(state => {
+        ctx.beginPath();
+        ctx.strokeStyle = state.color;
+        ctx.arc(
+          this.position.x,
+          4 * DIST + this.position.y - DIST * state.index,
+          RADIUS,
+          0,
+          2 * Math.PI
+        );
+        ctx.stroke();
+      });
     }
   }
 }
