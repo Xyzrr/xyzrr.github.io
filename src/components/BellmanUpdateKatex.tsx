@@ -59,7 +59,7 @@ const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {
   );
 
   return (
-    <div style={{ position: "fixed", left: 50, top: 540 }}>
+    <div style={{ position: "fixed", left: 550, top: 150 }}>
       <Katex
         expression={String.raw`${Qsa} \leftarrow ${Qsa} + \alpha(${textcolor(
           colors.reward,

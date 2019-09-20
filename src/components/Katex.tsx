@@ -1,14 +1,20 @@
-import katex from "katex";
-import React from "react";
-import styled from "styled-components";
-import * as colors from "../colors";
+import katex from 'katex';
+import React from 'react';
+import styled from 'styled-components';
 
-const KatexDiv = styled.div`
+import * as colors from '../colors';
+
+const KatexDiv = styled.div<{ fontSize: number }>`
   color: ${colors.lightGray.toString()};
   font-size: ${props => props.fontSize}px;
 `;
 
-const Katex = props => {
+interface KatexProps {
+  expression: string;
+  fontSize?: number;
+}
+
+const Katex: React.FC<KatexProps> = props => {
   const html = katex.renderToString(props.expression);
   return (
     <KatexDiv

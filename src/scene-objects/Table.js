@@ -58,7 +58,7 @@ export default class Table {
         ctx.beginPath();
         ctx.rect(this.position.x + 100 * j, this.position.y + 70 * i, 100, 70);
         ctx.strokeStyle = colors.gray;
-        ctx.stroke();
+        // ctx.stroke();
         this.numbersObjects[i][j].render(ctx);
       }
     }

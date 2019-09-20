@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import QLearningAgent from '../agents/QLearningAgent';
 import * as colors from '../colors';
 import BellmanUpdateKatex from '../components/BellmanUpdateKatex';
+import DynamicMatrix from '../components/DynamicMatrix';
 import NChainEnv from '../envs/NChain';
 import Game from '../Game';
 import Scene from '../Scene';
@@ -264,6 +265,7 @@ function QLearningPage() {
         ref={canvasRef}
       />
       <BellmanUpdateKatex updateData={agent.updateData}></BellmanUpdateKatex>
+      <DynamicMatrix></DynamicMatrix>
     </Page>
   );
 }
