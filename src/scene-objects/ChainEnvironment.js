@@ -1,6 +1,9 @@
 import * as colors from "../colors";
 
 export default class ChainEnvironment {
+  RADIUS = 30;
+  DIST = 100;
+
   constructor(position) {
     this.position = position;
   }
@@ -10,8 +13,6 @@ export default class ChainEnvironment {
   }
 
   render(ctx) {
-    const RADIUS = 30;
-    const DIST = 70;
     ctx.strokeStyle = colors.gray;
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -19,20 +20,20 @@ export default class ChainEnvironment {
       if (i < 4) {
         ctx.beginPath();
         ctx.moveTo(
-          this.position.x,
-          4 * DIST + this.position.y - DIST * i - RADIUS
+          this.position.x + this.DIST * (i - 2) + this.RADIUS,
+          this.position.y
         );
         ctx.lineTo(
-          this.position.x,
-          4 * DIST + this.position.y - DIST * i - DIST + RADIUS
+          this.position.x + this.DIST * (i - 1) - this.RADIUS,
+          this.position.y
         );
       }
       ctx.stroke();
       ctx.beginPath();
       ctx.arc(
-        this.position.x,
-        4 * DIST + this.position.y - DIST * i,
-        RADIUS,
+        this.position.x + this.DIST * (i - 2),
+        this.position.y,
+        this.RADIUS,
         0,
         2 * Math.PI
       );
@@ -43,9 +44,9 @@ export default class ChainEnvironment {
         ctx.beginPath();
         ctx.strokeStyle = state.color;
         ctx.arc(
-          this.position.x,
-          4 * DIST + this.position.y - DIST * state.index,
-          RADIUS,
+          this.position.x + this.DIST * (state.index - 2),
+          this.position.y,
+          this.RADIUS,
           0,
           2 * Math.PI
         );

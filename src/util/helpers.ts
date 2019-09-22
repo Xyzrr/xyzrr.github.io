@@ -13,3 +13,7 @@ export function zero2D(rows: number, cols: number) {
 export function randInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
+
+export function transpose(matrix: number[][]) {
+  return matrix[0].map((_, j) => matrix.map(row => row[j]));
+}

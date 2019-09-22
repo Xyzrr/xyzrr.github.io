@@ -12,8 +12,8 @@ export default class AgentObject implements SceneObject {
     this.redness = 0;
   }
 
-  move(newY: number) {
-    new TWEEN.Tween(this.position).to({ y: newY }, 150).start();
+  move(newX: number) {
+    new TWEEN.Tween(this.position).to({ x: newX }, 150).start();
   }
 
   slip() {

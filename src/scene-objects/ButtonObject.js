@@ -28,7 +28,7 @@ export default class ButtonObject {
     // ctx.stroke();
     ctx.font = "20px KaTeX_Main";
     ctx.fillStyle = this.textColor;
-    ctx.textAlign = "center";
+    ctx.textAlign = "left";
     ctx.fillText(this.content, this.position.x, this.position.y + 5);
   }
 }

@@ -17,7 +17,7 @@ import ButtonObject from '../scene-objects/ButtonObject';
 import ChainEnvironment from '../scene-objects/ChainEnvironment';
 import NumberObject from '../scene-objects/Number';
 import Table from '../scene-objects/Table';
-import {argMax} from '../util/helpers';
+import {argMax, transpose} from '../util/helpers';
 import useWindowSize from '../util/useWindowSize';
 
 const initialAgentOptions = {
@@ -27,27 +27,54 @@ const initialAgentOptions = {
   epsDecay: 0.99
 };
 
+const glob = {
+  envY: 130,
+  centerX: 450
+};
+
 const env = new NChainEnv();
 const agent = new QLearningAgent(initialAgentOptions);
 agent.prepareForEnv(env);
 const game = new Game(env, agent);
 
-const tableObject = new Table({ x: 50, y: 150 }, agent.qTable);
-const rewardNumberObject = new NumberObject({ x: 430, y: 320 }, 0, {
-  textAlign: "left",
+const rewardNumberObject = new NumberObject({ x: glob.centerX, y: 60 }, 0, {
+  textAlign: "center",
   font: "40px KaTeX_Main",
   precision: 0
 });
-const bestRewardNumberObject = new NumberObject({ x: 430, y: 350 }, 0, {
-  textAlign: "left",
+const bestRewardNumberObject = new NumberObject({ x: glob.centerX, y: 80 }, 0, {
+  textAlign: "center",
   font: "20px KaTeX_Main",
   precision: 0,
   modifier: (v: number) => "Best: " + v
 });
-const environmentObject = new ChainEnvironment({ x: 320, y: 185 });
-const agentObject = new AgentObject({ x: 320, y: 500 });
-const upActionObject = new ButtonObject({ x: 100, y: 120 }, "up");
-const downActionObject = new ButtonObject({ x: 200, y: 120 }, "dn");
+const envObject = new ChainEnvironment({
+  x: glob.centerX,
+  y: glob.envY
+});
+const agentObject = new AgentObject({
+  x: glob.centerX - 2 * envObject.DIST,
+  y: 130
+});
+const tableObject = new Table(
+  { x: glob.centerX - envObject.DIST * 2.5, y: glob.envY + 55 },
+  transpose(agent.qTable!)
+);
+tableObject.CELL_WIDTH = envObject.DIST;
+const upActionObject = new ButtonObject(
+  {
+    x: glob.centerX - 3 * tableObject.CELL_WIDTH,
+    y: glob.envY + 60 + tableObject.CELL_HEIGHT / 2
+  },
+  "right"
+);
+const downActionObject = new ButtonObject(
+  {
+    x: glob.centerX - 3 * tableObject.CELL_WIDTH,
+    y: glob.envY + 60 + (tableObject.CELL_HEIGHT * 3) / 2
+  },
+  "left"
+);
 
 const Page = styled.div`
   background-color: ${colors.darkGray.toString()};
@@ -137,7 +164,7 @@ function QLearningPage() {
     resizeCanvas();
 
     sceneRef.current = new Scene(canvas, ctx, size, [
-      environmentObject,
+      envObject,
       tableObject,
       agentObject,
       rewardNumberObject,
@@ -171,10 +198,10 @@ function QLearningPage() {
 
   resizeCanvas();
 
-  agentObject.move(465 - 70 * (game.state || 0));
+  agentObject.move(glob.centerX + envObject.DIST * ((game.state || 0) - 2));
 
   if (agent.qTable) {
-    tableObject.updateData(agent.qTable.slice().reverse());
+    tableObject.updateData(transpose(agent.qTable));
   }
 
   rewardNumberObject.updateVal(game.totalReward);
@@ -182,18 +209,18 @@ function QLearningPage() {
   if (agent.updateData) {
     tableObject.highlightCells([
       {
-        row: 4 - agent.updateData.state,
-        col: agent.updateData.action,
+        row: agent.updateData.action,
+        col: agent.updateData.state,
         color: colors.QLearningColors.currentQ
       },
       {
-        row: 4 - agent.updateData.newState,
-        col: agent.updateData.nextAction,
+        row: agent.updateData.nextAction,
+        col: agent.updateData.newState,
         color: colors.QLearningColors.nextQ
       }
     ]);
 
-    environmentObject.highlightStates([
+    envObject.highlightStates([
       {
         index: agent.updateData.state,
         color: colors.QLearningColors.state
@@ -265,7 +292,13 @@ function QLearningPage() {
         }}
         ref={canvasRef}
       />
-      <BellmanUpdateKatex updateData={agent.updateData}></BellmanUpdateKatex>
+      <BellmanUpdateKatex
+        updateData={agent.updateData}
+        position={{
+          x: glob.centerX - tableObject.CELL_WIDTH * 3 - 10,
+          y: tableObject.position.y + tableObject.CELL_HEIGHT * 2 + 30
+        }}
+      ></BellmanUpdateKatex>
       <DynamicMatrix></DynamicMatrix>
       <AspectRatioBox></AspectRatioBox>
     </Page>

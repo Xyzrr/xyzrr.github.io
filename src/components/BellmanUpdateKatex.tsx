@@ -5,9 +5,11 @@ import React from 'react';
 import {QLearningAgentUpdateData} from '../agents/QLearningAgent';
 import {QLearningColors as colors} from '../colors';
 import Katex from '../components/Katex';
+import Position from '../util/Position';
 
 interface BellmanUpdateKatexProps {
   updateData?: QLearningAgentUpdateData;
+  position: Position;
 }
 
 const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {
@@ -59,7 +61,13 @@ const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {
   );
 
   return (
-    <div style={{ position: "fixed", left: 550, top: 150 }}>
+    <div
+      style={{
+        position: "fixed",
+        left: props.position.x,
+        top: props.position.y
+      }}
+    >
       <Katex
         expression={String.raw`${Qsa} \leftarrow ${Qsa} + \alpha(${textcolor(
           colors.reward,
