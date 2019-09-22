@@ -299,7 +299,6 @@ function QLearningPage() {
           y: tableObject.position.y + tableObject.CELL_HEIGHT * 2 + 30
         }}
       ></BellmanUpdateKatex>
-      <DynamicMatrix></DynamicMatrix>
       <AspectRatioBox></AspectRatioBox>
     </Page>
   );
