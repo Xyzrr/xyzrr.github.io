@@ -6,6 +6,7 @@ import styled from 'styled-components';
 
 import QLearningAgent from '../agents/QLearningAgent';
 import * as colors from '../colors';
+import AspectRatioBox from '../components/AspectRatioBox';
 import BellmanUpdateKatex from '../components/BellmanUpdateKatex';
 import DynamicMatrix from '../components/DynamicMatrix';
 import NChainEnv from '../envs/NChain';
@@ -266,6 +267,7 @@ function QLearningPage() {
       />
       <BellmanUpdateKatex updateData={agent.updateData}></BellmanUpdateKatex>
       <DynamicMatrix></DynamicMatrix>
+      <AspectRatioBox></AspectRatioBox>
     </Page>
   );
 }
