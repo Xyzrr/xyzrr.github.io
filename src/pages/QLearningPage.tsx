@@ -11,11 +11,12 @@ import BellmanUpdateKatex from '../components/BellmanUpdateKatex';
 import DynamicMatrix from '../components/DynamicMatrix';
 import NChainEnv from '../envs/NChain';
 import Game from '../Game';
+import useStaging from '../hooks/useStaging';
 import Scene from '../Scene';
 import AgentObject from '../scene-objects/AgentObject';
 import ButtonObject from '../scene-objects/ButtonObject';
 import ChainEnvironment from '../scene-objects/ChainEnvironment';
-import NumberObject from '../scene-objects/Number';
+import NumberObject from '../scene-objects/NumberObject';
 import Table from '../scene-objects/Table';
 import {argMax, transpose} from '../util/helpers';
 import useWindowSize from '../util/useWindowSize';
@@ -28,7 +29,7 @@ const initialAgentOptions = {
 };
 
 const glob = {
-  envY: 130,
+  envY: 180,
   centerX: 450
 };
 
@@ -37,40 +38,59 @@ const agent = new QLearningAgent(initialAgentOptions);
 agent.prepareForEnv(env);
 const game = new Game(env, agent);
 
-const rewardNumberObject = new NumberObject({ x: glob.centerX, y: 60 }, 0, {
-  textAlign: "center",
-  font: "40px KaTeX_Main",
-  precision: 0
-});
-const bestRewardNumberObject = new NumberObject({ x: glob.centerX, y: 80 }, 0, {
-  textAlign: "center",
-  font: "20px KaTeX_Main",
-  precision: 0,
-  modifier: (v: number) => "Best: " + v
-});
+const rewardNumberObject = new NumberObject(
+  { x: glob.centerX, y: glob.envY - 60 },
+  0,
+  {
+    textAlign: "center",
+    font: "40px KaTeX_Main",
+    precision: 0
+  }
+);
+const lastRewardNumberObject = new NumberObject(
+  { x: glob.centerX, y: glob.envY - 95 },
+  undefined,
+  {
+    textAlign: "center",
+    font: "20px KaTeX_Main",
+    precision: 0,
+    color: colors.yellow,
+    modifier: (v: number) => "+" + v
+  }
+);
+// const bestRewardNumberObject = new NumberObject(
+//   { x: glob.centerX, y: glob.envY - 50 },
+//   0,
+//   {
+//     textAlign: "center",
+//     font: "20px KaTeX_Main",
+//     precision: 0,
+//     modifier: (v: number) => "Best: " + v
+//   }
+// );
 const envObject = new ChainEnvironment({
   x: glob.centerX,
   y: glob.envY
 });
 const agentObject = new AgentObject({
   x: glob.centerX - 2 * envObject.DIST,
-  y: 130
+  y: glob.envY
 });
 const tableObject = new Table(
   { x: glob.centerX - envObject.DIST * 2.5, y: glob.envY + 55 },
   transpose(agent.qTable!)
 );
 tableObject.CELL_WIDTH = envObject.DIST;
-const upActionObject = new ButtonObject(
+const rightActionObject = new ButtonObject(
   {
-    x: glob.centerX - 3 * tableObject.CELL_WIDTH,
+    x: glob.centerX - 3 * tableObject.CELL_WIDTH - 10,
     y: glob.envY + 60 + tableObject.CELL_HEIGHT / 2
   },
   "right"
 );
-const downActionObject = new ButtonObject(
+const leftActionObject = new ButtonObject(
   {
-    x: glob.centerX - 3 * tableObject.CELL_WIDTH,
+    x: glob.centerX - 3 * tableObject.CELL_WIDTH - 10,
     y: glob.envY + 60 + (tableObject.CELL_HEIGHT * 3) / 2
   },
   "left"
@@ -97,6 +117,15 @@ function QLearningPage() {
   //     setState(newState);
   //   };
 
+  useStaging([
+    () => {
+      window.alert("hello world");
+    },
+    () => {
+      window.alert("hello world 2");
+    }
+  ]);
+
   const agentTookAction = (
     action: any,
     done: boolean,
@@ -104,17 +133,17 @@ function QLearningPage() {
     info: any
   ) => {
     if (action) {
-      downActionObject.click();
+      leftActionObject.click();
     } else {
-      upActionObject.click();
+      rightActionObject.click();
     }
     if (info.slipped) {
       agentObject.slip();
     }
     if (done) {
-      if (totalReward > bestRewardNumberObject.val) {
-        bestRewardNumberObject.updateVal(totalReward);
-      }
+      // if (totalReward > bestRewardNumberObject.val) {
+      //   bestRewardNumberObject.updateVal(totalReward);
+      // }
       setOptions({ ...options, eps: agent.eps });
     }
     setStepCount(stepCount + 1);
@@ -140,14 +169,14 @@ function QLearningPage() {
   };
 
   const handleKeyDown = (e: any) => {
-    if (e.keyCode === 38) {
-      // up arrow
+    if (e.keyCode === 39) {
+      // right arrow
       e.preventDefault();
       const { done, totalReward, info } = game.agentTakeAction(0);
       agentTookAction(0, done, totalReward, info);
     }
-    if (e.keyCode === 40) {
-      // down arrow
+    if (e.keyCode === 37) {
+      // left arrow
       e.preventDefault();
       const { done, totalReward, info } = game.agentTakeAction(1);
       agentTookAction(1, done, totalReward, info);
@@ -168,9 +197,10 @@ function QLearningPage() {
       tableObject,
       agentObject,
       rewardNumberObject,
-      bestRewardNumberObject,
-      downActionObject,
-      upActionObject
+      // bestRewardNumberObject,
+      lastRewardNumberObject,
+      leftActionObject,
+      rightActionObject
     ]);
 
     sceneRef.current.render();
@@ -205,6 +235,7 @@ function QLearningPage() {
   }
 
   rewardNumberObject.updateVal(game.totalReward);
+  lastRewardNumberObject.updateVal(game.lastReward, false);
 
   if (agent.updateData) {
     tableObject.highlightCells([
@@ -233,7 +264,7 @@ function QLearningPage() {
 
     console.log(agent.updateData);
 
-    upActionObject.setColor(
+    rightActionObject.setColor(
       agent.updateData.action === 0
         ? colors.QLearningColors.action
         : agent.updateData.nextAction === 0
@@ -241,7 +272,7 @@ function QLearningPage() {
         : colors.lightGray
     );
 
-    downActionObject.setColor(
+    leftActionObject.setColor(
       agent.updateData.action === 1
         ? colors.QLearningColors.action
         : agent.updateData.nextAction === 1
@@ -295,11 +326,11 @@ function QLearningPage() {
       <BellmanUpdateKatex
         updateData={agent.updateData}
         position={{
-          x: glob.centerX - tableObject.CELL_WIDTH * 3 - 10,
+          x: glob.centerX - tableObject.CELL_WIDTH * 3 - 12,
           y: tableObject.position.y + tableObject.CELL_HEIGHT * 2 + 30
         }}
       ></BellmanUpdateKatex>
-      <AspectRatioBox></AspectRatioBox>
+      {/* <AspectRatioBox></AspectRatioBox> */}
     </Page>
   );
 }

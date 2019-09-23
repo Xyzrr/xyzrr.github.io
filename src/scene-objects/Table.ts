@@ -1,6 +1,6 @@
 import * as colors from '../colors';
 import Position from '../util/Position';
-import NumberObject from './Number';
+import NumberObject from './NumberObject';
 
 export default class Table {
   CELL_WIDTH = 120;

@@ -19,11 +19,11 @@ const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {
     return <></>;
   }
   const actionString = data.action
-    ? String.raw`\text{dn}`
-    : String.raw`\text{up}`;
+    ? String.raw`\text{left}`
+    : String.raw`\text{right}`;
   const nextActionString = data.nextAction
-    ? String.raw`\text{dn}`
-    : String.raw`\text{up}`;
+    ? String.raw`\text{left}`
+    : String.raw`\text{right}`;
 
   const colorbox = (color: Color, text: string) =>
     String.raw`\colorbox{${color.hex()}}{$${text}$}`;

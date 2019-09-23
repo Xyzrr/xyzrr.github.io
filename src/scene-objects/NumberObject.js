@@ -7,6 +7,7 @@ export default class NumberObject {
       font: "30px KaTeX_Main",
       textAlign: "center",
       precision: 2,
+      color: colors.lightGray,
       modifier: v => v,
       ...options
     };
@@ -17,6 +18,7 @@ export default class NumberObject {
     this.textAlign = options.textAlign;
     this.precision = options.precision;
     this.modifier = options.modifier;
+    this.color = options.color;
     this.newVal = 0;
     this.newValColor = colors.red;
     this.newValOpacity = 0;
@@ -34,12 +36,17 @@ export default class NumberObject {
     this.val = this.newVal;
   }
 
-  updateVal(newVal, animationDuration = 400) {
+  updateVal(newVal, animated = true, animationDuration = 400) {
     if (newVal === this.newVal) {
       return;
     }
     if (this.activeTween) {
       this.activeTween.stop();
+    }
+
+    if (!animated) {
+      this.val = newVal;
+      this.newVal = newVal;
     }
 
     if (newVal > this.val) {
@@ -90,17 +97,21 @@ export default class NumberObject {
   render(ctx) {
     ctx.textAlign = this.textAlign;
     ctx.font = this.font;
-    ctx.fillStyle = colors.lightGray.fade(1 - this.valOpacity);
-    ctx.fillText(
-      this.modifier(this.val.toFixed(this.precision)),
-      this.position.x,
-      this.position.y + this.valOffset
-    );
+    ctx.fillStyle = this.color.fade(1 - this.valOpacity);
+    if (this.val != null) {
+      ctx.fillText(
+        this.modifier(this.val.toFixed(this.precision)),
+        this.position.x,
+        this.position.y + this.valOffset
+      );
+    }
     ctx.fillStyle = this.newValColor.fade(1 - this.newValOpacity);
-    ctx.fillText(
-      this.modifier(this.newVal.toFixed(this.precision)),
-      this.position.x,
-      this.position.y + this.newValOffset
-    );
+    if (this.newVal != null) {
+      ctx.fillText(
+        this.modifier(this.newVal.toFixed(this.precision)),
+        this.position.x,
+        this.position.y + this.newValOffset
+      );
+    }
   }
 }
