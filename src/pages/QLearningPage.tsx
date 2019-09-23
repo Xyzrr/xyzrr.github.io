@@ -48,7 +48,7 @@ const rewardNumberObject = new NumberObject(
   }
 );
 const lastRewardNumberObject = new NumberObject(
-  { x: glob.centerX, y: glob.envY - 95 },
+  { x: glob.centerX, y: glob.envY - 100 },
   undefined,
   {
     textAlign: "center",
@@ -230,9 +230,11 @@ function QLearningPage() {
 
   agentObject.move(glob.centerX + envObject.DIST * ((game.state || 0) - 2));
 
-  if (agent.qTable) {
-    tableObject.updateData(transpose(agent.qTable));
-  }
+  window.setTimeout(() => {
+    if (agent.qTable) {
+      tableObject.updateData(transpose(agent.qTable));
+    }
+  }, 250);
 
   rewardNumberObject.updateVal(game.totalReward);
   lastRewardNumberObject.updateVal(game.lastReward, false);
