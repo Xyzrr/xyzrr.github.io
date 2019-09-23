@@ -38,11 +38,19 @@ export default class ChainEnvironment {
         2 * Math.PI
       );
       ctx.stroke();
+      ctx.font = "16px KaTeX_Main";
+      ctx.fillStyle = colors.gray.toString();
+      ctx.textAlign = "center";
+      ctx.fillText(
+        i,
+        this.position.x + this.DIST * (i - 2),
+        this.position.y + 4
+      );
     }
     if (this.highlightedStates) {
       this.highlightedStates.forEach(state => {
         ctx.beginPath();
-        ctx.strokeStyle = state.color;
+        ctx.strokeStyle = state.color.toString();
         ctx.arc(
           this.position.x + this.DIST * (state.index - 2),
           this.position.y,
@@ -51,6 +59,15 @@ export default class ChainEnvironment {
           2 * Math.PI
         );
         ctx.stroke();
+
+        ctx.font = "16px KaTeX_Main";
+        ctx.fillStyle = state.color.toString();
+        ctx.textAlign = "center";
+        ctx.fillText(
+          state.index,
+          this.position.x + this.DIST * (state.index - 2),
+          this.position.y + 4
+        );
       });
     }
   }
