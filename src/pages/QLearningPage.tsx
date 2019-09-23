@@ -251,17 +251,27 @@ function QLearningPage() {
           ? glob.centerX - 2 * envObject.DIST
           : glob.centerX + 2 * envObject.DIST;
 
-      for (let i = 0; i < game.lastReward; i++) {
-        const angle = Math.random() * 2 * Math.PI;
-        const radius = 40;
-        coinEmitter.emit(
-          { x: startX, y: glob.envY },
-          {
-            x: glob.centerX + radius * Math.cos(angle),
-            y: glob.envY - 85 + radius * Math.sin(angle)
+      let i = 0;
+
+      const splatter = () => {
+        setTimeout(() => {
+          const angle = Math.random() * 2 * Math.PI;
+          const radius = 40;
+          coinEmitter.emit(
+            { x: startX, y: glob.envY },
+            {
+              x: glob.centerX + radius * Math.cos(angle),
+              y: glob.envY - 85 + radius * Math.sin(angle)
+            }
+          );
+          i++;
+          if (game.lastReward && i < game.lastReward) {
+            splatter();
           }
-        );
-      }
+        }, 10);
+      };
+
+      splatter();
     }
   }, 150);
 
