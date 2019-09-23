@@ -69,20 +69,18 @@ const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {
       }}
     >
       <Katex
-        expression={String.raw`${Qsa} \leftarrow ${Qsa} + \alpha(${textcolor(
+        expression={String.raw`
+        \begin{aligned}${Qsa} &\leftarrow ${Qsa} + \alpha(${textcolor(
           colors.reward,
           "r"
-        )} + \gamma ${Qsan} - ${Qsa})`}
-      ></Katex>
-      <Katex
-        expression={String.raw`${Qsa2} \leftarrow ${Qsa2} + ${
-          data.lr
-        }(${textcolor(colors.reward, data.reward.toString())} + ${
-          data.gamma
-        } ${Qsan2} - ${Qsa2})`}
-      ></Katex>
-      <Katex
-        expression={String.raw`${Qsa2} \leftarrow ${colorbox(
+        )} + \gamma ${Qsan} - ${Qsa}) \\ 
+        
+        ${Qsa2} &\leftarrow ${Qsa2} + ${data.lr}(${textcolor(
+          colors.reward,
+          data.reward.toString()
+        )} + ${data.gamma} ${Qsan2} - ${Qsa2}) \\ 
+        
+        ${Qsa2} &\leftarrow ${colorbox(
           colors.currentQ,
           data.currentQ.toFixed(2)
         )} + ${data.lr}(${textcolor(colors.reward, data.reward.toString())} + ${
@@ -90,13 +88,13 @@ const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {
         } * ${colorbox(colors.nextQ, data.nextQ.toFixed(2))} - ${colorbox(
           colors.currentQ,
           data.currentQ.toFixed(2)
-        )})`}
-      ></Katex>
-      <Katex
-        expression={String.raw`${Qsa2} \leftarrow ${(
+        )}) \\
+
+        ${Qsa2} &\leftarrow ${(
           data.currentQ +
           data.lr * (data.reward + data.gamma * data.nextQ - data.currentQ)
-        ).toFixed(2)}`}
+        ).toFixed(2)}
+        \end{aligned}`}
       ></Katex>
     </div>
   );
