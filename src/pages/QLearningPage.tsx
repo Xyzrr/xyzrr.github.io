@@ -242,38 +242,28 @@ function QLearningPage() {
   window.setTimeout(() => {
     rewardNumberObject.updateVal(game.totalReward);
   }, 150);
+
   // lastRewardNumberObject.updateVal(game.lastReward, false);
-  window.setTimeout(() => {
-    coinEmitter.clear();
-    if (game.lastReward) {
-      const startX =
-        game.lastReward == 2
-          ? glob.centerX - 2 * envObject.DIST
-          : glob.centerX + 2 * envObject.DIST;
+  coinEmitter.clear();
+  if (game.lastReward) {
+    const startX =
+      game.lastReward == 2
+        ? glob.centerX - 2 * envObject.DIST
+        : glob.centerX + 2 * envObject.DIST;
 
-      let i = 0;
-
-      const splatter = () => {
-        setTimeout(() => {
-          const angle = Math.random() * 2 * Math.PI;
-          const radius = 40;
-          coinEmitter.emit(
-            { x: startX, y: glob.envY },
-            {
-              x: glob.centerX + radius * Math.cos(angle),
-              y: glob.envY - 85 + radius * Math.sin(angle)
-            }
-          );
-          i++;
-          if (game.lastReward && i < game.lastReward) {
-            splatter();
-          }
-        }, 10);
-      };
-
-      splatter();
+    for (let i = 0; i < game.lastReward; i++) {
+      const angle = Math.random() * 2 * Math.PI;
+      const radius = 40;
+      coinEmitter.emit(
+        { x: startX, y: glob.envY },
+        {
+          x: glob.centerX + radius * Math.cos(angle),
+          y: glob.envY - 85 + radius * Math.sin(angle)
+        },
+        150 + i * 10
+      );
     }
-  }, 150);
+  }
 
   if (agent.updateData) {
     tableObject.highlightCells([

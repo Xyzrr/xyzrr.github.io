@@ -9,33 +9,39 @@ import SceneObject from './SceneObject';
 interface Coin {
   position: Position;
   opacity: { val: number };
+  fading: boolean;
 }
 
 export default class CoinEmitter implements SceneObject {
   coins = new Set<Coin>();
-  emit(start: Position, end: Position) {
+  emit(start: Position, end: Position, delay: number = 0) {
     const coin: Coin = {
       position: start,
-      opacity: { val: 0 }
+      opacity: { val: 0 },
+      fading: false
     };
     this.coins.add(coin);
     new TWEEN.Tween(coin.position)
-      .to(end, 300)
-      .easing(TWEEN.Easing.Cubic.InOut)
+      .delay(delay)
+      .to(end, 200)
+      .easing(TWEEN.Easing.Cubic.Out)
       .start();
     new TWEEN.Tween(coin.opacity)
-      .to({ val: 0.6 }, 300)
-      .easing(TWEEN.Easing.Cubic.InOut)
+      .delay(delay)
+      .to({ val: 0.8 }, 200)
+      .easing(TWEEN.Easing.Cubic.Out)
       .start();
   }
   clear() {
-    console.log("clear");
     this.coins.forEach(coin => {
-      console.log("uhg");
-      new TWEEN.Tween(coin.opacity)
-        .to({ val: 0 }, 400)
-        .onComplete(() => this.coins.delete(coin))
-        .start();
+      if (!coin.fading) {
+        new TWEEN.Tween(coin.opacity)
+          .delay(250)
+          .to({ val: 0 }, 400)
+          .onComplete(() => this.coins.delete(coin))
+          .start();
+        coin.fading = true;
+      }
     });
   }
   render(ctx: CanvasRenderingContext2D) {
