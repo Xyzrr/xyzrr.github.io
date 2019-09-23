@@ -16,6 +16,7 @@ import Scene from '../Scene';
 import AgentObject from '../scene-objects/AgentObject';
 import ButtonObject from '../scene-objects/ButtonObject';
 import ChainEnvironment from '../scene-objects/ChainEnvironment';
+import CoinEmitter from '../scene-objects/CoinEmitter';
 import NumberObject from '../scene-objects/NumberObject';
 import Table from '../scene-objects/Table';
 import {argMax, transpose} from '../util/helpers';
@@ -39,7 +40,7 @@ agent.prepareForEnv(env);
 const game = new Game(env, agent);
 
 const rewardNumberObject = new NumberObject(
-  { x: glob.centerX, y: glob.envY - 60 },
+  { x: glob.centerX, y: glob.envY - 72 },
   0,
   {
     textAlign: "center",
@@ -47,17 +48,17 @@ const rewardNumberObject = new NumberObject(
     precision: 0
   }
 );
-const lastRewardNumberObject = new NumberObject(
-  { x: glob.centerX, y: glob.envY - 100 },
-  undefined,
-  {
-    textAlign: "center",
-    font: "20px KaTeX_Main",
-    precision: 0,
-    color: colors.yellow,
-    modifier: (v: number) => "+" + v
-  }
-);
+// const lastRewardNumberObject = new NumberObject(
+//   { x: glob.centerX, y: glob.envY - 100 },
+//   undefined,
+//   {
+//     textAlign: "center",
+//     font: "20px KaTeX_Main",
+//     precision: 0,
+//     color: colors.yellow,
+//     modifier: (v: number) => "+" + v
+//   }
+// );
 // const bestRewardNumberObject = new NumberObject(
 //   { x: glob.centerX, y: glob.envY - 50 },
 //   0,
@@ -72,6 +73,7 @@ const envObject = new ChainEnvironment({
   x: glob.centerX,
   y: glob.envY
 });
+const coinEmitter = new CoinEmitter();
 const agentObject = new AgentObject({
   x: glob.centerX - 2 * envObject.DIST,
   y: glob.envY
@@ -193,12 +195,13 @@ function QLearningPage() {
     resizeCanvas();
 
     sceneRef.current = new Scene(canvas, ctx, size, [
+      coinEmitter,
       envObject,
       tableObject,
       agentObject,
       rewardNumberObject,
       // bestRewardNumberObject,
-      lastRewardNumberObject,
+      // lastRewardNumberObject,
       leftActionObject,
       rightActionObject
     ]);
@@ -218,7 +221,7 @@ function QLearningPage() {
   });
 
   if (options.autoPlay) {
-    window.setTimeout(step, 150);
+    window.setTimeout(step, 200);
   }
 
   agent.gamma = options.gamma;
@@ -234,10 +237,33 @@ function QLearningPage() {
     if (agent.qTable) {
       tableObject.updateData(transpose(agent.qTable));
     }
-  }, 250);
+  }, 500);
 
-  rewardNumberObject.updateVal(game.totalReward);
-  lastRewardNumberObject.updateVal(game.lastReward, false);
+  window.setTimeout(() => {
+    rewardNumberObject.updateVal(game.totalReward);
+  }, 150);
+  // lastRewardNumberObject.updateVal(game.lastReward, false);
+  window.setTimeout(() => {
+    coinEmitter.clear();
+    if (game.lastReward) {
+      const startX =
+        game.lastReward == 2
+          ? glob.centerX - 2 * envObject.DIST
+          : glob.centerX + 2 * envObject.DIST;
+
+      for (let i = 0; i < game.lastReward; i++) {
+        const angle = Math.random() * 2 * Math.PI;
+        const radius = 40;
+        coinEmitter.emit(
+          { x: startX, y: glob.envY },
+          {
+            x: glob.centerX + radius * Math.cos(angle),
+            y: glob.envY - 85 + radius * Math.sin(angle)
+          }
+        );
+      }
+    }
+  }, 150);
 
   if (agent.updateData) {
     tableObject.highlightCells([
@@ -263,8 +289,6 @@ function QLearningPage() {
         color: colors.QLearningColors.nextState
       }
     ]);
-
-    console.log(agent.updateData);
 
     rightActionObject.setColor(
       agent.updateData.action === 0
