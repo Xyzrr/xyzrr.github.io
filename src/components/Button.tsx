@@ -42,11 +42,8 @@ const Button: React.RefForwardingComponent<ButtonHandles, ButtonProps> = (
     click: () => {
       if (buttonRef.current) {
         buttonRef.current.style.animation = "none";
-        window.setTimeout(() => {
-          if (buttonRef.current) {
-            buttonRef.current.style.animation = "";
-          }
-        });
+        void buttonRef.current.offsetWidth;
+        buttonRef.current.style.animation = "";
       }
     }
   }));
