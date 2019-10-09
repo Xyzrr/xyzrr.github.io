@@ -5,6 +5,7 @@ import React from 'react';
 import {QLearningAgentUpdateData} from '../agents/QLearningAgent';
 import {QLearningColors as colors} from '../colors';
 import Katex from '../components/Katex';
+import {colorbox, textcolor} from '../util/latex';
 import Position from '../util/Position';
 
 interface BellmanUpdateKatexProps {
@@ -24,12 +25,6 @@ const BellmanUpdateKatex: React.FC<BellmanUpdateKatexProps> = props => {
   const nextActionString = data.nextAction
     ? String.raw`\text{left}`
     : String.raw`\text{right}`;
-
-  const colorbox = (color: Color, text: string) =>
-    String.raw`\colorbox{${color.hex()}}{$${text}$}`;
-
-  const textcolor = (color: Color, text: string) =>
-    String.raw`\textcolor{${color.hex()}}{${text}}`;
 
   const Qsa = colorbox(
     colors.currentQ,

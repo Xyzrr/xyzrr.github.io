@@ -8,6 +8,7 @@ import QLearningAgent from '../agents/QLearningAgent';
 import * as colors from '../colors';
 import AspectRatioBox from '../components/AspectRatioBox';
 import BellmanUpdateKatex from '../components/BellmanUpdateKatex';
+import Button, {ButtonHandles} from '../components/Button';
 import DynamicMatrix from '../components/DynamicMatrix';
 import NChainEnv from '../envs/NChain';
 import Game from '../Game';
@@ -20,6 +21,7 @@ import CoinEmitter from '../scene-objects/CoinEmitter';
 import NumberObject from '../scene-objects/NumberObject';
 import Table from '../scene-objects/Table';
 import {argMax, transpose} from '../util/helpers';
+import {textcolor} from '../util/latex';
 import useWindowSize from '../util/useWindowSize';
 
 const initialAgentOptions = {
@@ -83,20 +85,6 @@ const tableObject = new Table(
   transpose(agent.qTable!)
 );
 tableObject.CELL_WIDTH = envObject.DIST;
-const rightActionObject = new ButtonObject(
-  {
-    x: glob.centerX - 3 * tableObject.CELL_WIDTH - 10,
-    y: glob.envY + 60 + tableObject.CELL_HEIGHT / 2
-  },
-  "right"
-);
-const leftActionObject = new ButtonObject(
-  {
-    x: glob.centerX - 3 * tableObject.CELL_WIDTH - 10,
-    y: glob.envY + 60 + (tableObject.CELL_HEIGHT * 3) / 2
-  },
-  "left"
-);
 
 const Page = styled.div`
   background-color: ${colors.darkGray.toString()};
@@ -135,9 +123,13 @@ function QLearningPage() {
     info: any
   ) => {
     if (action) {
-      leftActionObject.click();
+      if (leftButtonRef.current) {
+        leftButtonRef.current.click();
+      }
     } else {
-      rightActionObject.click();
+      if (rightButtonRef.current) {
+        rightButtonRef.current.click();
+      }
     }
     if (info.slipped) {
       agentObject.slip();
@@ -199,11 +191,9 @@ function QLearningPage() {
       envObject,
       tableObject,
       agentObject,
-      rewardNumberObject,
+      rewardNumberObject
       // bestRewardNumberObject,
       // lastRewardNumberObject,
-      leftActionObject,
-      rightActionObject
     ]);
 
     sceneRef.current.render();
@@ -289,23 +279,10 @@ function QLearningPage() {
         color: colors.QLearningColors.nextState
       }
     ]);
-
-    rightActionObject.setColor(
-      agent.updateData.action === 0
-        ? colors.QLearningColors.action
-        : agent.updateData.nextAction === 0
-        ? colors.QLearningColors.nextAction
-        : colors.lightGray
-    );
-
-    leftActionObject.setColor(
-      agent.updateData.action === 1
-        ? colors.QLearningColors.action
-        : agent.updateData.nextAction === 1
-        ? colors.QLearningColors.nextAction
-        : colors.lightGray
-    );
   }
+
+  const rightButtonRef = React.useRef<ButtonHandles>(null);
+  const leftButtonRef = React.useRef<ButtonHandles>(null);
 
   return (
     <Page>
@@ -356,6 +333,44 @@ function QLearningPage() {
           y: tableObject.position.y + tableObject.CELL_HEIGHT * 2 + 30
         }}
       ></BellmanUpdateKatex>
+      <Button
+        ref={rightButtonRef}
+        expression={textcolor(
+          agent.updateData && agent.updateData.action === 0
+            ? colors.QLearningColors.action
+            : agent.updateData && agent.updateData.nextAction === 0
+            ? colors.QLearningColors.nextAction
+            : colors.lightGray,
+          String.raw`\text{right}`
+        )}
+        position={{
+          x: glob.centerX - tableObject.CELL_WIDTH * 3 - 20,
+          y: tableObject.position.y + 20
+        }}
+        onClick={() => {
+          const { done, totalReward, info } = game.agentTakeAction(0);
+          agentTookAction(0, done, totalReward, info);
+        }}
+      ></Button>
+      <Button
+        ref={leftButtonRef}
+        expression={textcolor(
+          agent.updateData && agent.updateData.action === 1
+            ? colors.QLearningColors.action
+            : agent.updateData && agent.updateData.nextAction === 1
+            ? colors.QLearningColors.nextAction
+            : colors.lightGray,
+          String.raw`\text{left}`
+        )}
+        position={{
+          x: glob.centerX - tableObject.CELL_WIDTH * 3 - 20,
+          y: tableObject.position.y + tableObject.CELL_HEIGHT * 1 + 20
+        }}
+        onClick={() => {
+          const { done, totalReward, info } = game.agentTakeAction(1);
+          agentTookAction(1, done, totalReward, info);
+        }}
+      ></Button>
       {/* <AspectRatioBox></AspectRatioBox> */}
     </Page>
   );
