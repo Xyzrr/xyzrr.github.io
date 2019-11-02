@@ -7,7 +7,9 @@ const HomePageDiv = styled.div`
   align-items: center;
   height: 100vh;
   .bio {
-    width: 400px;
+    max-width: 400px;
+    width: 100%;
+    padding: 16px
     font-size: 18px;
     margin-bottom: 80px;
   }
@@ -15,7 +17,7 @@ const HomePageDiv = styled.div`
     position: absolute;
     right: 0;
     bottom: 0;
-    padding: 16px 32px;
+    padding: 16px 40px;
     font-size: 14px;
   }
   a {
@@ -39,8 +41,9 @@ const HomePage: React.FC = () => {
           I currently do swe at{" "}
           <a href="https://www.wandb.com/">Weights & Biases</a>. Earlier I moved
           buttons around at Google and dropped out of UIUC. I like simplifying
-          and prettifying things, writing, and doing calisthenics. I
-          irrationally idolize Paul Graham and Richard Feynman.
+          and prettifying things,{" "}
+          <a href="https://www.blog.johnqian.com">writing</a>, and doing
+          calisthenics. I irrationally idolize Paul Graham and Richard Feynman.
         </p>
         <p>
           If you like my work, we should meet up. My email is johnlongqian (at)
