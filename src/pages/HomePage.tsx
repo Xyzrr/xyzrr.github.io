@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import SnakeRenderer from "../components/SnakeRenderer";
 
 const HomePageDiv = styled.div`
   display: flex;
@@ -43,7 +44,8 @@ const HomePage: React.FC = () => {
           buttons around at Google and dropped out of UIUC. I like simplifying
           and prettifying things,{" "}
           <a href="https://www.blog.johnqian.com">writing</a>, and doing
-          calisthenics. I irrationally idolize Paul Graham and Richard Feynman.
+          calisthenics. I idolize Paul Graham and Richard Feynman to an
+          unreasonable extent.
         </p>
         <p>
           If you like my work, we should meet up. My email is johnlongqian (at)
@@ -56,6 +58,7 @@ const HomePage: React.FC = () => {
           <a href="https://github.com/Xyzrr/rl-snake">DQN playing Snake</a>
         </p>
       </div>
+      <SnakeRenderer></SnakeRenderer>
     </HomePageDiv>
   );
 };

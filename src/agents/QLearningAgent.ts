@@ -1,6 +1,6 @@
-import Env from '../envs/Env';
-import {argMax, randInt, zero2D} from '../util/helpers';
-import Agent from './Agent';
+import Env from "../envs/Env";
+import { argMax, randInt, zero2D } from "../util/helpers";
+import Agent from "./Agent";
 
 export interface QLearningAgentUpdateData {
   state: number;
@@ -39,7 +39,7 @@ export default class QLearningAgent implements Agent {
   }
 
   prepareForEnv(env: Env) {
-    this.qTable = zero2D(env.stateSpace, env.actionSpace);
+    this.qTable = zero2D(env.stateSpace!, env.actionSpace!);
   }
 
   getAction(state: number) {

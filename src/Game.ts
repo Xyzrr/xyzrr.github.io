@@ -1,5 +1,5 @@
-import Agent from './agents/Agent';
-import Env from './envs/Env';
+import Agent from "./agents/Agent";
+import Env from "./envs/Env";
 
 export default class Game {
   env: Env;
@@ -17,7 +17,7 @@ export default class Game {
   }
 
   reset() {
-    this.state = this.env.reset();
+    this.state = this.env.reset() as number;
     this.prevState = undefined;
     this.totalReward = 0;
   }
