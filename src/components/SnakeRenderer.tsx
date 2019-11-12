@@ -36,10 +36,10 @@ const SnakeRenderer: React.FC = props => {
   ];
   const [observation, setObservation] = React.useState(obs);
 
-  // window.setTimeout(() => {
-  //   a.randomizeFood();
-  //   setObservation(a.getObservation().arraySync() as number[][][]);
-  // }, 1000);
+  window.setTimeout(() => {
+    a.step(0);
+    setObservation(a.getObservation().arraySync() as number[][][]);
+  }, 1000);
 
   return (
     <SnakeRendererDiv>
