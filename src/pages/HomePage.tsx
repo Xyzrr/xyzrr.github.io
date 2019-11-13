@@ -7,10 +7,11 @@ const HomePageDiv = styled.div`
   justify-content: center;
   align-items: center;
   height: 100vh;
+  font-family: Quicksand;
   .bio {
     max-width: 400px;
     width: 100%;
-    padding: 16px
+    padding: 16px;
     font-size: 18px;
     margin-bottom: 80px;
   }
@@ -18,7 +19,7 @@ const HomePageDiv = styled.div`
     position: absolute;
     right: 0;
     bottom: 0;
-    padding: 16px 40px;
+    padding: 24px 48px;
     font-size: 14px;
   }
   a {
