@@ -3,11 +3,13 @@ import styled from "styled-components";
 import classNames from "classnames";
 import SnakeEnv from "../envs/SnakeEnv";
 import * as tf from "@tensorflow/tfjs";
+import { green, red } from "../colors";
 
 const SnakeRendererDiv = styled.div`
   position: absolute;
   display: flex;
   flex-direction: column;
+  z-index: -1;
   .row {
     display: flex;
   }
@@ -15,13 +17,11 @@ const SnakeRendererDiv = styled.div`
     width: 60px;
     height: 60px;
     &.food {
-      background: red;
+      background: ${red.desaturate(0.3).hex()};
     }
-    &.snake {
-      background: green;
-    }
+    &.snake,
     &.tail {
-      background: lime;
+      background: ${green.desaturate(0.5).hex()};
     }
   }
 `;
@@ -30,14 +30,6 @@ const env = new SnakeEnv();
 const obs = env.getObservation();
 
 const SnakeRenderer: React.FC = props => {
-  const WORLD_SIZE = 8;
-  let foodPosition = [0, 1];
-  let snake = [
-    [0, 2],
-    [0, 3],
-    [1, 3],
-    [2, 3]
-  ];
   const [observation, setObservation] = React.useState(obs);
   const [totalReward, setTotalReward] = React.useState(0);
 
@@ -76,7 +68,7 @@ const SnakeRenderer: React.FC = props => {
         done = newDone;
         obs = newObservation;
         setObservation(newObservation);
-        await sleep(5);
+        await sleep(300);
       }
     }
   }
@@ -94,19 +86,32 @@ const SnakeRenderer: React.FC = props => {
 
   return (
     <SnakeRendererDiv>
-      <div>{totalReward}</div>
       {obsArray.map((row, i) => (
         <div className="row" key={i}>
-          {row.map((cell, i) => (
-            <div
-              key={i}
-              className={classNames("cell", {
-                food: cell[0] === 1,
-                snake: cell[1] === 1,
-                tail: cell[2] > 0
-              })}
-            ></div>
-          ))}
+          {row.map((cell, i) => {
+            const food = cell[0] === 1;
+            const snake = cell[1] === 1;
+            const tail = cell[2] > 0;
+            return (
+              <div
+                key={i}
+                className={classNames("cell", {
+                  food,
+                  snake,
+                  tail
+                })}
+                style={{
+                  opacity: food
+                    ? 0.3
+                    : snake
+                    ? 0.4
+                    : tail
+                    ? 0.1 + (0.3 * (cell[2] - 1)) / (env.player.shape[0] - 1)
+                    : 0
+                }}
+              ></div>
+            );
+          })}
         </div>
       ))}
     </SnakeRendererDiv>
