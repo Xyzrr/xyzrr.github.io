@@ -39,6 +39,7 @@ const SnakeRenderer: React.FC = props => {
     [2, 3]
   ];
   const [observation, setObservation] = React.useState(obs);
+  const [totalReward, setTotalReward] = React.useState(0);
 
   function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -62,10 +63,12 @@ const SnakeRenderer: React.FC = props => {
           reward +
           (done
             ? 0
-            : 0.95 *
-              (nextRewardPrediction.argMax(1).arraySync() as number[])[0]);
+            : 0.95 * (nextRewardPrediction.max().arraySync() as number));
+        setTotalReward(totalReward => totalReward + reward);
         const label = prediction.bufferSync();
+        prediction.print();
         label.set(targetActionScore, 0, action);
+        label.toTensor().print();
         await model.fit(obs.reshape([1, 9, 9, 3]), label.toTensor(), {
           epochs: 1
         });
@@ -73,7 +76,7 @@ const SnakeRenderer: React.FC = props => {
         done = newDone;
         obs = newObservation;
         setObservation(newObservation);
-        await sleep(300);
+        await sleep(5);
       }
     }
   }
@@ -91,6 +94,7 @@ const SnakeRenderer: React.FC = props => {
 
   return (
     <SnakeRendererDiv>
+      <div>{totalReward}</div>
       {obsArray.map((row, i) => (
         <div className="row" key={i}>
           {row.map((cell, i) => (
