@@ -2,6 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import classNames from "classnames";
 import SnakeEnv from "../envs/SnakeEnv";
+import * as tf from "@tensorflow/tfjs";
 
 const SnakeRendererDiv = styled.div`
   position: absolute;
@@ -23,7 +24,7 @@ const SnakeRendererDiv = styled.div`
 `;
 
 const a = new SnakeEnv();
-const obs = a.getObservation().arraySync() as number[][][];
+const obs = a.getObservation();
 
 const SnakeRenderer: React.FC = props => {
   const WORLD_SIZE = 8;
@@ -35,15 +36,37 @@ const SnakeRenderer: React.FC = props => {
     [2, 3]
   ];
   const [observation, setObservation] = React.useState(obs);
+  const [model, setModel] = React.useState<tf.LayersModel | null>(null);
+
+  React.useEffect(() => {
+    tf.loadLayersModel("/models/snake/model.json").then(m => {
+      setModel(m);
+    });
+  }, []);
+
+  React.useEffect(() => {
+    setObservation(a.reset());
+  }, []);
 
   window.setTimeout(() => {
-    a.step(0);
-    setObservation(a.getObservation().arraySync() as number[][][]);
+    if (model) {
+      const prediction = model.predict(
+        observation.reshape([1, 9, 9, 3])
+      ) as tf.Tensor;
+
+      const action = (prediction.argMax(1).arraySync() as number[])[0];
+
+      console.log("took action", action);
+      const { newObservation, reward, done } = a.step(action);
+      setObservation(newObservation);
+    }
   }, 1000);
+
+  const obsArray = observation.arraySync() as number[][][];
 
   return (
     <SnakeRendererDiv>
-      {observation.map(row => (
+      {obsArray.map(row => (
         <div className="row">
           {row.map(cell => (
             <div

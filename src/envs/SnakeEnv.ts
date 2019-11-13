@@ -10,7 +10,7 @@ export default class SnakeEnv implements Env {
   player!: tf.Tensor2D;
   food!: tf.Tensor1D;
 
-  constructor(boardSize = 8, foodReward = 2, deathReward = -1) {
+  constructor(boardSize = 9, foodReward = 2, deathReward = -1) {
     this.boardSize = boardSize;
     this.foodReward = foodReward;
     this.deathReward = deathReward;
@@ -33,18 +33,30 @@ export default class SnakeEnv implements Env {
     const buffer = this.player.bufferSync();
     const x = buffer.get(this.player.shape[0] - 1, 0);
     const y = buffer.get(this.player.shape[0] - 1, 1);
-    return !(0 <= x && x <= this.boardSize && 0 <= y && y <= this.boardSize);
+    const outOfBounds = !(
+      0 <= x &&
+      x <= this.boardSize &&
+      0 <= y &&
+      y <= this.boardSize
+    );
+    if (outOfBounds) {
+      console.log("snake went out of bounds");
+    }
+    return outOfBounds;
   }
 
   collidedWithTail() {
     const [tail, head] = tf.split(this.player, [this.player.shape[0] - 1, 1]);
-    return (
+    const collidedWithTail =
       tf
         .sum(tail.equal(head), 1)
         .max()
         .bufferSync()
-        .get(0) !== 2
-    );
+        .get(0) === 2;
+    if (collidedWithTail) {
+      console.log("snake collided with tail");
+    }
+    return collidedWithTail;
   }
 
   step(action: number) {
@@ -82,13 +94,17 @@ export default class SnakeEnv implements Env {
     }
 
     if (done) {
-      return tf.zeros([this.boardSize, this.boardSize, 3]);
+      return {
+        newObservation: tf.zeros([this.boardSize, this.boardSize, 3]),
+        reward,
+        done
+      };
     }
 
     return {
-      observation: this.getObservation(),
-      reward: reward,
-      done: done
+      newObservation: this.getObservation(),
+      reward,
+      done
     };
   }
 
