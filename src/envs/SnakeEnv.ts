@@ -117,8 +117,6 @@ export default class SnakeEnv implements Env {
         .reshape([this.player.shape[0], 1]),
       1
     );
-    foodEntry.print();
-    playerEntries.print();
     const updates = foodEntry.reshape([1, 3]).concat(playerEntries);
     const values = tf
       .tensor1d([1])

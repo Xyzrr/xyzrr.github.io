@@ -20,11 +20,14 @@ const SnakeRendererDiv = styled.div`
     &.snake {
       background: green;
     }
+    &.tail {
+      background: lime;
+    }
   }
 `;
 
-const a = new SnakeEnv();
-const obs = a.getObservation();
+const env = new SnakeEnv();
+const obs = env.getObservation();
 
 const SnakeRenderer: React.FC = props => {
   const WORLD_SIZE = 8;
@@ -36,43 +39,50 @@ const SnakeRenderer: React.FC = props => {
     [2, 3]
   ];
   const [observation, setObservation] = React.useState(obs);
-  const [model, setModel] = React.useState<tf.LayersModel | null>(null);
+
+  function sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function runModel(model: tf.LayersModel) {
+    while (true) {
+      let done = false;
+      let obs = env.reset();
+      while (!done) {
+        const prediction = model.predict(
+          obs.reshape([1, 9, 9, 3])
+        ) as tf.Tensor;
+        const action = (prediction.argMax(1).arraySync() as number[])[0];
+        const { newObservation, reward, done: newDone } = env.step(action);
+        done = newDone;
+        obs = newObservation;
+        setObservation(newObservation);
+        await sleep(300);
+      }
+    }
+  }
 
   React.useEffect(() => {
-    tf.loadLayersModel("/models/snake/model.json").then(m => {
-      setModel(m);
+    tf.loadLayersModel("/models/snake/model.json").then(model => {
+      runModel(model);
     });
   }, []);
 
-  React.useEffect(() => {
-    setObservation(a.reset());
-  }, []);
-
-  window.setTimeout(() => {
-    if (model) {
-      const prediction = model.predict(
-        observation.reshape([1, 9, 9, 3])
-      ) as tf.Tensor;
-
-      const action = (prediction.argMax(1).arraySync() as number[])[0];
-
-      console.log("took action", action);
-      const { newObservation, reward, done } = a.step(action);
-      setObservation(newObservation);
-    }
-  }, 1000);
+  React.useEffect(() => {}, []);
 
   const obsArray = observation.arraySync() as number[][][];
 
   return (
     <SnakeRendererDiv>
-      {obsArray.map(row => (
-        <div className="row">
-          {row.map(cell => (
+      {obsArray.map((row, i) => (
+        <div className="row" key={i}>
+          {row.map((cell, i) => (
             <div
+              key={i}
               className={classNames("cell", {
                 food: cell[0] === 1,
-                snake: cell[1] === 1
+                snake: cell[1] === 1,
+                tail: cell[2] > 0
               })}
             ></div>
           ))}
