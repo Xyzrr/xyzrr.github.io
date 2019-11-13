@@ -68,9 +68,7 @@ const SnakeRenderer: React.FC = props => {
             : 0.95 * (nextRewardPrediction.max().arraySync() as number));
         setTotalReward(totalReward => totalReward + reward);
         const label = prediction.bufferSync();
-        prediction.print();
         label.set(targetActionScore, 0, action);
-        label.toTensor().print();
         await model.fit(obs.reshape([1, 9, 9, 3]), label.toTensor(), {
           epochs: 1
         });
