@@ -19,8 +19,12 @@ const HomePageDiv = styled.div`
     position: absolute;
     right: 0;
     bottom: 0;
-    padding: 24px 48px;
+    padding: 16px;
     font-size: 14px;
+    opacity: 0.6;
+    p {
+      margin: 0;
+    }
   }
   a {
     color: black;
