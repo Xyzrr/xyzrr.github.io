@@ -12,16 +12,26 @@ const SnakeRendererDiv = styled.div`
   z-index: -1;
   .row {
     display: flex;
+    height: 60px;
   }
   .cell {
     width: 60px;
-    height: 60px;
+    height: 100%;
     &.food {
       background: ${red.desaturate(0.3).hex()};
     }
     &.snake,
     &.tail {
       background: ${green.desaturate(0.5).hex()};
+    }
+  }
+  @media (max-width: 768px) {
+    width: 100%;
+    .row {
+      height: ${100 / 9}vw;
+    }
+    .cell {
+      width: ${100 / 9}vw;
     }
   }
 `;
