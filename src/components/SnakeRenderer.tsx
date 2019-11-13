@@ -54,6 +54,22 @@ const SnakeRenderer: React.FC = props => {
         ) as tf.Tensor;
         const action = (prediction.argMax(1).arraySync() as number[])[0];
         const { newObservation, reward, done: newDone } = env.step(action);
+
+        const nextRewardPrediction = model.predict(
+          newObservation.reshape([1, 9, 9, 3])
+        ) as tf.Tensor;
+        const targetActionScore =
+          reward +
+          (done
+            ? 0
+            : 0.95 *
+              (nextRewardPrediction.argMax(1).arraySync() as number[])[0]);
+        const label = prediction.bufferSync();
+        label.set(targetActionScore, 0, action);
+        await model.fit(obs.reshape([1, 9, 9, 3]), label.toTensor(), {
+          epochs: 1
+        });
+
         done = newDone;
         obs = newObservation;
         setObservation(newObservation);
@@ -64,6 +80,7 @@ const SnakeRenderer: React.FC = props => {
 
   React.useEffect(() => {
     tf.loadLayersModel("/models/snake/model.json").then(model => {
+      model.compile({ optimizer: "adam", loss: "meanSquaredError" });
       runModel(model);
     });
   }, []);
