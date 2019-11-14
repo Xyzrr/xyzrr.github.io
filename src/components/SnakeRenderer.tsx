@@ -48,9 +48,14 @@ const SnakeRenderer: React.FC = props => {
   }
 
   async function runModel(model: tf.LayersModel) {
-    while (true) {
+    for (let i = 0; ; i++) {
       let done = false;
-      let obs = env.reset();
+      let obs: tf.Tensor;
+      if (i === 0) {
+        obs = env.getObservation();
+      } else {
+        obs = env.reset();
+      }
       while (!done) {
         const prediction = model.predict(
           obs.reshape([1, 9, 9, 3])
