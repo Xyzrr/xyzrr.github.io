@@ -45,10 +45,10 @@ const HomePage: React.FC = () => {
         <p>Hey, I'm John. </p>
         <p>
           I currently do swe at{" "}
-          <a href="https://www.wandb.com/">Weights & Biases</a>. Earlier I moved
+          <a href="https://wandb.com/">Weights & Biases</a>. Earlier I moved
           buttons around at Google and dropped out of UIUC. I like simplifying
           and prettifying things,{" "}
-          <a href="https://www.blog.johnqian.com">writing</a>, and doing
+          <a href="https://blog.johnqian.com">writing</a>, and doing
           calisthenics. I idolize Paul Graham and Richard Feynman to an
           unreasonable extent.
         </p>
