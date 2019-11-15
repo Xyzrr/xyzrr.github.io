@@ -103,7 +103,7 @@ const SnakeRenderer: React.FC = props => {
         if (action == null) {
           // Sometimes action is undefined for some mysterious reason.
           // I'm hoping this can catch that one day.
-          console.log("Error: action was undefined!", action);
+          console.log("Error: action was undefined in runModel!", action);
           console.log("observation:");
           obs.print();
           console.log("prediction:");
@@ -148,6 +148,9 @@ const SnakeRenderer: React.FC = props => {
           ArrowDown: 2,
           ArrowLeft: 3
         };
+        if (!(e.key in keyToActionMap)) {
+          return;
+        }
         const action = keyToActionMap[e.key];
         const { newObservation, reward, done: newDone } = env.step(action);
         setObservation(newObservation);
