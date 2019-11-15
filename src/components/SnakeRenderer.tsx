@@ -118,7 +118,7 @@ const SnakeRenderer: React.FC = props => {
     }
   }
 
-  const debouncedRun = _.debounce((model: tf.LayersModel) => {
+  const runModelDebounced = _.debounce((model: tf.LayersModel) => {
     snakeGlobals.stopRunning = false;
     snakeGlobals.disableInput = false;
     runModel(model);
@@ -129,17 +129,19 @@ const SnakeRenderer: React.FC = props => {
       model.compile({ optimizer: "adam", loss: "meanSquaredError" });
       runModel(model);
 
+      // TODO: cleanup this listener. Not sure how to because the listener
+      // is a closure that takes in model.
       window.addEventListener("keydown", e => {
         if (snakeGlobals.disableInput) {
           return;
         }
+        const obs = env.getObservation();
         const keyToActionMap: { [key: string]: number } = {
           ArrowUp: 0,
           ArrowRight: 1,
           ArrowDown: 2,
           ArrowLeft: 3
         };
-        const obs = env.getObservation();
         const action = keyToActionMap[e.key];
         const { newObservation, reward, done: newDone } = env.step(action);
         setObservation(newObservation);
@@ -152,7 +154,7 @@ const SnakeRenderer: React.FC = props => {
           env.reset();
         }
 
-        debouncedRun(model);
+        runModelDebounced(model);
       });
     });
   }, []);
