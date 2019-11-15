@@ -35,9 +35,9 @@ export default class SnakeEnv implements Env {
     const y = buffer.get(this.player.shape[0] - 1, 1);
     const outOfBounds = !(
       0 <= x &&
-      x <= this.boardSize &&
+      x < this.boardSize &&
       0 <= y &&
-      y <= this.boardSize
+      y < this.boardSize
     );
     if (outOfBounds) {
       console.log("snake went out of bounds");

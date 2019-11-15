@@ -4,6 +4,8 @@ import classNames from "classnames";
 import SnakeEnv from "../envs/SnakeEnv";
 import * as tf from "@tensorflow/tfjs";
 import { green, red } from "../colors";
+import { model } from "@tensorflow/tfjs";
+import * as _ from "lodash";
 
 const SnakeRendererDiv = styled.div`
   position: absolute;
@@ -39,12 +41,50 @@ const SnakeRendererDiv = styled.div`
 const env = new SnakeEnv();
 const obs = env.getObservation();
 
+const snakeGlobals = {
+  stopRunning: false,
+  disableInput: false,
+  modelUpdating: false
+};
+
 const SnakeRenderer: React.FC = props => {
   const [observation, setObservation] = React.useState(obs);
   const [totalReward, setTotalReward] = React.useState(0);
 
   function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function updateModel(
+    model: tf.LayersModel,
+    obs: tf.Tensor,
+    action: number,
+    newObs: tf.Tensor,
+    reward: number,
+    done: boolean
+  ) {
+    // This is like a mutex lock, except it gives up if the thread is busy.
+    // Also, it doesn't necessarily work; if two threads enter at exactly the
+    // same time they may both go through. But it hasn't happened yet afaik.
+    if (snakeGlobals.modelUpdating) {
+      return;
+    }
+    snakeGlobals.modelUpdating = true;
+
+    const prediction = model.predict(obs.reshape([1, 9, 9, 3])) as tf.Tensor;
+    const nextRewardPrediction = model.predict(
+      newObs.reshape([1, 9, 9, 3])
+    ) as tf.Tensor;
+    const targetActionScore =
+      reward +
+      (done ? 0 : 0.95 * (nextRewardPrediction.max().arraySync() as number));
+    const label = prediction.bufferSync();
+    label.set(targetActionScore, 0, action);
+    await model.fit(obs.reshape([1, 9, 9, 3]), label.toTensor(), {
+      epochs: 1
+    });
+
+    snakeGlobals.modelUpdating = false;
   }
 
   async function runModel(model: tf.LayersModel) {
@@ -57,26 +97,18 @@ const SnakeRenderer: React.FC = props => {
         obs = env.reset();
       }
       while (!done) {
+        if (snakeGlobals.stopRunning) {
+          return;
+        }
         const prediction = model.predict(
           obs.reshape([1, 9, 9, 3])
         ) as tf.Tensor;
         const action = (prediction.argMax(1).arraySync() as number[])[0];
         const { newObservation, reward, done: newDone } = env.step(action);
 
-        const nextRewardPrediction = model.predict(
-          newObservation.reshape([1, 9, 9, 3])
-        ) as tf.Tensor;
-        const targetActionScore =
-          reward +
-          (done
-            ? 0
-            : 0.95 * (nextRewardPrediction.max().arraySync() as number));
+        await updateModel(model, obs, action, newObservation, reward, done);
+
         setTotalReward(totalReward => totalReward + reward);
-        const label = prediction.bufferSync();
-        label.set(targetActionScore, 0, action);
-        await model.fit(obs.reshape([1, 9, 9, 3]), label.toTensor(), {
-          epochs: 1
-        });
 
         done = newDone;
         obs = newObservation;
@@ -86,14 +118,44 @@ const SnakeRenderer: React.FC = props => {
     }
   }
 
+  const debouncedRun = _.debounce((model: tf.LayersModel) => {
+    snakeGlobals.stopRunning = false;
+    snakeGlobals.disableInput = false;
+    runModel(model);
+  }, 600);
+
   React.useEffect(() => {
     tf.loadLayersModel("/models/snake/model.json").then(model => {
       model.compile({ optimizer: "adam", loss: "meanSquaredError" });
       runModel(model);
+
+      window.addEventListener("keydown", e => {
+        if (snakeGlobals.disableInput) {
+          return;
+        }
+        const keyToActionMap: { [key: string]: number } = {
+          ArrowUp: 0,
+          ArrowRight: 1,
+          ArrowDown: 2,
+          ArrowLeft: 3
+        };
+        const obs = env.getObservation();
+        const action = keyToActionMap[e.key];
+        const { newObservation, reward, done: newDone } = env.step(action);
+        setObservation(newObservation);
+        snakeGlobals.stopRunning = true;
+
+        updateModel(model, obs, action, newObservation, reward, newDone);
+
+        if (newDone) {
+          snakeGlobals.disableInput = true;
+          env.reset();
+        }
+
+        debouncedRun(model);
+      });
     });
   }, []);
-
-  React.useEffect(() => {}, []);
 
   const obsArray = observation.arraySync() as number[][][];
 
