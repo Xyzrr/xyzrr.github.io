@@ -17,3 +17,7 @@ export function randInt(min: number, max: number) {
 export function transpose(matrix: number[][]) {
   return matrix[0].map((_, j) => matrix.map(row => row[j]));
 }
+
+export function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

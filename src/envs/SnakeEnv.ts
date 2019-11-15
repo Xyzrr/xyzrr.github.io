@@ -68,6 +68,7 @@ export default class SnakeEnv implements Env {
       tf.tensor1d([0, 1]),
       tf.tensor1d([-1, 0])
     ];
+
     const newPosition: tf.Tensor1D = currentPosition.add(
       actionUpdateMap[action]
     );

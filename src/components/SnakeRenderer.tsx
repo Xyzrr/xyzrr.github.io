@@ -6,6 +6,7 @@ import * as tf from "@tensorflow/tfjs";
 import { green, red } from "../colors";
 import { model } from "@tensorflow/tfjs";
 import * as _ from "lodash";
+import { sleep } from "../util/helpers";
 
 const SnakeRendererDiv = styled.div`
   position: absolute;
@@ -50,10 +51,6 @@ const snakeGlobals = {
 const SnakeRenderer: React.FC = props => {
   const [observation, setObservation] = React.useState(obs);
   const [totalReward, setTotalReward] = React.useState(0);
-
-  function sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
 
   async function updateModel(
     model: tf.LayersModel,
@@ -104,6 +101,17 @@ const SnakeRenderer: React.FC = props => {
           obs.reshape([1, 9, 9, 3])
         ) as tf.Tensor;
         const action = (prediction.argMax(1).arraySync() as number[])[0];
+        if (action == null) {
+          // Sometimes action is undefined for some mysterious reason.
+          // I'm hoping this can catch that one day.
+          console.log("Error: action was undefined!");
+          console.log("observation:");
+          obs.print();
+          console.log("prediction:");
+          prediction.print();
+          console.log("argmax:");
+          console.log(prediction.argMax(1));
+        }
         const { newObservation, reward, done: newDone } = env.step(action);
 
         await updateModel(model, obs, action, newObservation, reward, done);
