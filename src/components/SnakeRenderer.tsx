@@ -113,14 +113,13 @@ const SnakeRenderer: React.FC = props => {
           console.log(prediction.argMax(1));
         }
         const { newObservation, reward, done: newDone } = env.step(action);
+        setObservation(newObservation);
+        setTotalReward(totalReward => totalReward + reward);
 
         await updateModel(model, obs, action, newObservation, reward, done);
 
-        setTotalReward(totalReward => totalReward + reward);
-
         done = newDone;
         obs = newObservation;
-        setObservation(newObservation);
         await sleep(300);
       }
     }
