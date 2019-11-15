@@ -1,5 +1,4 @@
 import Env from "./Env";
-import { randInt, zero2D } from "../util/helpers";
 import * as tf from "@tensorflow/tfjs";
 
 export default class SnakeEnv implements Env {
@@ -60,6 +59,10 @@ export default class SnakeEnv implements Env {
   }
 
   step(action: number) {
+    if (action == null) {
+      console.log("Error: action was undefined in SnakeEnv!", action);
+    }
+
     const currentPosition = this.player.gather(this.player.shape[0] - 1);
 
     const actionUpdateMap = [
@@ -81,7 +84,7 @@ export default class SnakeEnv implements Env {
       reward = this.foodReward;
       this.randomizeFood();
     } else {
-      const [_, allButLast] = tf.split(this.player, [
+      const [, allButLast] = tf.split(this.player, [
         1,
         this.player.shape[0] - 1
       ]);

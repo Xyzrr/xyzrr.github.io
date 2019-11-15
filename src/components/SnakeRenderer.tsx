@@ -4,7 +4,6 @@ import classNames from "classnames";
 import SnakeEnv from "../envs/SnakeEnv";
 import * as tf from "@tensorflow/tfjs";
 import { green, red } from "../colors";
-import { model } from "@tensorflow/tfjs";
 import * as _ from "lodash";
 import { sleep } from "../util/helpers";
 
@@ -104,7 +103,7 @@ const SnakeRenderer: React.FC = props => {
         if (action == null) {
           // Sometimes action is undefined for some mysterious reason.
           // I'm hoping this can catch that one day.
-          console.log("Error: action was undefined!");
+          console.log("Error: action was undefined!", action);
           console.log("observation:");
           obs.print();
           console.log("prediction:");

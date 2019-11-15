@@ -1,12 +1,10 @@
-import Color from 'color';
-import {number} from 'prop-types';
-import React from 'react';
+import React from "react";
 
-import {QLearningAgentUpdateData} from '../agents/QLearningAgent';
-import {QLearningColors as colors} from '../colors';
-import Katex from '../components/Katex';
-import {colorbox, textcolor} from '../util/latex';
-import Position from '../util/Position';
+import { QLearningAgentUpdateData } from "../agents/QLearningAgent";
+import { QLearningColors as colors } from "../colors";
+import Katex from "../components/Katex";
+import { colorbox, textcolor } from "../util/latex";
+import Position from "../util/Position";
 
 interface BellmanUpdateKatexProps {
   updateData?: QLearningAgentUpdateData;

@@ -1,28 +1,25 @@
-import 'react-dat-gui/build/react-dat-gui.css';
+import "react-dat-gui/build/react-dat-gui.css";
 
-import React from 'react';
-import DatGui, {DatBoolean, DatButton, DatNumber} from 'react-dat-gui';
-import styled from 'styled-components';
+import React from "react";
+import DatGui, { DatBoolean, DatButton, DatNumber } from "react-dat-gui";
+import styled from "styled-components";
 
-import QLearningAgent from '../agents/QLearningAgent';
-import * as colors from '../colors';
-import AspectRatioBox from '../components/AspectRatioBox';
-import BellmanUpdateKatex from '../components/BellmanUpdateKatex';
-import Button, {ButtonHandles} from '../components/Button';
-import DynamicMatrix from '../components/DynamicMatrix';
-import NChainEnv from '../envs/NChain';
-import Game from '../Game';
-import useStaging from '../hooks/useStaging';
-import Scene from '../Scene';
-import AgentObject from '../scene-objects/AgentObject';
-import ButtonObject from '../scene-objects/ButtonObject';
-import ChainEnvironment from '../scene-objects/ChainEnvironment';
-import CoinEmitter from '../scene-objects/CoinEmitter';
-import NumberObject from '../scene-objects/NumberObject';
-import Table from '../scene-objects/Table';
-import {argMax, transpose} from '../util/helpers';
-import {textcolor} from '../util/latex';
-import useWindowSize from '../util/useWindowSize';
+import QLearningAgent from "../agents/QLearningAgent";
+import * as colors from "../colors";
+import BellmanUpdateKatex from "../components/BellmanUpdateKatex";
+import Button, { ButtonHandles } from "../components/Button";
+import NChainEnv from "../envs/NChain";
+import Game from "../Game";
+import useStaging from "../hooks/useStaging";
+import Scene from "../Scene";
+import AgentObject from "../scene-objects/AgentObject";
+import ChainEnvironment from "../scene-objects/ChainEnvironment";
+import CoinEmitter from "../scene-objects/CoinEmitter";
+import NumberObject from "../scene-objects/NumberObject";
+import Table from "../scene-objects/Table";
+import { transpose } from "../util/helpers";
+import { textcolor } from "../util/latex";
+import useWindowSize from "../util/useWindowSize";
 
 const initialAgentOptions = {
   gamma: 0.95,
@@ -237,7 +234,7 @@ function QLearningPage() {
   coinEmitter.clear();
   if (game.lastReward) {
     const startX =
-      game.lastReward == 2
+      game.lastReward === 2
         ? glob.centerX - 2 * envObject.DIST
         : glob.centerX + 2 * envObject.DIST;
 

@@ -1,10 +1,8 @@
-import React from 'react';
+import TWEEN from "@tweenjs/tween.js";
 
-import TWEEN from '@tweenjs/tween.js';
-
-import * as colors from '../colors';
-import Position from '../util/Position';
-import SceneObject from './SceneObject';
+import * as colors from "../colors";
+import Position from "../util/Position";
+import SceneObject from "./SceneObject";
 
 interface Coin {
   position: Position;

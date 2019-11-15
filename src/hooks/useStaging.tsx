@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import React from "react";
 
 type Stage = () => void;
 
 export default function useStaging(stages: Stage[]) {
-  const [stage, setStage] = useState(0);
-  useEffect(() => {
+  const [stage, setStage] = React.useState(0);
+  React.useEffect(() => {
     window.addEventListener("keypress", e => {
       switch (e.keyCode) {
         case 110:
