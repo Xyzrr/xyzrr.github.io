@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
 import QLearningPage from "./pages/QLearningPage";
 import HomePage from "./pages/HomePage";
@@ -11,9 +11,17 @@ function DQNPage() {
 function App() {
   return (
     <Router>
-      <Route path="/" exact component={HomePage} />
-      <Route path="/qlearning" component={QLearningPage} />
-      <Route path="/dqn" component={DQNPage} />
+      <Switch>
+        <Route path="/qlearning">
+          <QLearningPage></QLearningPage>
+        </Route>
+        <Route path="/dqn">
+          <DQNPage></DQNPage>
+        </Route>
+        <Route path="/" exact>
+          <HomePage></HomePage>
+        </Route>
+      </Switch>
     </Router>
   );
 }

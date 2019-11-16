@@ -1,6 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 import SnakeRenderer from "../components/SnakeRenderer";
+import { useParams } from "react-router-dom";
+import ShaderBackground from "../components/ShaderBackground";
 
 const HomePageDiv = styled.div`
   display: flex;
@@ -38,10 +40,38 @@ const HomePageDiv = styled.div`
   }
 `;
 
+interface Theme {
+  background: React.ReactNode;
+  link: string;
+  name: string;
+}
+
 const HomePage: React.FC = () => {
+  const themes: { [key: string]: Theme } = {
+    snake: {
+      background: <SnakeRenderer></SnakeRenderer>,
+      link: "https://github.com/Xyzrr/rl-snake",
+      name: "DQN playing Snake"
+    },
+    shader: {
+      background: <ShaderBackground></ShaderBackground>,
+      link: "#",
+      name: "Shader"
+    }
+  };
+  let themeKey: string | null = null;
+  if (window.location.hash) {
+    themeKey = window.location.hash.substr(1);
+  }
+  if (!themeKey || !(themeKey in themes)) {
+    const choices = Object.keys(themes);
+    themeKey = choices[Math.floor(Math.random() * choices.length)];
+  }
+  const theme = themes[themeKey];
   return (
     <HomePageDiv>
       <div className="bio">
+        {theme.background}
         <p>Hey, I'm John. </p>
         <p>
           I currently do swe at{" "}
@@ -60,10 +90,9 @@ const HomePage: React.FC = () => {
       <div className="footer">
         <p>Background:</p>
         <p>
-          <a href="https://github.com/Xyzrr/rl-snake">DQN playing Snake</a>
+          <a href={theme.link}>{theme.name}</a>
         </p>
       </div>
-      <SnakeRenderer></SnakeRenderer>
     </HomePageDiv>
   );
 };
