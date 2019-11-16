@@ -1,7 +1,6 @@
 import React from "react";
 import styled from "styled-components";
 import SnakeRenderer from "../components/SnakeRenderer";
-import { useParams } from "react-router-dom";
 import ShaderBackground from "../components/ShaderBackground";
 
 const HomePageDiv = styled.div`
@@ -68,10 +67,11 @@ const HomePage: React.FC = () => {
     themeKey = choices[Math.floor(Math.random() * choices.length)];
   }
   const theme = themes[themeKey];
+
   return (
     <HomePageDiv>
+      {theme.background}
       <div className="bio">
-        {theme.background}
         <p>Hey, I'm John. </p>
         <p>
           I currently do swe at{" "}
