@@ -83,24 +83,32 @@ const ShaderBackground: React.FC = () => {
     return shaderProgram;
   };
 
-  const initBuffers = (gl: WebGLRenderingContext) => {
-    const positionBuffer = gl.createBuffer();
+  const initBuffer = (gl: WebGLRenderingContext, data: ArrayBuffer) => {
+    const buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+    return buffer;
+  };
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-    const positions = [1, 1, -1, 1, 1, -1, -1, -1];
-
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
-
-    return {
-      position: positionBuffer
-    };
+  const initAttribute = (
+    gl: WebGLRenderingContext,
+    location: number,
+    size: number,
+    type: number,
+    normalize: boolean,
+    buffer: WebGLBuffer
+  ) => {
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
+    const stride = 0;
+    const offset = 0;
+    gl.vertexAttribPointer(location, size, type, normalize, stride, offset);
+    gl.enableVertexAttribArray(location);
   };
 
   const drawScene = (
     gl: WebGLRenderingContext,
     programInfo: any,
-    buffers: { [key: string]: WebGLBuffer | null }
+    time: number
   ) => {
     gl.clearColor(0, 0, 0, 1);
     gl.clearDepth(1);
@@ -120,24 +128,25 @@ const ShaderBackground: React.FC = () => {
     const modelViewMatrix = mat4.create();
 
     mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6]);
+    mat4.rotateY(modelViewMatrix, modelViewMatrix, (Math.PI / 4) * time);
 
-    {
-      const numComponents = 2;
-      const type = gl.FLOAT;
-      const normalize = false;
-      const stride = 0;
-      const offset = 0;
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-      gl.vertexAttribPointer(
-        programInfo.attribLocations.vertexPosition,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset
-      );
-      gl.enableVertexAttribArray(programInfo.attribLocations.vertexPosition);
-    }
+    initAttribute(
+      gl,
+      programInfo.attribLocations.vertexPosition,
+      3,
+      gl.FLOAT,
+      false,
+      programInfo.buffers.position
+    );
+
+    initAttribute(
+      gl,
+      programInfo.attribLocations.vertexColor,
+      3,
+      gl.UNSIGNED_BYTE,
+      true,
+      programInfo.buffers.color
+    );
 
     gl.useProgram(programInfo.program);
 
@@ -155,8 +164,8 @@ const ShaderBackground: React.FC = () => {
 
     {
       const offset = 0;
-      const vertexCount = 4;
-      gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount);
+      const vertexCount = 18;
+      gl.drawArrays(gl.TRIANGLES, offset, vertexCount);
     }
   };
 
@@ -173,18 +182,27 @@ const ShaderBackground: React.FC = () => {
 
       const vsSource = `
           attribute vec4 aVertexPosition;
+          attribute vec4 aVertexColor;
 
           uniform mat4 uModelViewMatrix;
           uniform mat4 uProjectionMatrix;
+          // uniform vec2 uTranslationVector;
+
+          varying vec4 vColor;
 
           void main() {
               gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+              // gl_Position = vec4(aVertexPosition + uTranslationVector, 0, 1);
+              vColor = aVertexColor;
           }
         `;
 
       const fsSource = `
+          precision mediump float;
+          varying vec4 vColor;
+
           void main() {
-              gl_FragColor = vec4(1, 1, 1, 1);
+              gl_FragColor = vColor;
           }
         `;
 
@@ -197,10 +215,11 @@ const ShaderBackground: React.FC = () => {
       const programInfo = {
         program: shaderProgram,
         attribLocations: {
-          vertexPositions: gl.getAttribLocation(
+          vertexPosition: gl.getAttribLocation(
             shaderProgram,
             "aVertexPosition"
-          )
+          ),
+          vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor")
         },
         uniformLocations: {
           projectionMatrix: gl.getUniformLocation(
@@ -211,12 +230,143 @@ const ShaderBackground: React.FC = () => {
             shaderProgram,
             "uModelViewMatrix"
           )
+        },
+        buffers: {
+          position: initBuffer(
+            gl,
+            new Float32Array([
+              // front
+              1,
+              1,
+              1,
+              -1,
+              1,
+              1,
+              1,
+              -1,
+              1,
+              -1,
+              1,
+              1,
+              1,
+              -1,
+              1,
+              -1,
+              -1,
+              1,
+              // front
+              1,
+              1,
+              1,
+              1,
+              1,
+              -1,
+              1,
+              -1,
+              1,
+              1,
+              -1,
+              1,
+              1,
+              1,
+              -1,
+              1,
+              -1,
+              -1,
+              // back
+              1,
+              1,
+              -1,
+              -1,
+              1,
+              -1,
+              1,
+              -1,
+              -1,
+              -1,
+              1,
+              -1,
+              1,
+              -1,
+              -1,
+              -1,
+              -1,
+              -1
+            ])
+          ),
+          color: initBuffer(
+            gl,
+            new Uint8Array([
+              // front
+              200,
+              70,
+              120,
+              200,
+              70,
+              120,
+              200,
+              70,
+              120,
+              200,
+              70,
+              120,
+              200,
+              70,
+              120,
+              200,
+              70,
+              120,
+
+              // front
+              200,
+              20,
+              120,
+              200,
+              20,
+              120,
+              200,
+              20,
+              120,
+              200,
+              20,
+              120,
+              200,
+              20,
+              120,
+              200,
+              20,
+              120,
+
+              // back
+              70,
+              120,
+              200,
+              70,
+              120,
+              200,
+              70,
+              120,
+              200,
+              70,
+              120,
+              200,
+              70,
+              120,
+              200,
+              70,
+              120,
+              200
+            ])
+          )
         }
       };
 
-      const buffers = initBuffers(gl);
+      const animation = (time: number) => {
+        drawScene(gl, programInfo, time * 0.001);
+        requestAnimationFrame(animation);
+      };
 
-      drawScene(gl, programInfo, buffers);
+      requestAnimationFrame(animation);
     }
   }, []);
 
