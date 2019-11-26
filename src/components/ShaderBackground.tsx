@@ -148,6 +148,15 @@ const ShaderBackground: React.FC = () => {
       programInfo.buffers.color
     );
 
+    initAttribute(
+      gl,
+      programInfo.attribLocations.normal,
+      3,
+      gl.FLOAT,
+      true,
+      programInfo.buffers.normal
+    );
+
     gl.useProgram(programInfo.program);
 
     gl.uniformMatrix4fv(
@@ -161,6 +170,12 @@ const ShaderBackground: React.FC = () => {
       false,
       modelViewMatrix
     );
+
+    gl.uniform3fv(programInfo.uniformLocations.reverseLightDirection, [
+      0,
+      0,
+      1
+    ]);
 
     {
       const offset = 0;
@@ -183,9 +198,11 @@ const ShaderBackground: React.FC = () => {
       const vsSource = `
           attribute vec4 aVertexPosition;
           attribute vec4 aVertexColor;
+          attribute vec3 aNormal;
 
           uniform mat4 uModelViewMatrix;
           uniform mat4 uProjectionMatrix;
+          uniform vec3 uReverseLightDirection;
           // uniform vec2 uTranslationVector;
 
           varying vec4 vColor;
@@ -194,6 +211,7 @@ const ShaderBackground: React.FC = () => {
               gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
               // gl_Position = vec4(aVertexPosition + uTranslationVector, 0, 1);
               vColor = aVertexColor;
+              vColor.rgb *= abs(dot(mat3(uModelViewMatrix) * aNormal, uReverseLightDirection)) * 0.8 + 0.2;
           }
         `;
 
@@ -219,7 +237,8 @@ const ShaderBackground: React.FC = () => {
             shaderProgram,
             "aVertexPosition"
           ),
-          vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor")
+          vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
+          normal: gl.getAttribLocation(shaderProgram, "aNormal")
         },
         uniformLocations: {
           projectionMatrix: gl.getUniformLocation(
@@ -229,6 +248,10 @@ const ShaderBackground: React.FC = () => {
           modelViewMatrix: gl.getUniformLocation(
             shaderProgram,
             "uModelViewMatrix"
+          ),
+          reverseLightDirection: gl.getUniformLocation(
+            shaderProgram,
+            "uReverseLightDirection"
           )
         },
         buffers: {
@@ -254,7 +277,7 @@ const ShaderBackground: React.FC = () => {
               -1,
               -1,
               1,
-              // front
+              // right
               1,
               1,
               1,
@@ -317,7 +340,7 @@ const ShaderBackground: React.FC = () => {
               70,
               120,
 
-              // front
+              // right
               200,
               20,
               120,
@@ -356,6 +379,70 @@ const ShaderBackground: React.FC = () => {
               70,
               120,
               200
+            ])
+          ),
+          normal: initBuffer(
+            gl,
+            new Float32Array([
+              // front
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+
+              // side
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              0,
+
+              // back
+              0,
+              0,
+              -1,
+              0,
+              0,
+              -1,
+              0,
+              0,
+              -1,
+              0,
+              0,
+              -1,
+              0,
+              0,
+              -1,
+              0,
+              0,
+              -1
             ])
           )
         }
