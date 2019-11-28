@@ -8,12 +8,14 @@ import * as _ from "lodash";
 import { sleep } from "../util/helpers";
 
 const SnakeRendererDiv = styled.div`
-  position: absolute;
+  height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  z-index: -1;
+  justify-content: center;
   .row {
     display: flex;
+    justify-content: center;
     height: 60px;
   }
   .cell {

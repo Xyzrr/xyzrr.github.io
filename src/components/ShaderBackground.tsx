@@ -3,18 +3,9 @@ import styled from "styled-components";
 import { mat4 } from "gl-matrix";
 import useWindowSize from "../util/useWindowSize";
 
-const ShaderBackgroundDiv = styled.div`
-  position: absolute;
-  left: 0;
-  top: 0;
+const ShaderBackgroundCanvas = styled.canvas`
   width: 100%;
   height: 100%;
-  z-index: -1;
-  background: lightgray;
-  canvas {
-    width: 100%;
-    height: 100%;
-  }
 `;
 
 const ShaderBackground: React.FC = () => {
@@ -457,11 +448,7 @@ const ShaderBackground: React.FC = () => {
     }
   }, []);
 
-  return (
-    <ShaderBackgroundDiv>
-      <canvas ref={canvasRef}></canvas>
-    </ShaderBackgroundDiv>
-  );
+  return <ShaderBackgroundCanvas ref={canvasRef}></ShaderBackgroundCanvas>;
 };
 
 export default ShaderBackground;

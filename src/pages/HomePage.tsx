@@ -39,6 +39,13 @@ const HomePageDiv = styled.div`
   }
 `;
 
+const HomePageBackground = styled.div`
+  position: absolute;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+`;
+
 interface Theme {
   background: React.ReactNode;
   link: string;
@@ -70,7 +77,7 @@ const HomePage: React.FC = () => {
 
   return (
     <HomePageDiv>
-      {theme.background}
+      <HomePageBackground>{theme.background}</HomePageBackground>
       <div className="bio">
         <p>Hey, I'm John. </p>
         <p>
