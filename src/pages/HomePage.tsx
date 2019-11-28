@@ -7,7 +7,9 @@ const HomePageDiv = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  height: 100%;
+  position: fixed;
+  width: 100%;
   font-family: Quicksand;
   .bio {
     max-width: 400px;
