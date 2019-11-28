@@ -17,6 +17,12 @@ const FluidShader: React.FC = () => {
     bufferInfo: twgl.BufferInfo,
     time: number
   ) => {
+    twgl.resizeCanvasToDisplaySize(
+      gl.canvas as HTMLCanvasElement,
+      window.devicePixelRatio
+    );
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
     gl.clearColor(0, 0, 0, 1);
     gl.clearDepth(1);
     gl.enable(gl.DEPTH_TEST);
@@ -60,9 +66,6 @@ const FluidShader: React.FC = () => {
       console.log("Unabled to initialize WebGL.");
       return;
     }
-
-    twgl.resizeCanvasToDisplaySize(canvasRef.current, window.devicePixelRatio);
-    gl.viewport(0, 0, canvasRef.current.width, canvasRef.current.height);
 
     const vsSource = `
           attribute vec4 a_position;
