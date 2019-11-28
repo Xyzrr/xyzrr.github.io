@@ -171,7 +171,7 @@ const ShaderBackground: React.FC = () => {
     {
       const offset = 0;
       const vertexCount = 18;
-      gl.drawArrays(gl.TRIANGLES, offset, vertexCount);
+      gl.drawArrays(gl.POINTS, offset, vertexCount);
     }
   };
 
@@ -200,6 +200,7 @@ const ShaderBackground: React.FC = () => {
 
           void main() {
               gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+              gl_PointSize = 10.0;
               // gl_Position = vec4(aVertexPosition + uTranslationVector, 0, 1);
               vColor = aVertexColor;
               vColor.rgb *= abs(dot(mat3(uModelViewMatrix) * aNormal, uReverseLightDirection)) * 0.8 + 0.2;
@@ -211,7 +212,7 @@ const ShaderBackground: React.FC = () => {
           varying vec4 vColor;
 
           void main() {
-              gl_FragColor = vColor;
+              gl_FragColor = vec4(1, 0, 0, 1);
           }
         `;
 

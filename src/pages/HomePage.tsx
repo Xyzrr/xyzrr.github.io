@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import SnakeRenderer from "../components/SnakeRenderer";
-import ShaderBackground from "../components/ShaderBackground";
+import FluidShader from "../components/FluidShader";
 
 const HomePageDiv = styled.div`
   display: flex;
@@ -60,7 +60,7 @@ const HomePage: React.FC = () => {
       name: "DQN playing Snake"
     },
     shader: {
-      background: <ShaderBackground></ShaderBackground>,
+      background: <FluidShader></FluidShader>,
       link: "#",
       name: "Shader"
     }
