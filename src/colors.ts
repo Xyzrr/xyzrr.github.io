@@ -12,6 +12,7 @@ export const red = Color.rgb(250, 138, 84);
 export const purple = Color.rgb(197, 134, 192);
 export const yellow = Color.rgb(220, 220, 170);
 export const brown = Color.rgb(206, 145, 120);
+export const orange = Color.rgb(255, 165, 0);
 
 export const bgBrown = Color.rgb(54, 36, 17);
 export const bgGreen = Color.rgb(17, 54, 31);
@@ -27,7 +28,12 @@ export const QLearningColors = {
 };
 
 export const TetrisColors = {
-  green,
-  blue,
-  red
+  s: green,
+  z: red,
+  j: darkBlue,
+  l: orange,
+  t: purple,
+  i: blue,
+  o: yellow,
+  g: gray
 };

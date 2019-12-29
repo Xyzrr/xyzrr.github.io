@@ -1,14 +1,17 @@
 import React, { useEffect } from "react";
 import { TetrisColors } from "../../colors";
 import styled from "styled-components";
+import { TetrisTile } from "../types";
 
 interface TetrisGameFieldProps {
   width?: number;
+  field: TetrisTile[][];
 }
 
 const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
   const width = props.width || 400;
   const height = width * 2;
+  const unit = width / 10;
 
   const GameFieldCanvas = styled.canvas`
     width: ${width}px;
@@ -16,21 +19,37 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
   `;
 
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
+
+  const renderLand = () => {
+    if (canvasRef.current) {
+      const ctx = canvasRef.current.getContext("2d");
+
+      if (ctx) {
+        props.field.forEach((row, i) => {
+          row.forEach((cell, j) => {
+            if (cell !== ".") {
+              ctx.fillStyle = TetrisColors[cell].toString();
+              ctx.fillRect(unit * j, unit * i, unit, unit);
+            }
+          });
+        });
+      }
+    }
+  };
+
   useEffect(() => {
     if (canvasRef.current) {
       canvasRef.current.width = width * window.devicePixelRatio;
       canvasRef.current.height = height * window.devicePixelRatio;
       const ctx = canvasRef.current.getContext("2d");
-      if (!ctx) {
-        return;
+      if (ctx) {
+        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
       }
-      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-      ctx.fillStyle = TetrisColors.blue.toString();
-      ctx.fillRect(0, 0, 50, 50);
-      ctx.fillStyle = TetrisColors.red.toString();
-      ctx.fillRect(50, 0, 50, 50);
+      renderLand();
     }
   });
+
+  renderLand();
 
   return <GameFieldCanvas ref={canvasRef}></GameFieldCanvas>;
 };
