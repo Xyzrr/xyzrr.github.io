@@ -61,11 +61,11 @@ const HomePage: React.FC = () => {
       link: "https://github.com/Xyzrr/rl-snake",
       name: "DQN playing Snake"
     },
-    shader: {
-      background: <FluidShader></FluidShader>,
-      link: "#",
-      name: "Shader"
-    }
+    // shader: {
+    //   background: <FluidShader></FluidShader>,
+    //   link: "#",
+    //   name: "Shader"
+    // }
   };
   let themeKey: string | null = null;
   if (window.location.hash) {

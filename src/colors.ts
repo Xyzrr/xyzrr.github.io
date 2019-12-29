@@ -1,4 +1,4 @@
-import Color from 'color';
+import Color from "color";
 
 export const darkGray = Color.rgb(10, 10, 10);
 export const gray = Color.rgb(110, 110, 110);
@@ -24,4 +24,10 @@ export const QLearningColors = {
   nextAction: darkGreen,
   currentQ: bgBrown,
   nextQ: bgGreen
+};
+
+export const TetrisColors = {
+  green,
+  blue,
+  red
 };
