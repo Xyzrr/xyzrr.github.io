@@ -15,11 +15,6 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
   const height = width * 2;
   const unit = width / 10;
 
-  const GameFieldCanvas = styled.canvas`
-    width: ${width}px;
-    height: ${height}px;
-  `;
-
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const ctx = canvasRef.current && canvasRef.current.getContext("2d");
 
@@ -35,6 +30,7 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
   };
 
   const renderActivePiece = (ctx: CanvasRenderingContext2D) => {
+    console.log("orientation", props.activePiece.orientation);
     tetromino[props.activePiece.type].matrix[
       props.activePiece.orientation
     ].forEach((row, i) => {
@@ -70,7 +66,7 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
     renderActivePiece(ctx);
   }
 
-  return <GameFieldCanvas ref={canvasRef}></GameFieldCanvas>;
+  return <canvas style={{ width, height }} ref={canvasRef}></canvas>;
 };
 
 export default TetrisGameField;
