@@ -3,6 +3,8 @@ import React from "react";
 import styled from "styled-components";
 import TetrisGameFrame from "../components/TetrisGameFrame";
 import { TetrisFieldTile, Mino, ActivePiece } from "../types";
+import tetrominos from "../tetromino";
+import * as constants from "../constants";
 
 const keyBindings = {
   moveLeft: 37,
@@ -22,6 +24,29 @@ const keyDown: { [key: string]: number } = {};
 
 const TetrisPageDiv = styled.div``;
 
+const colliding = (activePiece: ActivePiece, field: TetrisFieldTile[][]) => {
+  const tetromino = tetrominos[activePiece.type];
+  const matrix = tetromino.matrices[activePiece.orientation];
+  for (let i = 0; i < matrix.length; i++) {
+    for (let j = 0; j < matrix.length; j++) {
+      if (matrix[i][j] === "#") {
+        const x = activePiece.x + j;
+        const y = activePiece.y + i;
+        if (
+          x < 0 ||
+          x >= constants.MATRIX_COLS ||
+          y < 0 ||
+          y >= constants.MATRIX_ROWS ||
+          field[y][x] !== "."
+        ) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+};
+
 interface TetrisPageState {
   field: TetrisFieldTile[][];
   activePiece: ActivePiece;
@@ -35,37 +60,64 @@ const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
   state,
   action
 ) => {
+  let newActivePiece: ActivePiece;
   switch (action.type) {
     case "tick":
+      newActivePiece = {
+        ...state.activePiece,
+        y: state.activePiece.y + 1
+      };
+      if (colliding(newActivePiece, state.field)) {
+        return state;
+      }
       return {
         ...state,
-        activePiece: { ...state.activePiece, y: state.activePiece.y + 1 }
+        activePiece: newActivePiece
       };
     case "moveLeft":
+      newActivePiece = {
+        ...state.activePiece,
+        x: state.activePiece.x - 1
+      };
+      if (colliding(newActivePiece, state.field)) {
+        return state;
+      }
       return {
         ...state,
-        activePiece: { ...state.activePiece, x: state.activePiece.x - 1 }
+        activePiece: newActivePiece
       };
     case "moveRight":
+      newActivePiece = { ...state.activePiece, x: state.activePiece.x + 1 };
+      if (colliding(newActivePiece, state.field)) {
+        return state;
+      }
       return {
         ...state,
-        activePiece: { ...state.activePiece, x: state.activePiece.x + 1 }
+        activePiece: newActivePiece
       };
     case "rotateClockwise":
+      newActivePiece = {
+        ...state.activePiece,
+        orientation: (state.activePiece.orientation + 1) % 4
+      };
+      if (colliding(newActivePiece, state.field)) {
+        return state;
+      }
       return {
         ...state,
-        activePiece: {
-          ...state.activePiece,
-          orientation: (state.activePiece.orientation + 1) % 4
-        }
+        activePiece: newActivePiece
       };
     case "rotateCounterClockwise":
+      newActivePiece = {
+        ...state.activePiece,
+        orientation: (state.activePiece.orientation + 3) % 4
+      };
+      if (colliding(newActivePiece, state.field)) {
+        return state;
+      }
       return {
         ...state,
-        activePiece: {
-          ...state.activePiece,
-          orientation: (state.activePiece.orientation + 3) % 4
-        }
+        activePiece: newActivePiece
       };
     default:
       throw new Error("Invalid action type");

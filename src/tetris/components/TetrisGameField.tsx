@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { TetrisColors } from "../../colors";
 import styled from "styled-components";
 import { TetrisFieldTile, ActivePiece } from "../types";
-import tetromino from "../tetromino";
+import tetrominos from "../tetromino";
 
 interface TetrisGameFieldProps {
   width?: number;
@@ -31,7 +31,7 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
 
   const renderActivePiece = (ctx: CanvasRenderingContext2D) => {
     console.log("orientation", props.activePiece.orientation);
-    tetromino[props.activePiece.type].matrix[
+    tetrominos[props.activePiece.type].matrices[
       props.activePiece.orientation
     ].forEach((row, i) => {
       row.forEach((cell, j) => {

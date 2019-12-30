@@ -1,9 +1,9 @@
 import { Mino } from "./types";
 import * as _ from "lodash";
 
-const tetromino = {
+const tetrominos = {
   z: {
-    matrix: [
+    matrices: [
       [
         ["#", "#", " "],
         [" ", "#", "#"],
@@ -12,7 +12,7 @@ const tetromino = {
     ]
   },
   s: {
-    matrix: [
+    matrices: [
       [
         [" ", "#", "#"],
         ["#", "#", " "],
@@ -21,7 +21,7 @@ const tetromino = {
     ]
   },
   j: {
-    matrix: [
+    matrices: [
       [
         ["#", " ", " "],
         ["#", "#", "#"],
@@ -30,7 +30,7 @@ const tetromino = {
     ]
   },
   l: {
-    matrix: [
+    matrices: [
       [
         [" ", " ", "#"],
         ["#", "#", "#"],
@@ -39,7 +39,7 @@ const tetromino = {
     ]
   },
   o: {
-    matrix: [
+    matrices: [
       [
         [" ", "#", "#"],
         [" ", "#", "#"],
@@ -48,7 +48,7 @@ const tetromino = {
     ]
   },
   t: {
-    matrix: [
+    matrices: [
       [
         [" ", "#", " "],
         ["#", "#", "#"],
@@ -57,7 +57,7 @@ const tetromino = {
     ]
   },
   i: {
-    matrix: [
+    matrices: [
       [
         [" ", " ", " ", " ", " "],
         [" ", " ", " ", " ", " "],
@@ -82,13 +82,13 @@ const rotateMatrix = (matrix: any[][]) => {
   return result;
 };
 
-for (let type in tetromino) {
-  const tet = tetromino[type as Mino];
+for (let type in tetrominos) {
+  const tetromino = tetrominos[type as Mino];
   for (let i = 0; i < 3; i++) {
-    tet.matrix.push(rotateMatrix(tet.matrix[i]));
+    tetromino.matrices.push(rotateMatrix(tetromino.matrices[i]));
   }
 }
 
-console.log(tetromino);
+console.log(tetrominos);
 
-export default tetromino;
+export default tetrominos;
