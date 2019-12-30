@@ -1,11 +1,13 @@
 import React, { useEffect } from "react";
 import { TetrisColors } from "../../colors";
 import styled from "styled-components";
-import { TetrisTile } from "../types";
+import { TetrisFieldTile, ActivePiece } from "../types";
+import tetromino from "../tetromino";
 
 interface TetrisGameFieldProps {
   width?: number;
-  field: TetrisTile[][];
+  field: TetrisFieldTile[][];
+  activePiece: ActivePiece;
 }
 
 const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
@@ -19,22 +21,35 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
   `;
 
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
+  const ctx = canvasRef.current && canvasRef.current.getContext("2d");
 
-  const renderLand = () => {
-    if (canvasRef.current) {
-      const ctx = canvasRef.current.getContext("2d");
+  const renderLand = (ctx: CanvasRenderingContext2D) => {
+    props.field.forEach((row, i) => {
+      row.forEach((cell, j) => {
+        if (cell !== ".") {
+          ctx.fillStyle = TetrisColors[cell].toString();
+          ctx.fillRect(unit * j, unit * (i - 20), unit, unit);
+        }
+      });
+    });
+  };
 
-      if (ctx) {
-        props.field.forEach((row, i) => {
-          row.forEach((cell, j) => {
-            if (cell !== ".") {
-              ctx.fillStyle = TetrisColors[cell].toString();
-              ctx.fillRect(unit * j, unit * i, unit, unit);
-            }
-          });
-        });
-      }
-    }
+  const renderActivePiece = (ctx: CanvasRenderingContext2D) => {
+    tetromino[props.activePiece.type].matrix[
+      props.activePiece.orientation
+    ].forEach((row, i) => {
+      row.forEach((cell, j) => {
+        if (cell !== " ") {
+          ctx.fillStyle = TetrisColors[props.activePiece.type].toString();
+          ctx.fillRect(
+            (props.activePiece.x + j) * unit,
+            (props.activePiece.y + i - 20) * unit,
+            unit,
+            unit
+          );
+        }
+      });
+    });
   };
 
   useEffect(() => {
@@ -44,12 +59,16 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
       const ctx = canvasRef.current.getContext("2d");
       if (ctx) {
         ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        renderLand(ctx);
+        renderActivePiece(ctx);
       }
-      renderLand();
     }
   });
 
-  renderLand();
+  if (ctx) {
+    renderLand(ctx);
+    renderActivePiece(ctx);
+  }
 
   return <GameFieldCanvas ref={canvasRef}></GameFieldCanvas>;
 };

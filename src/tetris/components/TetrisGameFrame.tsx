@@ -1,31 +1,18 @@
 import React from "react";
 import TetrisGameField from "./TetrisGameField";
-import { TetrisTile } from "../types";
+import { TetrisFieldTile, ActivePiece } from "../types";
 
-const TetrisGameFrame: React.FC = () => {
-  const testField: TetrisTile[][] = [
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", "s", "s", ".", ".", ".", ".", "."],
-    ["z", "z", "s", "s", ".", ".", ".", ".", ".", "."],
-    [".", "z", "z", ".", ".", ".", ".", ".", ".", "."]
-  ];
-  return <TetrisGameField field={testField}></TetrisGameField>;
+interface TetrisGameFrameProps {
+  field: TetrisFieldTile[][];
+  activePiece: ActivePiece;
+}
+const TetrisGameFrame: React.FC<TetrisGameFrameProps> = props => {
+  return (
+    <TetrisGameField
+      field={props.field}
+      activePiece={props.activePiece}
+    ></TetrisGameField>
+  );
 };
 
 export default TetrisGameFrame;
