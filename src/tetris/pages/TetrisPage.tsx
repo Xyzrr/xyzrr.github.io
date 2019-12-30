@@ -20,7 +20,9 @@ const globals = {
   lastTick: 0
 };
 
-const keyDown: { [key: string]: number } = {};
+const keyDown: {
+  [key: string]: { downTime: number; lastTriggered: number };
+} = {};
 
 const TetrisPageDiv = styled.div``;
 
@@ -189,7 +191,7 @@ const TetrisPage: React.FC = () => {
   });
   const tickDuration = 200;
   const DAS = 117;
-  const ARR = 51;
+  const ARR = 22;
 
   const update = () => {
     const time = Date.now();
@@ -197,6 +199,35 @@ const TetrisPage: React.FC = () => {
       dispatch({ type: "tick" });
       globals.lastTick += tickDuration;
     }
+
+    const rightKey = keyDown[keyBindings.moveRight];
+    if (
+      rightKey &&
+      time - rightKey.downTime >= DAS &&
+      time - rightKey.lastTriggered >= ARR
+    ) {
+      dispatch({ type: "moveRight" });
+      if (rightKey.lastTriggered === rightKey.downTime) {
+        rightKey.lastTriggered += DAS;
+      } else {
+        rightKey.lastTriggered += ARR;
+      }
+    }
+
+    const leftKey = keyDown[keyBindings.moveLeft];
+    if (
+      leftKey &&
+      time - leftKey.downTime >= DAS &&
+      time - leftKey.lastTriggered >= ARR
+    ) {
+      dispatch({ type: "moveLeft" });
+      if (leftKey.lastTriggered === leftKey.downTime) {
+        leftKey.lastTriggered += DAS;
+      } else {
+        leftKey.lastTriggered += ARR;
+      }
+    }
+
     window.requestAnimationFrame(update);
   };
 
@@ -218,7 +249,7 @@ const TetrisPage: React.FC = () => {
         dispatch({ type: "rotateCounterClockwise" });
         break;
     }
-    keyDown[e.keyCode] = Date.now();
+    keyDown[e.keyCode] = { downTime: Date.now(), lastTriggered: Date.now() };
   };
 
   const onKeyUp = (e: KeyboardEvent) => {
