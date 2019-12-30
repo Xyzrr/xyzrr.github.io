@@ -1,8 +1,7 @@
 import React, { useEffect } from "react";
 import { TetrisColors } from "../../colors";
-import styled from "styled-components";
 import { TetrisFieldTile, ActivePiece } from "../types";
-import tetrominos from "../tetromino";
+import tetrominos from "../tetrominos";
 
 interface TetrisGameFieldProps {
   width?: number;

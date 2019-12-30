@@ -1,6 +1,37 @@
 import { Mino } from "./types";
 import * as _ from "lodash";
 
+const jlstzOffsets = [
+  [
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 }
+  ],
+  [
+    { x: 0, y: 0 },
+    { x: 1, y: 0 },
+    { x: 1, y: 1 },
+    { x: 0, y: -2 },
+    { x: 1, y: -2 }
+  ],
+  [
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 }
+  ],
+  [
+    { x: 0, y: 0 },
+    { x: -1, y: 0 },
+    { x: -1, y: 1 },
+    { x: 0, y: -2 },
+    { x: -1, y: -2 }
+  ]
+];
+
 const tetrominos = {
   z: {
     matrices: [
@@ -9,7 +40,8 @@ const tetrominos = {
         [" ", "#", "#"],
         [" ", " ", " "]
       ]
-    ]
+    ],
+    offsets: jlstzOffsets
   },
   s: {
     matrices: [
@@ -18,7 +50,8 @@ const tetrominos = {
         ["#", "#", " "],
         [" ", " ", " "]
       ]
-    ]
+    ],
+    offsets: jlstzOffsets
   },
   j: {
     matrices: [
@@ -27,7 +60,8 @@ const tetrominos = {
         ["#", "#", "#"],
         [" ", " ", " "]
       ]
-    ]
+    ],
+    offsets: jlstzOffsets
   },
   l: {
     matrices: [
@@ -36,7 +70,8 @@ const tetrominos = {
         ["#", "#", "#"],
         [" ", " ", " "]
       ]
-    ]
+    ],
+    offsets: jlstzOffsets
   },
   o: {
     matrices: [
@@ -45,6 +80,12 @@ const tetrominos = {
         [" ", "#", "#"],
         [" ", " ", " "]
       ]
+    ],
+    offsets: [
+      [{ x: 0, y: 0 }],
+      [{ x: 0, y: 1 }],
+      [{ x: -1, y: 1 }],
+      [{ x: -1, y: 0 }]
     ]
   },
   t: {
@@ -54,7 +95,8 @@ const tetrominos = {
         ["#", "#", "#"],
         [" ", " ", " "]
       ]
-    ]
+    ],
+    offsets: jlstzOffsets
   },
   i: {
     matrices: [
@@ -64,6 +106,36 @@ const tetrominos = {
         [" ", "#", "#", "#", "#"],
         [" ", " ", " ", " ", " "],
         [" ", " ", " ", " ", " "]
+      ]
+    ],
+    offsets: [
+      [
+        { x: 0, y: 0 },
+        { x: -1, y: 0 },
+        { x: 2, y: 0 },
+        { x: -1, y: 0 },
+        { x: 2, y: 0 }
+      ],
+      [
+        { x: -1, y: 0 },
+        { x: 0, y: 0 },
+        { x: 0, y: 0 },
+        { x: 0, y: -1 },
+        { x: 0, y: 2 }
+      ],
+      [
+        { x: -1, y: -1 },
+        { x: 1, y: -1 },
+        { x: -2, y: -1 },
+        { x: 1, y: 0 },
+        { x: -2, y: 0 }
+      ],
+      [
+        { x: 0, y: -1 },
+        { x: 0, y: -1 },
+        { x: 0, y: -1 },
+        { x: 0, y: 1 },
+        { x: 0, y: -2 }
       ]
     ]
   }
@@ -88,7 +160,5 @@ for (let type in tetrominos) {
     tetromino.matrices.push(rotateMatrix(tetromino.matrices[i]));
   }
 }
-
-console.log(tetrominos);
 
 export default tetrominos;
