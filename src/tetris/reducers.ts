@@ -113,13 +113,54 @@ const popNextActivePiece = () => {
   };
 };
 
+const checkForClears = (
+  activePiece: ActivePiece,
+  oldField: TetrisFieldTile[][],
+  newField: TetrisFieldTile[][]
+) => {
+  const tetromino = tetrominos[activePiece.type];
+  const matrix = tetromino.matrices[activePiece.orientation];
+  let linesCleared = 0;
+  const clearedField = _.cloneDeep(newField);
+  for (let i = 0; i < matrix.length; i++) {
+    if (
+      i + activePiece.y < constants.MATRIX_ROWS &&
+      !newField[i + activePiece.y].includes(".")
+    ) {
+      clearedField.splice(i + activePiece.y, 1);
+      clearedField.unshift(_.fill(new Array(constants.MATRIX_COLS), "."));
+      linesCleared++;
+    }
+  }
+  let spin = false;
+  if (
+    linesCleared &&
+    activePieceIsColliding(
+      { ...activePiece, x: activePiece.x - 1 },
+      oldField
+    ) &&
+    activePieceIsColliding(
+      { ...activePiece, x: activePiece.x + 1 },
+      oldField
+    ) &&
+    activePieceIsColliding({ ...activePiece, y: activePiece.x - 1 }, oldField)
+  ) {
+    spin = true;
+  }
+  console.log(
+    `Cleared ${linesCleared} lines` +
+      (spin ? ` with a ${activePiece.type} spin` : "")
+  );
+  return clearedField;
+};
+
 const lockActivePiece = (
   activePiece: ActivePiece,
   field: TetrisFieldTile[][]
 ) => {
   const tetromino = tetrominos[activePiece.type];
   const matrix = tetromino.matrices[activePiece.orientation];
-  const newField = _.cloneDeep(field);
+  let newField = _.cloneDeep(field);
   for (let i = 0; i < matrix.length; i++) {
     for (let j = 0; j < matrix[0].length; j++) {
       if (matrix[i][j] == "#") {
@@ -127,6 +168,7 @@ const lockActivePiece = (
       }
     }
   }
+  newField = checkForClears(activePiece, field, newField);
   return newField;
 };
 
