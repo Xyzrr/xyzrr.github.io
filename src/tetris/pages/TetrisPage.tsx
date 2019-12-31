@@ -145,6 +145,9 @@ const TetrisPage: React.FC = () => {
       case keyBindings.rotateCounterClockwise:
         dispatch({ type: "rotateCounterClockwise" });
         break;
+      case keyBindings.hardDrop:
+        dispatch({ type: "hardDrop" });
+        break;
     }
     keyDown[e.keyCode] = { downTime: Date.now(), lastTriggered: Date.now() };
   };

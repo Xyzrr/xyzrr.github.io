@@ -10,7 +10,7 @@ const startLockingIfOnGround = (
   field: TetrisFieldTile[][],
   breakLock: boolean
 ) => {
-  const onGround = colliding({ ...activePiece, y: activePiece.y + 1 }, field);
+  const onGround = activePieceIsOnGround(activePiece, field);
   if (onGround) {
     if (globals.lockStartTime === 0 || breakLock) {
       globals.lockStartTime = Date.now();
@@ -20,7 +20,15 @@ const startLockingIfOnGround = (
   }
 };
 
-const colliding = (activePiece: ActivePiece, field: TetrisFieldTile[][]) => {
+const activePieceIsOnGround = (
+  activePiece: ActivePiece,
+  field: TetrisFieldTile[][]
+) => activePieceIsColliding({ ...activePiece, y: activePiece.y + 1 }, field);
+
+const activePieceIsColliding = (
+  activePiece: ActivePiece,
+  field: TetrisFieldTile[][]
+) => {
   const tetromino = tetrominos[activePiece.type];
   const matrix = tetromino.matrices[activePiece.orientation];
   for (let i = 0; i < matrix.length; i++) {
@@ -54,7 +62,7 @@ const moveActivePiece = (
     x: activePiece.x + deltaX,
     y: activePiece.y + deltaY
   };
-  if (colliding(newActivePiece, field)) {
+  if (activePieceIsColliding(newActivePiece, field)) {
     newActivePiece = activePiece;
   }
   // Don't break lock for vertical movements
@@ -84,7 +92,7 @@ const rotateActivePiece = (
       y: activePiece.y + beforeOffsets[i].y - afterOffsets[i].y,
       orientation: newOrientation
     };
-    if (!colliding(testPiece, field)) {
+    if (!activePieceIsColliding(testPiece, field)) {
       newActivePiece = testPiece;
       break;
     }
@@ -120,6 +128,14 @@ const lockActivePiece = (
     }
   }
   return newField;
+};
+
+const moveToGround = (activePiece: ActivePiece, field: TetrisFieldTile[][]) => {
+  let testY = activePiece.y;
+  while (!activePieceIsOnGround({ ...activePiece, y: testY }, field)) {
+    testY++;
+  }
+  return { ...activePiece, y: testY };
 };
 
 interface TetrisPageState {
@@ -166,6 +182,13 @@ export const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
         ...state,
         activePiece: popNextActivePiece(),
         field: lockActivePiece(state.activePiece, state.field)
+      };
+    case "hardDrop":
+      const droppedPiece = moveToGround(state.activePiece, state.field);
+      return {
+        ...state,
+        activePiece: popNextActivePiece(),
+        field: lockActivePiece(droppedPiece, state.field)
       };
     default:
       throw new Error("Invalid action type");
