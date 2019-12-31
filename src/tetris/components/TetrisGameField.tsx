@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { TetrisColors } from "../../colors";
 import { TetrisFieldTile, ActivePiece } from "../types";
 import tetrominos from "../tetrominos";
+import { moveToGround } from "../reducers";
 
 interface TetrisGameFieldProps {
   width?: number;
@@ -28,22 +29,37 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
     });
   };
 
-  const renderActivePiece = (ctx: CanvasRenderingContext2D) => {
-    tetrominos[props.activePiece.type].matrices[
-      props.activePiece.orientation
-    ].forEach((row, i) => {
-      row.forEach((cell, j) => {
-        if (cell !== " ") {
-          ctx.fillStyle = TetrisColors[props.activePiece.type].toString();
-          ctx.fillRect(
-            (props.activePiece.x + j) * unit,
-            (props.activePiece.y + i - 20) * unit,
-            unit,
-            unit
-          );
-        }
-      });
-    });
+  const renderActivePiece = (
+    ctx: CanvasRenderingContext2D,
+    activePiece: ActivePiece,
+    alpha = 1
+  ) => {
+    tetrominos[activePiece.type].matrices[activePiece.orientation].forEach(
+      (row, i) => {
+        row.forEach((cell, j) => {
+          if (cell !== " ") {
+            ctx.fillStyle = TetrisColors[activePiece.type]
+              .alpha(alpha)
+              .toString();
+            ctx.fillRect(
+              (activePiece.x + j) * unit,
+              (activePiece.y + i - 20) * unit,
+              unit,
+              unit
+            );
+          }
+        });
+      }
+    );
+  };
+
+  const render = (ctx: CanvasRenderingContext2D) => {
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, width, height);
+    renderLand(ctx);
+    renderActivePiece(ctx, props.activePiece);
+    const ghostPiece = moveToGround(props.activePiece, props.field);
+    renderActivePiece(ctx, ghostPiece, 0.2);
   };
 
   useEffect(() => {
@@ -53,15 +69,13 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
       const ctx = canvasRef.current.getContext("2d");
       if (ctx) {
         ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-        renderLand(ctx);
-        renderActivePiece(ctx);
+        render(ctx);
       }
     }
   });
 
   if (ctx) {
-    renderLand(ctx);
-    renderActivePiece(ctx);
+    render(ctx);
   }
 
   return <canvas style={{ width, height }} ref={canvasRef}></canvas>;

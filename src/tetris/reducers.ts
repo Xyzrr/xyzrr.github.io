@@ -130,7 +130,10 @@ const lockActivePiece = (
   return newField;
 };
 
-const moveToGround = (activePiece: ActivePiece, field: TetrisFieldTile[][]) => {
+export const moveToGround = (
+  activePiece: ActivePiece,
+  field: TetrisFieldTile[][]
+) => {
   let testY = activePiece.y;
   while (!activePieceIsOnGround({ ...activePiece, y: testY }, field)) {
     testY++;
