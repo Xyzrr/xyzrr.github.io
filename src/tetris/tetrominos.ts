@@ -41,7 +41,11 @@ const tetrominos = {
         [" ", " ", " "]
       ]
     ],
-    offsets: jlstzOffsets
+    offsets: jlstzOffsets,
+    start: {
+      x: 3,
+      y: 19
+    }
   },
   s: {
     matrices: [
@@ -51,7 +55,11 @@ const tetrominos = {
         [" ", " ", " "]
       ]
     ],
-    offsets: jlstzOffsets
+    offsets: jlstzOffsets,
+    start: {
+      x: 3,
+      y: 19
+    }
   },
   j: {
     matrices: [
@@ -61,7 +69,11 @@ const tetrominos = {
         [" ", " ", " "]
       ]
     ],
-    offsets: jlstzOffsets
+    offsets: jlstzOffsets,
+    start: {
+      x: 3,
+      y: 19
+    }
   },
   l: {
     matrices: [
@@ -71,7 +83,11 @@ const tetrominos = {
         [" ", " ", " "]
       ]
     ],
-    offsets: jlstzOffsets
+    offsets: jlstzOffsets,
+    start: {
+      x: 3,
+      y: 19
+    }
   },
   o: {
     matrices: [
@@ -86,7 +102,11 @@ const tetrominos = {
       [{ x: 0, y: 1 }],
       [{ x: -1, y: 1 }],
       [{ x: -1, y: 0 }]
-    ]
+    ],
+    start: {
+      x: 3,
+      y: 19
+    }
   },
   t: {
     matrices: [
@@ -96,7 +116,11 @@ const tetrominos = {
         [" ", " ", " "]
       ]
     ],
-    offsets: jlstzOffsets
+    offsets: jlstzOffsets,
+    start: {
+      x: 3,
+      y: 19
+    }
   },
   i: {
     matrices: [
@@ -137,7 +161,11 @@ const tetrominos = {
         { x: 0, y: 1 },
         { x: 0, y: -2 }
       ]
-    ]
+    ],
+    start: {
+      x: 2,
+      y: 18
+    }
   }
 };
 

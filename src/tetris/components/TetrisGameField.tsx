@@ -29,7 +29,6 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
   };
 
   const renderActivePiece = (ctx: CanvasRenderingContext2D) => {
-    console.log("orientation", props.activePiece.orientation);
     tetrominos[props.activePiece.type].matrices[
       props.activePiece.orientation
     ].forEach((row, i) => {

@@ -2,8 +2,9 @@ import React from "react";
 
 import styled from "styled-components";
 import TetrisGameFrame from "../components/TetrisGameFrame";
-import { TetrisFieldTile, Mino, ActivePiece } from "../types";
-import tetrominos from "../tetrominos";
+import { TetrisFieldTile } from "../types";
+import { tetrisReducer } from "../reducers";
+import globals from "../globals";
 import * as constants from "../constants";
 
 const keyBindings = {
@@ -16,126 +17,11 @@ const keyBindings = {
   hold: 67
 };
 
-const globals = {
-  lastTick: 0
-};
-
 const keyDown: {
   [key: string]: { downTime: number; lastTriggered: number };
 } = {};
 
 const TetrisPageDiv = styled.div``;
-
-const colliding = (activePiece: ActivePiece, field: TetrisFieldTile[][]) => {
-  const tetromino = tetrominos[activePiece.type];
-  const matrix = tetromino.matrices[activePiece.orientation];
-  for (let i = 0; i < matrix.length; i++) {
-    for (let j = 0; j < matrix.length; j++) {
-      if (matrix[i][j] === "#") {
-        const x = activePiece.x + j;
-        const y = activePiece.y + i;
-        if (
-          x < 0 ||
-          x >= constants.MATRIX_COLS ||
-          y < 0 ||
-          y >= constants.MATRIX_ROWS ||
-          field[y][x] !== "."
-        ) {
-          return true;
-        }
-      }
-    }
-  }
-  return false;
-};
-
-const moveActivePiece = (
-  activePiece: ActivePiece,
-  field: TetrisFieldTile[][],
-  deltaX: number,
-  deltaY: number
-) => {
-  const newActivePiece = {
-    ...activePiece,
-    x: activePiece.x + deltaX,
-    y: activePiece.y + deltaY
-  };
-  if (colliding(newActivePiece, field)) {
-    return activePiece;
-  }
-  return newActivePiece;
-};
-
-const rotateActivePiece = (
-  activePiece: ActivePiece,
-  field: TetrisFieldTile[][],
-  dir: number
-) => {
-  let newActivePiece = activePiece;
-
-  const tetromino = tetrominos[activePiece.type];
-  const newOrientation = (activePiece.orientation + 4 + dir) % 4;
-  const beforeOffsets = tetromino.offsets[activePiece.orientation];
-  const afterOffsets = tetromino.offsets[newOrientation];
-  for (let i = 0; i < tetromino.offsets[0].length; i++) {
-    const testPiece = {
-      ...activePiece,
-      x: activePiece.x + beforeOffsets[i].x - afterOffsets[i].x,
-      y: activePiece.y + beforeOffsets[i].y - afterOffsets[i].y,
-      orientation: newOrientation
-    };
-    if (!colliding(testPiece, field)) {
-      newActivePiece = testPiece;
-      break;
-    }
-  }
-
-  return newActivePiece;
-};
-
-interface TetrisPageState {
-  field: TetrisFieldTile[][];
-  activePiece: ActivePiece;
-}
-
-interface TetrisPageAction {
-  type: string;
-}
-
-const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
-  state,
-  action
-) => {
-  switch (action.type) {
-    case "tick":
-      return {
-        ...state,
-        activePiece: moveActivePiece(state.activePiece, state.field, 0, 1)
-      };
-    case "moveLeft":
-      return {
-        ...state,
-        activePiece: moveActivePiece(state.activePiece, state.field, -1, 0)
-      };
-    case "moveRight":
-      return {
-        ...state,
-        activePiece: moveActivePiece(state.activePiece, state.field, 1, 0)
-      };
-    case "rotateClockwise":
-      return {
-        ...state,
-        activePiece: rotateActivePiece(state.activePiece, state.field, 1)
-      };
-    case "rotateCounterClockwise":
-      return {
-        ...state,
-        activePiece: rotateActivePiece(state.activePiece, state.field, -1)
-      };
-    default:
-      throw new Error("Invalid action type");
-  }
-};
 
 const TetrisPage: React.FC = () => {
   const testField: TetrisFieldTile[][] = [
@@ -189,43 +75,49 @@ const TetrisPage: React.FC = () => {
       orientation: 1
     }
   });
-  const tickDuration = 200;
-  const DAS = 117;
-  const ARR = 22;
 
   const update = () => {
     const time = Date.now();
-    if (time - globals.lastTick >= tickDuration) {
+    if (time - globals.lastTick >= constants.TICK_DURATION) {
       dispatch({ type: "tick" });
-      globals.lastTick += tickDuration;
+      globals.lastTick += constants.TICK_DURATION;
     }
 
     const rightKey = keyDown[keyBindings.moveRight];
     if (
       rightKey &&
-      time - rightKey.downTime >= DAS &&
-      time - rightKey.lastTriggered >= ARR
+      time - rightKey.downTime >= constants.DAS &&
+      time - rightKey.lastTriggered >= constants.ARR
     ) {
       dispatch({ type: "moveRight" });
       if (rightKey.lastTriggered === rightKey.downTime) {
-        rightKey.lastTriggered += DAS;
+        rightKey.lastTriggered += constants.DAS;
       } else {
-        rightKey.lastTriggered += ARR;
+        rightKey.lastTriggered += constants.ARR;
       }
     }
 
     const leftKey = keyDown[keyBindings.moveLeft];
     if (
       leftKey &&
-      time - leftKey.downTime >= DAS &&
-      time - leftKey.lastTriggered >= ARR
+      time - leftKey.downTime >= constants.DAS &&
+      time - leftKey.lastTriggered >= constants.ARR
     ) {
       dispatch({ type: "moveLeft" });
       if (leftKey.lastTriggered === leftKey.downTime) {
-        leftKey.lastTriggered += DAS;
+        leftKey.lastTriggered += constants.DAS;
       } else {
-        leftKey.lastTriggered += ARR;
+        leftKey.lastTriggered += constants.ARR;
       }
+    }
+
+    if (
+      globals.lockStartTime &&
+      time - globals.lockStartTime >= constants.LOCK_DELAY
+    ) {
+      console.log(time, globals.lockStartTime);
+      dispatch({ type: "lockActivePiece" });
+      globals.lockStartTime = 0;
     }
 
     window.requestAnimationFrame(update);
