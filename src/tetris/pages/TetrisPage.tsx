@@ -78,9 +78,14 @@ const TetrisPage: React.FC = () => {
 
   const update = () => {
     const time = Date.now();
-    if (time - globals.lastTick >= constants.TICK_DURATION) {
+
+    const softDropKey = keyDown[keyBindings.softDrop];
+    const dropSpeed = softDropKey
+      ? constants.SOFT_DROP_SPEED
+      : constants.TICK_DURATION;
+    if (time - globals.lastTick >= dropSpeed) {
       dispatch({ type: "tick" });
-      globals.lastTick += constants.TICK_DURATION;
+      globals.lastTick += dropSpeed;
     }
 
     const rightKey = keyDown[keyBindings.moveRight];
