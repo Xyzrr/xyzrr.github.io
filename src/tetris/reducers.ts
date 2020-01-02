@@ -66,11 +66,7 @@ const moveActivePiece = (
     newActivePiece = activePiece;
   }
   // Don't break lock for vertical movements
-  if (deltaX === 0) {
-    startLockingIfOnGround(activePiece, field, false);
-  } else {
-    startLockingIfOnGround(newActivePiece, field, true);
-  }
+  startLockingIfOnGround(newActivePiece, field, deltaX !== 0);
   return newActivePiece;
 };
 
@@ -102,15 +98,19 @@ const rotateActivePiece = (
   return newActivePiece;
 };
 
-const popNextActivePiece = () => {
-  const choices = ["z", "s", "j", "l", "o", "i", "t"];
-  const chosen = choices[randInt(0, choices.length - 1)] as Mino;
+const getInitialActivePieceState = (type: Mino) => {
   return {
-    type: chosen,
-    x: tetrominos[chosen].start.x,
-    y: tetrominos[chosen].start.y,
+    type: type,
+    x: tetrominos[type].start.x,
+    y: tetrominos[type].start.y,
     orientation: 0
   };
+};
+
+const popNextActivePiece = () => {
+  const choices = ["z", "s", "j", "l", "o", "i", "t"];
+  const chosen = choices[randInt(0, choices.length)] as Mino;
+  return getInitialActivePieceState(chosen);
 };
 
 const checkForClears = (
@@ -185,6 +185,7 @@ export const moveToGround = (
 
 interface TetrisPageState {
   field: TetrisFieldTile[][];
+  hold?: Mino;
   activePiece: ActivePiece;
 }
 
@@ -235,6 +236,20 @@ export const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
         activePiece: popNextActivePiece(),
         field: lockActivePiece(droppedPiece, state.field)
       };
+    case "hold":
+      if (state.hold) {
+        return {
+          ...state,
+          activePiece: getInitialActivePieceState(state.hold),
+          hold: state.activePiece.type
+        };
+      } else {
+        return {
+          ...state,
+          activePiece: popNextActivePiece(),
+          hold: state.activePiece.type
+        };
+      }
     default:
       throw new Error("Invalid action type");
   }

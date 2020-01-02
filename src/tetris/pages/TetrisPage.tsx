@@ -6,6 +6,7 @@ import { TetrisFieldTile } from "../types";
 import { tetrisReducer } from "../reducers";
 import globals from "../globals";
 import * as constants from "../constants";
+import { unstable_batchedUpdates } from "react-dom";
 
 const keyBindings = {
   moveLeft: 37,
@@ -68,62 +69,64 @@ const TetrisPage: React.FC = () => {
   ];
   const [state, dispatch] = React.useReducer(tetrisReducer, {
     field: testField,
+    hold: undefined,
     activePiece: {
-      x: 0,
-      y: 21,
+      x: 3,
+      y: 19,
       type: "j",
-      orientation: 1
+      orientation: 0
     }
   });
 
   const update = () => {
-    const time = Date.now();
+    unstable_batchedUpdates(() => {
+      const time = Date.now();
 
-    const softDropKey = keyDown[keyBindings.softDrop];
-    const dropSpeed = softDropKey
-      ? constants.SOFT_DROP_SPEED
-      : constants.TICK_DURATION;
-    if (time - globals.lastTick >= dropSpeed) {
-      dispatch({ type: "tick" });
-      globals.lastTick += dropSpeed;
-    }
-
-    const rightKey = keyDown[keyBindings.moveRight];
-    if (
-      rightKey &&
-      time - rightKey.downTime >= constants.DAS &&
-      time - rightKey.lastTriggered >= constants.ARR
-    ) {
-      dispatch({ type: "moveRight" });
-      if (rightKey.lastTriggered === rightKey.downTime) {
-        rightKey.lastTriggered += constants.DAS;
-      } else {
-        rightKey.lastTriggered += constants.ARR;
+      const softDropKey = keyDown[keyBindings.softDrop];
+      const dropSpeed = softDropKey
+        ? constants.SOFT_DROP_SPEED
+        : constants.TICK_DURATION;
+      if (time - globals.lastTick >= dropSpeed) {
+        dispatch({ type: "tick" });
+        globals.lastTick += dropSpeed;
       }
-    }
 
-    const leftKey = keyDown[keyBindings.moveLeft];
-    if (
-      leftKey &&
-      time - leftKey.downTime >= constants.DAS &&
-      time - leftKey.lastTriggered >= constants.ARR
-    ) {
-      dispatch({ type: "moveLeft" });
-      if (leftKey.lastTriggered === leftKey.downTime) {
-        leftKey.lastTriggered += constants.DAS;
-      } else {
-        leftKey.lastTriggered += constants.ARR;
+      const rightKey = keyDown[keyBindings.moveRight];
+      if (
+        rightKey &&
+        time - rightKey.downTime >= constants.DAS &&
+        time - rightKey.lastTriggered >= constants.ARR
+      ) {
+        dispatch({ type: "moveRight" });
+        if (rightKey.lastTriggered === rightKey.downTime) {
+          rightKey.lastTriggered += constants.DAS;
+        } else {
+          rightKey.lastTriggered += constants.ARR;
+        }
       }
-    }
 
-    if (
-      globals.lockStartTime &&
-      time - globals.lockStartTime >= constants.LOCK_DELAY
-    ) {
-      console.log(time, globals.lockStartTime);
-      dispatch({ type: "lockActivePiece" });
-      globals.lockStartTime = 0;
-    }
+      const leftKey = keyDown[keyBindings.moveLeft];
+      if (
+        leftKey &&
+        time - leftKey.downTime >= constants.DAS &&
+        time - leftKey.lastTriggered >= constants.ARR
+      ) {
+        dispatch({ type: "moveLeft" });
+        if (leftKey.lastTriggered === leftKey.downTime) {
+          leftKey.lastTriggered += constants.DAS;
+        } else {
+          leftKey.lastTriggered += constants.ARR;
+        }
+      }
+
+      if (
+        globals.lockStartTime &&
+        time - globals.lockStartTime >= constants.LOCK_DELAY
+      ) {
+        dispatch({ type: "lockActivePiece" });
+        globals.lockStartTime = 0;
+      }
+    });
 
     window.requestAnimationFrame(update);
   };
@@ -147,6 +150,9 @@ const TetrisPage: React.FC = () => {
         break;
       case keyBindings.hardDrop:
         dispatch({ type: "hardDrop" });
+        break;
+      case keyBindings.hold:
+        dispatch({ type: "hold" });
         break;
     }
     keyDown[e.keyCode] = { downTime: Date.now(), lastTriggered: Date.now() };
