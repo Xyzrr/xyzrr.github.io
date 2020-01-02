@@ -3,8 +3,7 @@ import React from "react";
 import styled from "styled-components";
 import TetrisGameFrame from "../components/TetrisGameFrame";
 import { TetrisFieldTile } from "../types";
-import { tetrisReducer } from "../reducers";
-import globals from "../globals";
+import { tetrisReducer, getInitialActivePieceState } from "../reducers";
 import * as constants from "../constants";
 import { unstable_batchedUpdates } from "react-dom";
 
@@ -70,25 +69,17 @@ const TetrisPage: React.FC = () => {
   const [state, dispatch] = React.useReducer(tetrisReducer, {
     field: testField,
     hold: undefined,
-    activePiece: {
-      position: constants.START_POSITION,
-      type: "j",
-      orientation: 0
-    }
+    activePiece: getInitialActivePieceState("j")
   });
 
   const update = () => {
     unstable_batchedUpdates(() => {
       const time = Date.now();
 
-      const softDropKey = keyDown[keyBindings.softDrop];
-      const dropSpeed = softDropKey
-        ? constants.SOFT_DROP_SPEED
-        : constants.TICK_DURATION;
-      if (time - globals.lastTick >= dropSpeed) {
-        dispatch({ type: "tick" });
-        globals.lastTick += dropSpeed;
-      }
+      dispatch({
+        type: "tick",
+        info: { softDrop: keyDown[keyBindings.softDrop] }
+      });
 
       const rightKey = keyDown[keyBindings.moveRight];
       if (
@@ -116,14 +107,6 @@ const TetrisPage: React.FC = () => {
         } else {
           leftKey.lastTriggered += constants.ARR;
         }
-      }
-
-      if (
-        globals.lockStartTime &&
-        time - globals.lockStartTime >= constants.LOCK_DELAY
-      ) {
-        dispatch({ type: "lockActivePiece" });
-        globals.lockStartTime = 0;
       }
     });
 
@@ -162,7 +145,6 @@ const TetrisPage: React.FC = () => {
   };
 
   React.useEffect(() => {
-    globals.lastTick = Date.now();
     window.requestAnimationFrame(update);
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);

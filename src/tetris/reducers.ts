@@ -1,7 +1,6 @@
 import { TetrisFieldTile, ActivePiece, Mino } from "./types";
 import tetrominos from "./tetrominos";
 import * as constants from "./constants";
-import globals from "./globals";
 import { randInt } from "../util/helpers";
 import * as _ from "lodash";
 
@@ -33,13 +32,19 @@ const startLockingIfOnGround = (
   breakLock: boolean
 ) => {
   const onGround = activePieceIsOnGround(activePiece, field);
+  const newActivePiece = { ...activePiece };
   if (onGround) {
-    if (globals.lockStartTime === 0 || breakLock) {
-      globals.lockStartTime = Date.now();
+    if (activePiece.lockStartTime === 0 || breakLock) {
+      newActivePiece.lockStartTime = Date.now();
     }
+    newActivePiece.lastFallTime = 0;
   } else {
-    globals.lockStartTime = 0;
+    newActivePiece.lockStartTime = 0;
+    if (activePiece.lastFallTime === 0) {
+      newActivePiece.lastFallTime = Date.now();
+    }
   }
+  return newActivePiece;
 };
 
 const activePieceIsOnGround = (
@@ -69,21 +74,21 @@ const activePieceIsColliding = (
   return false;
 };
 
-const moveActivePiece = (
+const attemptMoveActivePiece = (
   activePiece: ActivePiece,
   field: TetrisFieldTile[][],
   translation: [number, number]
 ) => {
   let newActivePiece = translate(activePiece, translation);
-  if (activePieceIsColliding(newActivePiece, field)) {
+  const colliding = activePieceIsColliding(newActivePiece, field);
+  if (colliding) {
     newActivePiece = activePiece;
   }
-  // Don't break lock for vertical movements
-  startLockingIfOnGround(newActivePiece, field, translation[1] !== 0);
+  newActivePiece = startLockingIfOnGround(newActivePiece, field, !colliding);
   return newActivePiece;
 };
 
-const rotateActivePiece = (
+const attemptRotateActivePiece = (
   activePiece: ActivePiece,
   field: TetrisFieldTile[][],
   dir: number
@@ -104,16 +109,18 @@ const rotateActivePiece = (
       break;
     }
   }
-  startLockingIfOnGround(activePiece, field, true);
+  newActivePiece = startLockingIfOnGround(newActivePiece, field, true);
 
   return newActivePiece;
 };
 
-const getInitialActivePieceState = (type: Mino) => {
+export const getInitialActivePieceState = (type: Mino) => {
   return {
     type: type,
     position: constants.START_POSITION,
-    orientation: 0
+    orientation: 0,
+    lastFallTime: Date.now(),
+    lockStartTime: 0
   };
 };
 
@@ -128,8 +135,6 @@ const checkForClears = (
   oldField: TetrisFieldTile[][],
   newField: TetrisFieldTile[][]
 ) => {
-  const tetromino = tetrominos[activePiece.type];
-  const minos = tetromino.minos[activePiece.orientation];
   let linesCleared = 0;
   const clearedField = _.cloneDeep(newField);
   for (let i = 0; i < 5; i++) {
@@ -186,6 +191,42 @@ export const moveToGround = (
   return translate(activePiece, [testShift, 0]);
 };
 
+export const tick = (
+  activePiece: ActivePiece,
+  field: TetrisFieldTile[][],
+  softDrop: boolean
+) => {
+  let newActivePiece = activePiece;
+  let newField = field;
+
+  const time = Date.now();
+
+  // handle falling
+  const dropSpeed = softDrop
+    ? constants.SOFT_DROP_SPEED
+    : constants.TICK_DURATION;
+  if (
+    activePiece.lastFallTime &&
+    time - activePiece.lastFallTime >= dropSpeed
+  ) {
+    newActivePiece = {
+      ...attemptMoveActivePiece(activePiece, field, [1, 0]),
+      lastFallTime: activePiece.lastFallTime + dropSpeed
+    };
+  }
+
+  // handle locking
+  if (
+    activePiece.lockStartTime &&
+    time - activePiece.lockStartTime >= constants.LOCK_DELAY
+  ) {
+    newActivePiece = popNextActivePiece();
+    newField = lockActivePiece(activePiece, field);
+  }
+
+  return { activePiece: newActivePiece, field: newField };
+};
+
 interface TetrisPageState {
   field: TetrisFieldTile[][];
   hold?: Mino;
@@ -194,6 +235,7 @@ interface TetrisPageState {
 
 interface TetrisPageAction {
   type: string;
+  info?: any;
 }
 
 export const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
@@ -204,33 +246,37 @@ export const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
     case "tick":
       return {
         ...state,
-        activePiece: moveActivePiece(state.activePiece, state.field, [1, 0])
+        ...tick(state.activePiece, state.field, action.info.softDrop)
       };
     case "moveLeft":
       return {
         ...state,
-        activePiece: moveActivePiece(state.activePiece, state.field, [0, -1])
+        activePiece: attemptMoveActivePiece(state.activePiece, state.field, [
+          0,
+          -1
+        ])
       };
     case "moveRight":
       return {
         ...state,
-        activePiece: moveActivePiece(state.activePiece, state.field, [0, 1])
+        activePiece: attemptMoveActivePiece(state.activePiece, state.field, [
+          0,
+          1
+        ])
       };
     case "rotateClockwise":
       return {
         ...state,
-        activePiece: rotateActivePiece(state.activePiece, state.field, 1)
+        activePiece: attemptRotateActivePiece(state.activePiece, state.field, 1)
       };
     case "rotateCounterClockwise":
       return {
         ...state,
-        activePiece: rotateActivePiece(state.activePiece, state.field, -1)
-      };
-    case "lockActivePiece":
-      return {
-        ...state,
-        activePiece: popNextActivePiece(),
-        field: lockActivePiece(state.activePiece, state.field)
+        activePiece: attemptRotateActivePiece(
+          state.activePiece,
+          state.field,
+          -1
+        )
       };
     case "hardDrop":
       const droppedPiece = moveToGround(state.activePiece, state.field);
