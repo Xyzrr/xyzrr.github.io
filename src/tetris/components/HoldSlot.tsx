@@ -1,7 +1,6 @@
 import { Mino } from "../types";
 import React from "react";
 import tetrominos from "../tetrominos";
-import { TetrisColors } from "../../colors";
 
 interface HoldSlotProps {
   unit: number;
@@ -13,12 +12,11 @@ const HoldSlot: React.FC<HoldSlotProps> = props => {
   const height = props.unit * 5;
 
   const render = (ctx: CanvasRenderingContext2D) => {
-    ctx.fillStyle = "#000";
-    ctx.fillRect(0, 0, width, height);
+    ctx.clearRect(0, 0, width, height);
 
     if (props.pieceType) {
+      ctx.fillStyle = tetrominos[props.pieceType].color.toString();
       for (const coord of tetrominos[props.pieceType].minos[0]) {
-        ctx.fillStyle = TetrisColors[props.pieceType].toString();
         ctx.fillRect(
           coord[1] * props.unit,
           coord[0] * props.unit,

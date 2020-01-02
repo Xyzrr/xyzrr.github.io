@@ -26,14 +26,3 @@ export const QLearningColors = {
   currentQ: bgBrown,
   nextQ: bgGreen
 };
-
-export const TetrisColors = {
-  s: green,
-  z: red,
-  j: darkBlue,
-  l: orange,
-  t: purple,
-  i: blue,
-  o: yellow,
-  g: gray
-};

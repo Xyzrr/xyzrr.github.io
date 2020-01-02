@@ -163,6 +163,51 @@ const TetrisPage: React.FC = () => {
         activePiece={state.activePiece}
         hold={state.hold}
       ></TetrisGameFrame>
+      {/* <TetrisGameFrame
+        field={state.field}
+        activePiece={state.activePiece}
+        hold={state.hold}
+      ></TetrisGameFrame>
+      <TetrisGameFrame
+        field={state.field}
+        activePiece={state.activePiece}
+        hold={state.hold}
+      ></TetrisGameFrame>
+      <TetrisGameFrame
+        field={state.field}
+        activePiece={state.activePiece}
+        hold={state.hold}
+      ></TetrisGameFrame>
+      <TetrisGameFrame
+        field={state.field}
+        activePiece={state.activePiece}
+        hold={state.hold}
+      ></TetrisGameFrame>
+      <TetrisGameFrame
+        field={state.field}
+        activePiece={state.activePiece}
+        hold={state.hold}
+      ></TetrisGameFrame>
+      <TetrisGameFrame
+        field={state.field}
+        activePiece={state.activePiece}
+        hold={state.hold}
+      ></TetrisGameFrame>
+      <TetrisGameFrame
+        field={state.field}
+        activePiece={state.activePiece}
+        hold={state.hold}
+      ></TetrisGameFrame>
+      <TetrisGameFrame
+        field={state.field}
+        activePiece={state.activePiece}
+        hold={state.hold}
+      ></TetrisGameFrame>
+      <TetrisGameFrame
+        field={state.field}
+        activePiece={state.activePiece}
+        hold={state.hold}
+      ></TetrisGameFrame> */}
     </TetrisPageDiv>
   );
 };

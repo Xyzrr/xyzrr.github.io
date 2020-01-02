@@ -1,5 +1,6 @@
 import { Mino } from "./types";
 import * as _ from "lodash";
+import { red, green, darkBlue, orange, purple, yellow, blue } from "../colors";
 
 const jlstzOffsets: [number, number][][] = [
   [
@@ -121,30 +122,37 @@ const iMinos: [number, number][] = [
 
 const tetrominos = {
   z: {
+    color: red,
     minos: [zMinos],
     offsets: jlstzOffsets
   },
   s: {
+    color: green,
     minos: [sMinos],
     offsets: jlstzOffsets
   },
   j: {
+    color: darkBlue,
     minos: [jMinos],
     offsets: jlstzOffsets
   },
   l: {
+    color: orange,
     minos: [lMinos],
     offsets: jlstzOffsets
   },
   t: {
+    color: purple,
     minos: [tMinos],
     offsets: jlstzOffsets
   },
   o: {
+    color: yellow,
     minos: [oMinos],
     offsets: oOffsets
   },
   i: {
+    color: blue,
     minos: [iMinos],
     offsets: iOffsets
   }
