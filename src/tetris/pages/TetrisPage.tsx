@@ -71,8 +71,7 @@ const TetrisPage: React.FC = () => {
     field: testField,
     hold: undefined,
     activePiece: {
-      x: 3,
-      y: 19,
+      position: constants.START_POSITION,
       type: "j",
       orientation: 0
     }

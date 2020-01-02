@@ -5,6 +5,24 @@ import globals from "./globals";
 import { randInt } from "../util/helpers";
 import * as _ from "lodash";
 
+const translate = (activePiece: ActivePiece, translation: [number, number]) => {
+  const newPosition: [number, number] = [
+    activePiece.position[0] + translation[0],
+    activePiece.position[1] + translation[1]
+  ];
+  return {
+    ...activePiece,
+    position: newPosition
+  };
+};
+
+const rotate = (activePiece: ActivePiece, rotation: number) => {
+  return {
+    ...activePiece,
+    orientation: (activePiece.orientation + rotation + 4) % 4
+  };
+};
+
 const startLockingIfOnGround = (
   activePiece: ActivePiece,
   field: TetrisFieldTile[][],
@@ -23,29 +41,26 @@ const startLockingIfOnGround = (
 const activePieceIsOnGround = (
   activePiece: ActivePiece,
   field: TetrisFieldTile[][]
-) => activePieceIsColliding({ ...activePiece, y: activePiece.y + 1 }, field);
+) => activePieceIsColliding(translate(activePiece, [1, 0]), field);
 
 const activePieceIsColliding = (
   activePiece: ActivePiece,
   field: TetrisFieldTile[][]
 ) => {
   const tetromino = tetrominos[activePiece.type];
-  const matrix = tetromino.matrices[activePiece.orientation];
-  for (let i = 0; i < matrix.length; i++) {
-    for (let j = 0; j < matrix.length; j++) {
-      if (matrix[i][j] === "#") {
-        const x = activePiece.x + j;
-        const y = activePiece.y + i;
-        if (
-          x < 0 ||
-          x >= constants.MATRIX_COLS ||
-          y < 0 ||
-          y >= constants.MATRIX_ROWS ||
-          field[y][x] !== "."
-        ) {
-          return true;
-        }
-      }
+  const minos = tetromino.minos[activePiece.orientation];
+
+  for (const coord of minos) {
+    const row = activePiece.position[0] + coord[0];
+    const col = activePiece.position[1] + coord[1];
+    if (
+      row < 0 ||
+      row >= constants.MATRIX_ROWS ||
+      col < 0 ||
+      col >= constants.MATRIX_COLS ||
+      field[row][col] !== "."
+    ) {
+      return true;
     }
   }
   return false;
@@ -54,20 +69,20 @@ const activePieceIsColliding = (
 const moveActivePiece = (
   activePiece: ActivePiece,
   field: TetrisFieldTile[][],
-  deltaX: number,
-  deltaY: number
+  translation: [number, number]
 ) => {
-  let newActivePiece = {
-    ...activePiece,
-    x: activePiece.x + deltaX,
-    y: activePiece.y + deltaY
-  };
+  let newActivePiece = translate(activePiece, translation);
   if (activePieceIsColliding(newActivePiece, field)) {
     newActivePiece = activePiece;
   }
   // Don't break lock for vertical movements
-  startLockingIfOnGround(newActivePiece, field, deltaX !== 0);
+  startLockingIfOnGround(newActivePiece, field, translation[1] !== 0);
   return newActivePiece;
+};
+
+const subtractCoords = (a: [number, number], b: [number, number]) => {
+  const result: [number, number] = [a[0] - b[0], a[1] - b[1]];
+  return result;
 };
 
 const rotateActivePiece = (
@@ -78,16 +93,14 @@ const rotateActivePiece = (
   let newActivePiece = activePiece;
 
   const tetromino = tetrominos[activePiece.type];
-  const newOrientation = (activePiece.orientation + 4 + dir) % 4;
+  const rotatedPiece = rotate(activePiece, dir);
   const beforeOffsets = tetromino.offsets[activePiece.orientation];
-  const afterOffsets = tetromino.offsets[newOrientation];
+  const afterOffsets = tetromino.offsets[rotatedPiece.orientation];
   for (let i = 0; i < tetromino.offsets[0].length; i++) {
-    const testPiece = {
-      ...activePiece,
-      x: activePiece.x + beforeOffsets[i].x - afterOffsets[i].x,
-      y: activePiece.y + beforeOffsets[i].y - afterOffsets[i].y,
-      orientation: newOrientation
-    };
+    const testPiece = translate(
+      rotatedPiece,
+      subtractCoords(beforeOffsets[i], afterOffsets[i])
+    );
     if (!activePieceIsColliding(testPiece, field)) {
       newActivePiece = testPiece;
       break;
@@ -101,8 +114,7 @@ const rotateActivePiece = (
 const getInitialActivePieceState = (type: Mino) => {
   return {
     type: type,
-    x: tetrominos[type].start.x,
-    y: tetrominos[type].start.y,
+    position: constants.START_POSITION,
     orientation: 0
   };
 };
@@ -119,15 +131,15 @@ const checkForClears = (
   newField: TetrisFieldTile[][]
 ) => {
   const tetromino = tetrominos[activePiece.type];
-  const matrix = tetromino.matrices[activePiece.orientation];
+  const minos = tetromino.minos[activePiece.orientation];
   let linesCleared = 0;
   const clearedField = _.cloneDeep(newField);
-  for (let i = 0; i < matrix.length; i++) {
+  for (let i = 0; i < 5; i++) {
     if (
-      i + activePiece.y < constants.MATRIX_ROWS &&
-      !newField[i + activePiece.y].includes(".")
+      activePiece.position[0] + i < constants.MATRIX_ROWS &&
+      !newField[i + activePiece.position[0]].includes(".")
     ) {
-      clearedField.splice(i + activePiece.y, 1);
+      clearedField.splice(activePiece.position[0] + i, 1);
       clearedField.unshift(_.fill(new Array(constants.MATRIX_COLS), "."));
       linesCleared++;
     }
@@ -135,15 +147,9 @@ const checkForClears = (
   let spin = false;
   if (
     linesCleared &&
-    activePieceIsColliding(
-      { ...activePiece, x: activePiece.x - 1 },
-      oldField
-    ) &&
-    activePieceIsColliding(
-      { ...activePiece, x: activePiece.x + 1 },
-      oldField
-    ) &&
-    activePieceIsColliding({ ...activePiece, y: activePiece.x - 1 }, oldField)
+    activePieceIsColliding(translate(activePiece, [0, -1]), oldField) &&
+    activePieceIsColliding(translate(activePiece, [0, 1]), oldField) &&
+    activePieceIsColliding(translate(activePiece, [-1, 0]), oldField)
   ) {
     spin = true;
   }
@@ -159,14 +165,12 @@ const lockActivePiece = (
   field: TetrisFieldTile[][]
 ) => {
   const tetromino = tetrominos[activePiece.type];
-  const matrix = tetromino.matrices[activePiece.orientation];
+  const minos = tetromino.minos[activePiece.orientation];
   let newField = _.cloneDeep(field);
-  for (let i = 0; i < matrix.length; i++) {
-    for (let j = 0; j < matrix[0].length; j++) {
-      if (matrix[i][j] == "#") {
-        newField[activePiece.y + i][activePiece.x + j] = activePiece.type;
-      }
-    }
+  for (const coord of minos) {
+    newField[activePiece.position[0] + coord[0]][
+      activePiece.position[1] + coord[1]
+    ] = activePiece.type;
   }
   newField = checkForClears(activePiece, field, newField);
   return newField;
@@ -176,11 +180,13 @@ export const moveToGround = (
   activePiece: ActivePiece,
   field: TetrisFieldTile[][]
 ) => {
-  let testY = activePiece.y;
-  while (!activePieceIsOnGround({ ...activePiece, y: testY }, field)) {
-    testY++;
+  let testShift = 0;
+  while (
+    !activePieceIsOnGround(translate(activePiece, [testShift, 0]), field)
+  ) {
+    testShift++;
   }
-  return { ...activePiece, y: testY };
+  return translate(activePiece, [testShift, 0]);
 };
 
 interface TetrisPageState {
@@ -201,17 +207,17 @@ export const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
     case "tick":
       return {
         ...state,
-        activePiece: moveActivePiece(state.activePiece, state.field, 0, 1)
+        activePiece: moveActivePiece(state.activePiece, state.field, [1, 0])
       };
     case "moveLeft":
       return {
         ...state,
-        activePiece: moveActivePiece(state.activePiece, state.field, -1, 0)
+        activePiece: moveActivePiece(state.activePiece, state.field, [0, -1])
       };
     case "moveRight":
       return {
         ...state,
-        activePiece: moveActivePiece(state.activePiece, state.field, 1, 0)
+        activePiece: moveActivePiece(state.activePiece, state.field, [0, 1])
       };
     case "rotateClockwise":
       return {

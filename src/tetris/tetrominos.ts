@@ -1,183 +1,159 @@
 import { Mino } from "./types";
 import * as _ from "lodash";
 
-const jlstzOffsets = [
+const jlstzOffsets: [number, number][][] = [
   [
-    { x: 0, y: 0 },
-    { x: 0, y: 0 },
-    { x: 0, y: 0 },
-    { x: 0, y: 0 },
-    { x: 0, y: 0 }
+    [0, 0],
+    [0, 0],
+    [0, 0],
+    [0, 0],
+    [0, 0]
   ],
   [
-    { x: 0, y: 0 },
-    { x: 1, y: 0 },
-    { x: 1, y: 1 },
-    { x: 0, y: -2 },
-    { x: 1, y: -2 }
+    [0, 0],
+    [0, 1],
+    [1, 1],
+    [-2, 0],
+    [-2, 1]
   ],
   [
-    { x: 0, y: 0 },
-    { x: 0, y: 0 },
-    { x: 0, y: 0 },
-    { x: 0, y: 0 },
-    { x: 0, y: 0 }
+    [0, 0],
+    [0, 0],
+    [0, 0],
+    [0, 0],
+    [0, 0]
   ],
   [
-    { x: 0, y: 0 },
-    { x: -1, y: 0 },
-    { x: -1, y: 1 },
-    { x: 0, y: -2 },
-    { x: -1, y: -2 }
+    [0, 0],
+    [0, -1],
+    [1, -1],
+    [-2, 0],
+    [-2, -1]
+  ]
+];
+
+const oOffsets: [number, number][][] = [
+  [[0, 0]],
+  [[1, 0]],
+  [[1, -1]],
+  [[0, -1]]
+];
+
+const iOffsets: [number, number][][] = [
+  [
+    [0, 0],
+    [0, -1],
+    [0, 2],
+    [0, -1],
+    [0, 2]
+  ],
+  [
+    [0, -1],
+    [0, 0],
+    [0, 0],
+    [-1, 0],
+    [2, 0]
+  ],
+  [
+    [-1, -1],
+    [-1, 1],
+    [-1, -2],
+    [0, 1],
+    [0, -2]
+  ],
+  [
+    [-1, 0],
+    [-1, 0],
+    [-1, 0],
+    [1, 0],
+    [-2, 0]
   ]
 ];
 
 const tetrominos = {
   z: {
-    matrices: [
+    minos: [
       [
-        ["#", "#", " "],
-        [" ", "#", "#"],
-        [" ", " ", " "]
+        [1, 1],
+        [1, 2],
+        [2, 2],
+        [2, 3]
       ]
     ],
-    offsets: jlstzOffsets,
-    start: {
-      x: 3,
-      y: 19
-    }
+    offsets: jlstzOffsets
   },
   s: {
-    matrices: [
+    minos: [
       [
-        [" ", "#", "#"],
-        ["#", "#", " "],
-        [" ", " ", " "]
+        [1, 2],
+        [1, 3],
+        [2, 1],
+        [2, 2]
       ]
     ],
-    offsets: jlstzOffsets,
-    start: {
-      x: 3,
-      y: 19
-    }
+    offsets: jlstzOffsets
   },
   j: {
-    matrices: [
+    minos: [
       [
-        ["#", " ", " "],
-        ["#", "#", "#"],
-        [" ", " ", " "]
+        [1, 1],
+        [2, 1],
+        [2, 2],
+        [2, 3]
       ]
     ],
-    offsets: jlstzOffsets,
-    start: {
-      x: 3,
-      y: 19
-    }
+    offsets: jlstzOffsets
   },
   l: {
-    matrices: [
+    minos: [
       [
-        [" ", " ", "#"],
-        ["#", "#", "#"],
-        [" ", " ", " "]
+        [1, 3],
+        [2, 1],
+        [2, 2],
+        [2, 3]
       ]
     ],
-    offsets: jlstzOffsets,
-    start: {
-      x: 3,
-      y: 19
-    }
+    offsets: jlstzOffsets
   },
   o: {
-    matrices: [
+    minos: [
       [
-        [" ", "#", "#"],
-        [" ", "#", "#"],
-        [" ", " ", " "]
+        [1, 2],
+        [1, 3],
+        [2, 2],
+        [2, 3]
       ]
     ],
-    offsets: [
-      [{ x: 0, y: 0 }],
-      [{ x: 0, y: 1 }],
-      [{ x: -1, y: 1 }],
-      [{ x: -1, y: 0 }]
-    ],
-    start: {
-      x: 3,
-      y: 19
-    }
+    offsets: oOffsets
   },
   t: {
-    matrices: [
+    minos: [
       [
-        [" ", "#", " "],
-        ["#", "#", "#"],
-        [" ", " ", " "]
+        [1, 2],
+        [2, 1],
+        [2, 2],
+        [2, 3]
       ]
     ],
-    offsets: jlstzOffsets,
-    start: {
-      x: 3,
-      y: 19
-    }
+    offsets: jlstzOffsets
   },
   i: {
-    matrices: [
+    minos: [
       [
-        [" ", " ", " ", " ", " "],
-        [" ", " ", " ", " ", " "],
-        [" ", "#", "#", "#", "#"],
-        [" ", " ", " ", " ", " "],
-        [" ", " ", " ", " ", " "]
+        [2, 1],
+        [2, 2],
+        [2, 3],
+        [2, 4]
       ]
     ],
-    offsets: [
-      [
-        { x: 0, y: 0 },
-        { x: -1, y: 0 },
-        { x: 2, y: 0 },
-        { x: -1, y: 0 },
-        { x: 2, y: 0 }
-      ],
-      [
-        { x: -1, y: 0 },
-        { x: 0, y: 0 },
-        { x: 0, y: 0 },
-        { x: 0, y: -1 },
-        { x: 0, y: 2 }
-      ],
-      [
-        { x: -1, y: -1 },
-        { x: 1, y: -1 },
-        { x: -2, y: -1 },
-        { x: 1, y: 0 },
-        { x: -2, y: 0 }
-      ],
-      [
-        { x: 0, y: -1 },
-        { x: 0, y: -1 },
-        { x: 0, y: -1 },
-        { x: 0, y: 1 },
-        { x: 0, y: -2 }
-      ]
-    ],
-    start: {
-      x: 2,
-      y: 18
-    }
+    offsets: iOffsets
   }
 };
 
-const rotateMatrix = (matrix: any[][]) => {
-  const result = [];
-  for (let i = 0; i < matrix.length; i++) {
-    result.push(_.fill(Array(matrix.length), " "));
-  }
-  for (let i = 0; i < matrix.length; i++) {
-    for (let j = 0; j < matrix.length; j++) {
-      result[j][matrix.length - 1 - i] = matrix[i][j];
-    }
+const rotateCoords = (coords: number[][], size: number) => {
+  const result: number[][] = [];
+  for (const coord of coords) {
+    result.push([coord[1], size - coord[0] - 1]);
   }
   return result;
 };
@@ -185,7 +161,7 @@ const rotateMatrix = (matrix: any[][]) => {
 for (let type in tetrominos) {
   const tetromino = tetrominos[type as Mino];
   for (let i = 0; i < 3; i++) {
-    tetromino.matrices.push(rotateMatrix(tetromino.matrices[i]));
+    tetromino.minos.push(rotateCoords(tetromino.minos[i], 5));
   }
 }
 
