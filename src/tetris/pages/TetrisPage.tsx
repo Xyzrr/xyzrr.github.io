@@ -21,7 +21,13 @@ const keyDown: {
   [key: string]: { downTime: number; lastTriggered: number };
 } = {};
 
-const TetrisPageDiv = styled.div``;
+const TetrisPageDiv = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: black;
+`;
 
 const TetrisPage: React.FC = () => {
   const testField: TetrisFieldTile[][] = [
@@ -155,6 +161,7 @@ const TetrisPage: React.FC = () => {
       <TetrisGameFrame
         field={state.field}
         activePiece={state.activePiece}
+        hold={state.hold}
       ></TetrisGameFrame>
     </TetrisPageDiv>
   );
