@@ -34,23 +34,17 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
     activePiece: ActivePiece,
     alpha = 1
   ) => {
-    tetrominos[activePiece.type].matrices[activePiece.orientation].forEach(
-      (row, i) => {
-        row.forEach((cell, j) => {
-          if (cell !== " ") {
-            ctx.fillStyle = TetrisColors[activePiece.type]
-              .alpha(alpha)
-              .toString();
-            ctx.fillRect(
-              (activePiece.x + j) * unit,
-              (activePiece.y + i - 20) * unit,
-              unit,
-              unit
-            );
-          }
-        });
-      }
-    );
+    for (const coord of tetrominos[activePiece.type].minos[
+      activePiece.orientation
+    ]) {
+      ctx.fillStyle = TetrisColors[activePiece.type].alpha(alpha).toString();
+      ctx.fillRect(
+        (activePiece.position[1] + coord[1]) * unit,
+        (activePiece.position[0] + coord[0] - 20) * unit,
+        unit,
+        unit
+      );
+    }
   };
 
   const render = (ctx: CanvasRenderingContext2D) => {
