@@ -39,22 +39,6 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
 
   const backgroundCanvasRef = React.useRef<HTMLCanvasElement>(null);
 
-  const renderGrid = (ctx: CanvasRenderingContext2D) => {
-    ctx.strokeStyle = "#161616";
-    for (let i = 0; i < constants.MATRIX_ROWS; i++) {
-      ctx.beginPath();
-      ctx.moveTo(0, i * props.unit);
-      ctx.lineTo(width, i * props.unit);
-      ctx.stroke();
-    }
-    for (let j = 0; j < constants.MATRIX_COLS; j++) {
-      ctx.beginPath();
-      ctx.moveTo(j * props.unit, 0);
-      ctx.lineTo(j * props.unit, height);
-      ctx.stroke();
-    }
-  };
-
   const renderLand = (ctx: CanvasRenderingContext2D) => {
     props.field.forEach((row, i) => {
       row.forEach((cell, j) => {
@@ -92,9 +76,7 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
   };
 
   const render = (ctx: CanvasRenderingContext2D) => {
-    // ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
     ctx.clearRect(0, 0, width, height);
-    // ctx.fillRect(0, 0, width, height);
     renderLand(ctx);
     renderActivePiece(ctx, props.activePiece);
     const ghostPiece = moveToGround(props.activePiece, props.field);
@@ -102,6 +84,22 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
   };
 
   useEffect(() => {
+    const renderGrid = (ctx: CanvasRenderingContext2D) => {
+      ctx.strokeStyle = "#161616";
+      for (let i = 0; i < constants.MATRIX_ROWS; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, i * props.unit);
+        ctx.lineTo(width, i * props.unit);
+        ctx.stroke();
+      }
+      for (let j = 0; j < constants.MATRIX_COLS; j++) {
+        ctx.beginPath();
+        ctx.moveTo(j * props.unit, 0);
+        ctx.lineTo(j * props.unit, height);
+        ctx.stroke();
+      }
+    };
+
     if (backgroundCanvasRef.current) {
       backgroundCanvasRef.current.width = width * window.devicePixelRatio;
       backgroundCanvasRef.current.height = height * window.devicePixelRatio;
@@ -122,7 +120,7 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
         ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
       }
     }
-  }, []);
+  }, [width, height, props.unit]);
 
   if (ctx) {
     render(ctx);

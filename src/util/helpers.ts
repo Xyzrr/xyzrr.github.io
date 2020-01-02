@@ -21,3 +21,18 @@ export function transpose(matrix: number[][]) {
 export function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+export function resizeCanvas(
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+  width: number,
+  height: number
+) {
+  if (canvasRef.current) {
+    canvasRef.current.width = width * window.devicePixelRatio;
+    canvasRef.current.height = height * window.devicePixelRatio;
+    const ctx = canvasRef.current.getContext("2d");
+    if (ctx) {
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+  }
+}

@@ -1,5 +1,4 @@
 import { Mino } from "./types";
-import * as _ from "lodash";
 import { red, green, darkBlue, orange, purple, yellow, blue } from "../colors";
 
 const jlstzOffsets: [number, number][][] = [

@@ -52,6 +52,7 @@ const snakeGlobals = {
 const SnakeRenderer: React.FC = props => {
   const [observation, setObservation] = React.useState(obs);
   const [totalReward, setTotalReward] = React.useState(0);
+  console.log("Total reward:", totalReward);
 
   async function updateModel(
     model: tf.LayersModel,
@@ -85,54 +86,54 @@ const SnakeRenderer: React.FC = props => {
     snakeGlobals.modelUpdating = false;
   }
 
-  async function runModel(model: tf.LayersModel) {
-    for (let i = 0; ; i++) {
-      let done = false;
-      let obs: tf.Tensor;
-      if (i === 0) {
-        obs = env.getObservation();
-      } else {
-        obs = env.reset();
-      }
-      while (!done) {
-        if (snakeGlobals.stopRunning) {
-          return;
+  React.useEffect(() => {
+    async function runModel(model: tf.LayersModel) {
+      for (let i = 0; ; i++) {
+        let done = false;
+        let obs: tf.Tensor;
+        if (i === 0) {
+          obs = env.getObservation();
+        } else {
+          obs = env.reset();
         }
-        const prediction = model.predict(
-          obs.reshape([1, 9, 9, 3])
-        ) as tf.Tensor;
-        const action = (prediction.argMax(1).arraySync() as number[])[0];
-        if (action == null) {
-          // Sometimes action is undefined for some mysterious reason.
-          // I'm hoping this can catch that one day.
-          console.log("Error: action was undefined in runModel!", action);
-          console.log("observation:");
-          obs.print();
-          console.log("prediction:");
-          prediction.print();
-          console.log("argmax:");
-          console.log(prediction.argMax(1));
+        while (!done) {
+          if (snakeGlobals.stopRunning) {
+            return;
+          }
+          const prediction = model.predict(
+            obs.reshape([1, 9, 9, 3])
+          ) as tf.Tensor;
+          const action = (prediction.argMax(1).arraySync() as number[])[0];
+          if (action == null) {
+            // Sometimes action is undefined for some mysterious reason.
+            // I'm hoping this can catch that one day.
+            console.log("Error: action was undefined in runModel!", action);
+            console.log("observation:");
+            obs.print();
+            console.log("prediction:");
+            prediction.print();
+            console.log("argmax:");
+            console.log(prediction.argMax(1));
+          }
+          const { newObservation, reward, done: newDone } = env.step(action);
+          setObservation(newObservation);
+          setTotalReward(totalReward => totalReward + reward);
+
+          await updateModel(model, obs, action, newObservation, reward, done);
+
+          done = newDone;
+          obs = newObservation;
+          await sleep(300);
         }
-        const { newObservation, reward, done: newDone } = env.step(action);
-        setObservation(newObservation);
-        setTotalReward(totalReward => totalReward + reward);
-
-        await updateModel(model, obs, action, newObservation, reward, done);
-
-        done = newDone;
-        obs = newObservation;
-        await sleep(300);
       }
     }
-  }
 
-  const runModelDebounced = _.debounce((model: tf.LayersModel) => {
-    snakeGlobals.stopRunning = false;
-    snakeGlobals.disableInput = false;
-    runModel(model);
-  }, 600);
+    const runModelDebounced = _.debounce((model: tf.LayersModel) => {
+      snakeGlobals.stopRunning = false;
+      snakeGlobals.disableInput = false;
+      runModel(model);
+    }, 600);
 
-  React.useEffect(() => {
     tf.loadLayersModel("/models/snake/model.json").then(model => {
       model.compile({ optimizer: "adam", loss: "meanSquaredError" });
       runModel(model);

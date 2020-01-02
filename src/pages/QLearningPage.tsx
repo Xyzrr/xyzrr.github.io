@@ -17,7 +17,7 @@ import ChainEnvironment from "../scene-objects/ChainEnvironment";
 import CoinEmitter from "../scene-objects/CoinEmitter";
 import NumberObject from "../scene-objects/NumberObject";
 import Table from "../scene-objects/Table";
-import { transpose } from "../util/helpers";
+import { transpose, resizeCanvas } from "../util/helpers";
 import { textcolor } from "../util/latex";
 import useWindowSize from "../util/useWindowSize";
 
@@ -145,20 +145,6 @@ function QLearningPage() {
     agentTookAction(action, done, totalReward, info);
   };
 
-  const resizeCanvas = () => {
-    if (canvasRef.current && size.width && size.height) {
-      canvasRef.current.width = size.width * window.devicePixelRatio;
-      canvasRef.current.height = size.height * window.devicePixelRatio;
-      const ctx = canvasRef.current.getContext("2d");
-      if (ctx) {
-        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-      }
-      if (sceneRef.current) {
-        sceneRef.current.size = size;
-      }
-    }
-  };
-
   const handleKeyDown = (e: any) => {
     if (e.keyCode === 39) {
       // right arrow
@@ -181,7 +167,9 @@ function QLearningPage() {
   React.useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas && canvas.getContext("2d");
-    resizeCanvas();
+    if (size.width && size.height) {
+      resizeCanvas(canvasRef, size.width, size.height);
+    }
 
     sceneRef.current = new Scene(canvas, ctx, size, [
       coinEmitter,
@@ -194,7 +182,7 @@ function QLearningPage() {
     ]);
 
     sceneRef.current.render();
-  }, []);
+  }, [size]);
 
   React.useEffect(() => {
     game.reset();
@@ -216,7 +204,9 @@ function QLearningPage() {
   agent.eps = options.eps;
   agent.epsDecay = options.epsDecay;
 
-  resizeCanvas();
+  if (size.width && size.height) {
+    resizeCanvas(canvasRef, size.width, size.height);
+  }
 
   agentObject.move(glob.centerX + envObject.DIST * ((game.state || 0) - 2));
 
