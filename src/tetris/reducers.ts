@@ -216,6 +216,7 @@ export const tick = (
   softDrop: boolean
 ) => {
   let newActivePiece: ActivePiece | undefined = activePiece;
+  let newNextPieces = nextPieces;
   let newField = field;
 
   const time = Date.now();
@@ -244,10 +245,15 @@ export const tick = (
       nextPieces: poppedNextPieces
     } = popNextActivePiece(nextPieces);
     newActivePiece = poppedActivePiece;
+    newNextPieces = poppedNextPieces;
     newField = lockActivePiece(activePiece, field);
   }
 
-  return { activePiece: newActivePiece, field: newField };
+  return {
+    activePiece: newActivePiece,
+    field: newField,
+    nextPieces: newNextPieces
+  };
 };
 
 interface TetrisPageState {
