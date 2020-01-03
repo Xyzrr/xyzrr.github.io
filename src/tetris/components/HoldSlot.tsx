@@ -1,6 +1,7 @@
 import { Mino } from "../types";
 import React from "react";
 import tetrominos from "../tetrominos";
+import { resizeCanvas } from "../../util/helpers";
 
 interface HoldSlotProps {
   unit: number;
@@ -31,14 +32,7 @@ const HoldSlot: React.FC<HoldSlotProps> = props => {
   const ctx = canvasRef.current && canvasRef.current.getContext("2d");
 
   React.useEffect(() => {
-    if (canvasRef.current) {
-      canvasRef.current.width = width * window.devicePixelRatio;
-      canvasRef.current.height = height * window.devicePixelRatio;
-      const ctx = canvasRef.current.getContext("2d");
-      if (ctx) {
-        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-      }
-    }
+    resizeCanvas(canvasRef, width, height);
   });
 
   if (ctx) {

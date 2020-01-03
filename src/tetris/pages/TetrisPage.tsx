@@ -3,7 +3,11 @@ import React from "react";
 import styled from "styled-components";
 import TetrisGameFrame from "../components/TetrisGameFrame";
 import { TetrisFieldTile } from "../types";
-import { tetrisReducer, getInitialActivePieceState } from "../reducers";
+import {
+  tetrisReducer,
+  generateRandomBag,
+  popNextActivePiece
+} from "../reducers";
 import * as constants from "../constants";
 import { unstable_batchedUpdates } from "react-dom";
 
@@ -74,10 +78,15 @@ const TetrisPage: React.FC = () => {
     ["z", "z", "s", "s", ".", ".", ".", ".", ".", "."],
     [".", "z", "z", ".", ".", ".", ".", ".", ".", "."]
   ];
+  const {
+    activePiece: initialActivePiece,
+    nextPieces: initialBag
+  } = popNextActivePiece([]);
   const [state, dispatch] = React.useReducer(tetrisReducer, {
     field: testField,
     hold: undefined,
-    activePiece: getInitialActivePieceState("j")
+    activePiece: initialActivePiece,
+    nextPieces: initialBag
   });
 
   React.useEffect(() => {
@@ -160,12 +169,13 @@ const TetrisPage: React.FC = () => {
 
   return (
     <TetrisPageDiv>
-      {new Array(100).fill(0).map((_a, i) => (
+      {new Array(1).fill(0).map((_a, i) => (
         <TetrisGameFrame
           key={i}
           field={state.field}
           activePiece={state.activePiece}
           hold={state.hold}
+          nextPieces={state.nextPieces}
         ></TetrisGameFrame>
       ))}
     </TetrisPageDiv>

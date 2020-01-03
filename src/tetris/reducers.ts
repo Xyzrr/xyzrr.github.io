@@ -114,7 +114,10 @@ const attemptRotateActivePiece = (
   return newActivePiece;
 };
 
-export const getInitialActivePieceState = (type: Mino) => {
+export const getInitialActivePieceState = (type?: Mino) => {
+  if (!type) {
+    return undefined;
+  }
   return {
     type: type,
     position: constants.START_POSITION,
@@ -124,10 +127,16 @@ export const getInitialActivePieceState = (type: Mino) => {
   };
 };
 
-const popNextActivePiece = () => {
-  const choices = ["z", "s", "j", "l", "o", "i", "t"];
-  const chosen = choices[randInt(0, choices.length)] as Mino;
-  return getInitialActivePieceState(chosen);
+export const popNextActivePiece = (nextPieces: Mino[]) => {
+  let newNextPieces = _.clone(nextPieces);
+  if (newNextPieces.length < 7) {
+    newNextPieces = newNextPieces.concat(generateRandomBag());
+  }
+  const nextPieceType = newNextPieces.shift();
+  return {
+    activePiece: getInitialActivePieceState(nextPieceType),
+    nextPieces: newNextPieces
+  };
 };
 
 const checkForClears = (
@@ -191,12 +200,22 @@ export const moveToGround = (
   return translate(activePiece, [testShift, 0]);
 };
 
+export const generateRandomBag = () => {
+  const bag: Mino[] = ["z", "s", "l", "j", "t", "o", "i"];
+  for (let i = bag.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [bag[i], bag[j]] = [bag[j], bag[i]];
+  }
+  return bag;
+};
+
 export const tick = (
   activePiece: ActivePiece,
   field: TetrisFieldTile[][],
+  nextPieces: Mino[],
   softDrop: boolean
 ) => {
-  let newActivePiece = activePiece;
+  let newActivePiece: ActivePiece | undefined = activePiece;
   let newField = field;
 
   const time = Date.now();
@@ -220,7 +239,11 @@ export const tick = (
     activePiece.lockStartTime &&
     time - activePiece.lockStartTime >= constants.LOCK_DELAY
   ) {
-    newActivePiece = popNextActivePiece();
+    const {
+      activePiece: poppedActivePiece,
+      nextPieces: poppedNextPieces
+    } = popNextActivePiece(nextPieces);
+    newActivePiece = poppedActivePiece;
     newField = lockActivePiece(activePiece, field);
   }
 
@@ -230,7 +253,8 @@ export const tick = (
 interface TetrisPageState {
   field: TetrisFieldTile[][];
   hold?: Mino;
-  activePiece: ActivePiece;
+  activePiece?: ActivePiece;
+  nextPieces: Mino[];
 }
 
 interface TetrisPageAction {
@@ -242,11 +266,19 @@ export const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
   state,
   action
 ) => {
+  if (!state.activePiece) {
+    return state;
+  }
   switch (action.type) {
     case "tick":
       return {
         ...state,
-        ...tick(state.activePiece, state.field, action.info.softDrop)
+        ...tick(
+          state.activePiece,
+          state.field,
+          state.nextPieces,
+          action.info.softDrop
+        )
       };
     case "moveLeft":
       return {
@@ -282,7 +314,7 @@ export const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
       const droppedPiece = moveToGround(state.activePiece, state.field);
       return {
         ...state,
-        activePiece: popNextActivePiece(),
+        ...popNextActivePiece(state.nextPieces),
         field: lockActivePiece(droppedPiece, state.field)
       };
     case "hold":
@@ -295,7 +327,7 @@ export const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
       } else {
         return {
           ...state,
-          activePiece: popNextActivePiece(),
+          ...popNextActivePiece(state.nextPieces),
           hold: state.activePiece.type
         };
       }

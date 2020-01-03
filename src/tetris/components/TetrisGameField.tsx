@@ -27,7 +27,7 @@ const TetrisGameFieldDiv = styled.div`
 interface TetrisGameFieldProps {
   unit: number;
   field: TetrisFieldTile[][];
-  activePiece: ActivePiece;
+  activePiece?: ActivePiece;
 }
 
 const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
@@ -78,9 +78,11 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
   const render = (ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(0, 0, width, height);
     renderLand(ctx);
-    renderActivePiece(ctx, props.activePiece);
-    const ghostPiece = moveToGround(props.activePiece, props.field);
-    renderActivePiece(ctx, ghostPiece, true);
+    if (props.activePiece) {
+      renderActivePiece(ctx, props.activePiece);
+      const ghostPiece = moveToGround(props.activePiece, props.field);
+      renderActivePiece(ctx, ghostPiece, true);
+    }
   };
 
   useEffect(() => {
