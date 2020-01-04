@@ -3,11 +3,7 @@ import React from "react";
 import styled from "styled-components";
 import TetrisGameFrame from "../components/TetrisGameFrame";
 import { TetrisFieldTile } from "../types";
-import {
-  tetrisReducer,
-  generateRandomBag,
-  popNextActivePiece
-} from "../reducers";
+import { tetrisReducer, popNextActivePiece } from "../reducers";
 import * as constants from "../constants";
 import { unstable_batchedUpdates } from "react-dom";
 
@@ -85,6 +81,7 @@ const TetrisPage: React.FC = () => {
   const [state, dispatch] = React.useReducer(tetrisReducer, {
     field: testField,
     hold: undefined,
+    held: false,
     activePiece: initialActivePiece,
     nextPieces: initialBag
   });
@@ -176,6 +173,7 @@ const TetrisPage: React.FC = () => {
           activePiece={state.activePiece}
           hold={state.hold}
           nextPieces={state.nextPieces}
+          held={state.held}
         ></TetrisGameFrame>
       ))}
     </TetrisPageDiv>

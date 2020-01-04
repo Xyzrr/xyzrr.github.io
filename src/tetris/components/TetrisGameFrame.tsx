@@ -13,13 +13,18 @@ interface TetrisGameFrameProps {
   field: TetrisFieldTile[][];
   activePiece?: ActivePiece;
   hold?: Mino;
+  held: boolean;
   nextPieces: Mino[];
 }
 const TetrisGameFrame: React.FC<TetrisGameFrameProps> = props => {
   const unitSize = 24;
   return (
     <TetrisGameFrameDiv>
-      <HoldSlot unit={unitSize} pieceType={props.hold}></HoldSlot>
+      <HoldSlot
+        unit={unitSize}
+        pieceType={props.hold}
+        held={props.held}
+      ></HoldSlot>
       <TetrisGameField
         unit={unitSize}
         field={props.field}

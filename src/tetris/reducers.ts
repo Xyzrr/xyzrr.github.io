@@ -213,11 +213,13 @@ export const tick = (
   activePiece: ActivePiece,
   field: TetrisFieldTile[][],
   nextPieces: Mino[],
+  held: boolean,
   softDrop: boolean
 ) => {
   let newActivePiece: ActivePiece | undefined = activePiece;
   let newNextPieces = nextPieces;
   let newField = field;
+  let newHeld = held;
 
   const time = Date.now();
 
@@ -247,18 +249,21 @@ export const tick = (
     newActivePiece = poppedActivePiece;
     newNextPieces = poppedNextPieces;
     newField = lockActivePiece(activePiece, field);
+    newHeld = false;
   }
 
   return {
     activePiece: newActivePiece,
     field: newField,
-    nextPieces: newNextPieces
+    nextPieces: newNextPieces,
+    held: newHeld
   };
 };
 
 interface TetrisPageState {
   field: TetrisFieldTile[][];
   hold?: Mino;
+  held: boolean;
   activePiece?: ActivePiece;
   nextPieces: Mino[];
 }
@@ -283,6 +288,7 @@ export const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
           state.activePiece,
           state.field,
           state.nextPieces,
+          state.held,
           action.info.softDrop
         )
       };
@@ -321,20 +327,26 @@ export const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
       return {
         ...state,
         ...popNextActivePiece(state.nextPieces),
-        field: lockActivePiece(droppedPiece, state.field)
+        field: lockActivePiece(droppedPiece, state.field),
+        held: false
       };
     case "hold":
+      if (state.held) {
+        return state;
+      }
       if (state.hold) {
         return {
           ...state,
           activePiece: getInitialActivePieceState(state.hold),
-          hold: state.activePiece.type
+          hold: state.activePiece.type,
+          held: true
         };
       } else {
         return {
           ...state,
           ...popNextActivePiece(state.nextPieces),
-          hold: state.activePiece.type
+          hold: state.activePiece.type,
+          held: true
         };
       }
     default:
