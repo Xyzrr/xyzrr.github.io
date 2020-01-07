@@ -1,0 +1,55 @@
+{
+  "name": "web-app",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@tensorflow/tfjs": "^1.3.1",
+    "@tweenjs/tween.js": "^18.3.1",
+    "@types/classnames": "^2.2.9",
+    "@types/color": "^3.0.0",
+    "@types/gl-matrix": "^2.4.5",
+    "@types/katex": "^0.10.2",
+    "@types/lodash": "^4.14.147",
+    "@types/react": "^16.9.2",
+    "@types/react-dom": "^16.9.4",
+    "@types/react-router-dom": "^5.1.2",
+    "@types/styled-components": "^4.1.19",
+    "@types/tween.js": "^17.2.0",
+    "classnames": "^2.2.6",
+    "color": "^3.1.2",
+    "gl-matrix": "^3.1.0",
+    "katex": "^0.11.0",
+    "lodash": "^4.17.15",
+    "mathjax": "^2.7.5",
+    "node-sass": "^4.12.0",
+    "react": "^16.9.0",
+    "react-dat-gui": "^3.0.0",
+    "react-dom": "^16.9.0",
+    "react-router-dom": "^5.1.2",
+    "react-scripts": "3.1.1",
+    "styled-components": "^4.3.2",
+    "twgl.js": "^4.14.0",
+    "typescript": "^3.6.3"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
