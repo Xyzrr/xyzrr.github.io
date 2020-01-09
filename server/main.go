@@ -1,20 +1,3 @@
-/**
- * Copyright 2017 Google Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-// [START all]
 package main
 
 import (
@@ -22,10 +5,56 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
+	"github.com/rs/xid"
 )
+
+type Pos struct {
+	Row int `json:"row"`
+	Col int `json:"col"`
+}
+
+type ActivePiece struct {
+	Position      Pos       `json:"position"`
+	PieceType     Tetromino `json:"pieceType"`
+	Orientation   int       `json:"orientation"`
+	LastFallTime  int       `json:"lastFallTime"`
+	LockStartTime int       `json:"lockStartTime"`
+}
+
+type PlayerState struct {
+	Field       [40][20]int  `json:"field"`
+	ActivePiece ActivePiece  `json:"activePiece"`
+	Hold        int          `json:"hold"`
+	Held        bool         `json:"held"`
+	NextPieces  [5]Tetromino `json:"nextPieces"`
+}
+
+type PlayerInput struct {
+	tick    int
+	command int
+}
+
+var initialPlayerState = PlayerState{
+	Field: [40][20]int{},
+	ActivePiece: ActivePiece{
+		Position:      Pos{18, 2},
+		PieceType:     J,
+		Orientation:   0,
+		LastFallTime:  0,
+		LockStartTime: 0,
+	},
+	Hold:       0,
+	Held:       false,
+	NextPieces: [5]Tetromino{J, Z, T, I, O},
+}
+
+var clients = make(map[*websocket.Conn]string)
+var playerStates = make(map[string]PlayerState)
+var inputQueue = make([]PlayerInput, 0)
 
 func main() {
 	// use PORT environment variable, or default to 8080
@@ -39,10 +68,31 @@ func main() {
 	server.HandleFunc("/", hello)
 	server.HandleFunc("/socket", socketHandler)
 
+	go runGames()
+
 	// start the web server on port and accept requests
 	log.Printf("Server listening on port %s", port)
 	err := http.ListenAndServe(":"+port, cors.AllowAll().Handler(server))
 	log.Fatal(err)
+}
+
+func updateGame(state PlayerState) PlayerState {
+	state.ActivePiece.Position.Row++
+	return state
+}
+
+func runGames() {
+	fmt.Println("Starting to run games")
+	ticker := time.NewTicker(200 * time.Millisecond)
+
+	for {
+		<-ticker.C
+		for client, id := range clients {
+			state := playerStates[id]
+			playerStates[id] = updateGame(state)
+			client.WriteJSON(playerStates)
+		}
+	}
 }
 
 // hello responds to the request with a plain-text "Hello, world" message.
@@ -63,21 +113,26 @@ var upgrader = websocket.Upgrader{
 func socketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		log.Fatal(err)
 		return
 	}
+	defer conn.Close()
+
+	newID := xid.New().String()
+	conn.WriteJSON(map[string]string{"type": "id", "id": newID})
+	clients[conn] = newID
+	playerStates[newID] = initialPlayerState
 	for {
-		messageType, p, err := conn.ReadMessage()
-		fmt.Println(string(p))
+		var input PlayerInput
+		err := conn.ReadJSON(&input)
+
 		if err != nil {
-			log.Println(err)
-			return
-		}
-		if err := conn.WriteMessage(messageType, p); err != nil {
-			log.Println(err)
-			return
+			log.Printf("error: %v", err)
+			delete(clients, conn)
+			break
 		}
 
+		inputQueue = append(inputQueue, input)
 	}
 }
 

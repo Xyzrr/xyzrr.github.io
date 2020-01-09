@@ -38,7 +38,7 @@ const HoldSlot: React.FC<HoldSlotProps> = props => {
 
   React.useEffect(() => {
     resizeCanvas(canvasRef, width, height);
-  });
+  }, [width, height]);
 
   if (ctx) {
     render(ctx);

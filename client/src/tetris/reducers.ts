@@ -349,6 +349,8 @@ export const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
           held: true
         };
       }
+    case "replaceState":
+      return action.info;
     default:
       throw new Error("Invalid action type");
   }

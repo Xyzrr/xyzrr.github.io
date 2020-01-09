@@ -6,6 +6,7 @@ import { TetrisFieldTile } from "../types";
 import { tetrisReducer, popNextActivePiece } from "../reducers";
 import * as constants from "../constants";
 import { unstable_batchedUpdates } from "react-dom";
+import * as _ from "lodash";
 
 const keyBindings = {
   moveLeft: 37,
@@ -85,93 +86,122 @@ const TetrisPage: React.FC = () => {
     activePiece: initialActivePiece,
     nextPieces: initialBag
   });
+  let clientID: string | undefined = undefined;
 
   React.useEffect(() => {
     // const socket = new WebSocket("ws://34.67.102.3:8080/socket");
     const socket = new WebSocket("ws://localhost:8080/socket");
     socket.onopen = () => {
-      socket.send("Hell yea it got opened!");
       socket.onmessage = m => {
-        console.log(m);
+        console.log("got message", m);
+        const parsedData = JSON.parse(m.data);
+        console.log("parsed data", _.cloneDeep(parsedData));
+        if (parsedData.type && parsedData.type === "id") {
+          console.log("Got client ID", parsedData.id);
+          clientID = parsedData.id;
+        } else {
+          if (clientID) {
+            const charMap = [".", "s", "z", "j", "l", "t", "o", "i"];
+            const newState = parsedData[clientID];
+            newState.field = newState.field.map((row: any) =>
+              row.map((c: any) => charMap[c])
+            );
+            newState.activePiece.type = charMap[newState.activePiece.pieceType];
+            newState.activePiece.position = [
+              newState.activePiece.position.row,
+              newState.activePiece.position.col
+            ];
+            newState.nextPieces = newState.nextPieces.map(
+              (c: any) => charMap[c]
+            );
+            console.log("modified", newState);
+            dispatch({
+              type: "replaceState",
+              info: newState
+            });
+          }
+        }
       };
     };
 
-    const update = () => {
-      unstable_batchedUpdates(() => {
-        const time = Date.now();
+    //   const update = () => {
+    //     unstable_batchedUpdates(() => {
+    //       const time = Date.now();
 
-        dispatch({
-          type: "tick",
-          info: { softDrop: keyDown[keyBindings.softDrop] }
-        });
+    //       dispatch({
+    //         type: "tick",
+    //         info: { softDrop: keyDown[keyBindings.softDrop] }
+    //       });
 
-        const rightKey = keyDown[keyBindings.moveRight];
-        if (
-          rightKey &&
-          time - rightKey.downTime >= constants.DAS &&
-          time - rightKey.lastTriggered >= constants.ARR
-        ) {
-          dispatch({ type: "moveRight" });
-          if (rightKey.lastTriggered === rightKey.downTime) {
-            rightKey.lastTriggered += constants.DAS;
-          } else {
-            rightKey.lastTriggered += constants.ARR;
-          }
-        }
+    //       const rightKey = keyDown[keyBindings.moveRight];
+    //       if (
+    //         rightKey &&
+    //         time - rightKey.downTime >= constants.DAS &&
+    //         time - rightKey.lastTriggered >= constants.ARR
+    //       ) {
+    //         dispatch({ type: "moveRight" });
+    //         if (rightKey.lastTriggered === rightKey.downTime) {
+    //           rightKey.lastTriggered += constants.DAS;
+    //         } else {
+    //           rightKey.lastTriggered += constants.ARR;
+    //         }
+    //       }
 
-        const leftKey = keyDown[keyBindings.moveLeft];
-        if (
-          leftKey &&
-          time - leftKey.downTime >= constants.DAS &&
-          time - leftKey.lastTriggered >= constants.ARR
-        ) {
-          dispatch({ type: "moveLeft" });
-          if (leftKey.lastTriggered === leftKey.downTime) {
-            leftKey.lastTriggered += constants.DAS;
-          } else {
-            leftKey.lastTriggered += constants.ARR;
-          }
-        }
-      });
+    //       const leftKey = keyDown[keyBindings.moveLeft];
+    //       if (
+    //         leftKey &&
+    //         time - leftKey.downTime >= constants.DAS &&
+    //         time - leftKey.lastTriggered >= constants.ARR
+    //       ) {
+    //         dispatch({ type: "moveLeft" });
+    //         if (leftKey.lastTriggered === leftKey.downTime) {
+    //           leftKey.lastTriggered += constants.DAS;
+    //         } else {
+    //           leftKey.lastTriggered += constants.ARR;
+    //         }
+    //       }
+    //     });
 
-      window.requestAnimationFrame(update);
-    };
+    //     window.requestAnimationFrame(update);
+    //   };
 
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (keyDown[e.keyCode]) {
-        return;
-      }
-      switch (e.keyCode) {
-        case keyBindings.moveLeft:
-          dispatch({ type: "moveLeft" });
-          break;
-        case keyBindings.moveRight:
-          dispatch({ type: "moveRight" });
-          break;
-        case keyBindings.rotateClockwise:
-          dispatch({ type: "rotateClockwise" });
-          break;
-        case keyBindings.rotateCounterClockwise:
-          dispatch({ type: "rotateCounterClockwise" });
-          break;
-        case keyBindings.hardDrop:
-          dispatch({ type: "hardDrop" });
-          break;
-        case keyBindings.hold:
-          dispatch({ type: "hold" });
-          break;
-      }
-      keyDown[e.keyCode] = { downTime: Date.now(), lastTriggered: Date.now() };
-    };
+    //   const onKeyDown = (e: KeyboardEvent) => {
+    //     if (keyDown[e.keyCode]) {
+    //       return;
+    //     }
+    //     switch (e.keyCode) {
+    //       case keyBindings.moveLeft:
+    //         dispatch({ type: "moveLeft" });
+    //         break;
+    //       case keyBindings.moveRight:
+    //         dispatch({ type: "moveRight" });
+    //         break;
+    //       case keyBindings.rotateClockwise:
+    //         dispatch({ type: "rotateClockwise" });
+    //         break;
+    //       case keyBindings.rotateCounterClockwise:
+    //         dispatch({ type: "rotateCounterClockwise" });
+    //         break;
+    //       case keyBindings.hardDrop:
+    //         dispatch({ type: "hardDrop" });
+    //         break;
+    //       case keyBindings.hold:
+    //         dispatch({ type: "hold" });
+    //         break;
+    //     }
+    //     keyDown[e.keyCode] = { downTime: Date.now(), lastTriggered: Date.now() };
+    //   };
 
-    const onKeyUp = (e: KeyboardEvent) => {
-      delete keyDown[e.keyCode];
-    };
+    //   const onKeyUp = (e: KeyboardEvent) => {
+    //     delete keyDown[e.keyCode];
+    //   };
 
-    window.requestAnimationFrame(update);
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("keyup", onKeyUp);
+    //   window.requestAnimationFrame(update);
+    //   window.addEventListener("keydown", onKeyDown);
+    //   window.addEventListener("keyup", onKeyUp);
   }, []);
+
+  console.log("state", state);
 
   return (
     <TetrisPageDiv>
