@@ -128,8 +128,8 @@ var minos = [][][]Pos{
 	}},
 }
 
-func GetOffsets(t Tetromino) [][]Pos {
-	return offsets[t-1]
+func GetOffsets(t Tetromino, orientation byte) []Pos {
+	return offsets[t-1][orientation]
 }
 
 func GetMinos(t Tetromino, orientation byte) []Pos {

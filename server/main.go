@@ -91,6 +91,10 @@ func AddPositions(a Pos, b Pos) Pos {
 	return Pos{a.Row + b.Row, a.Col + b.Col}
 }
 
+func SubPositions(a Pos, b Pos) Pos {
+	return Pos{a.Row - b.Row, a.Col - b.Col}
+}
+
 func ActivePieceIsColliding(activePiece ActivePiece, field GameField) bool {
 	minos := GetMinos(activePiece.PieceType, activePiece.Orientation)
 
@@ -110,6 +114,27 @@ func (state *PlayerState) AttemptMoveActivePiece(offset Pos) {
 	colliding := ActivePieceIsColliding(ap, state.Field)
 	if !colliding {
 		state.ActivePiece.Position = ap.Position
+	}
+}
+
+func RotateActivePiece(activePiece ActivePiece, rotation byte) ActivePiece {
+	activePiece.Orientation = (activePiece.Orientation + rotation + 4) % 4
+	return activePiece
+}
+
+func (state *PlayerState) AttemptRotateActivePiece(dir byte) {
+	rotatedPiece := RotateActivePiece(state.ActivePiece, dir)
+	beforeOffsets := GetOffsets(state.ActivePiece.PieceType, state.ActivePiece.Orientation)
+	afterOffsets := GetOffsets(rotatedPiece.PieceType, rotatedPiece.Orientation)
+	for i := range beforeOffsets {
+		testPiece := rotatedPiece
+		trueOffset := SubPositions(beforeOffsets[i], afterOffsets[i])
+		testPiece.Position = AddPositions(testPiece.Position, trueOffset)
+		if !ActivePieceIsColliding(testPiece, state.Field) {
+			fmt.Println("HEY", trueOffset, i, testPiece.Position)
+			state.ActivePiece = testPiece
+			break
+		}
 	}
 }
 
@@ -139,10 +164,15 @@ func updateGames(states map[string]*PlayerState, inputs []PlayerInput) map[strin
 		result[id].Tick()
 	}
 	for _, inp := range inputs {
-		if inp.Command == 1 {
+		switch inp.Command {
+		case 1:
 			result[inp.PlayerID].AttemptMoveActivePiece(Pos{0, -1})
-		} else if inp.Command == 2 {
+		case 2:
 			result[inp.PlayerID].AttemptMoveActivePiece(Pos{0, 1})
+		case 3:
+			result[inp.PlayerID].AttemptRotateActivePiece(1)
+		case 4:
+			result[inp.PlayerID].AttemptRotateActivePiece(3)
 		}
 	}
 	return result

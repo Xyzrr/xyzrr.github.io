@@ -174,21 +174,22 @@ const TetrisPage: React.FC = () => {
           socket.send(
             JSON.stringify({ playerID: clientID, command: 1, time: Date.now() })
           );
-          console.log("sent left packet");
-
           break;
         case keyBindings.moveRight:
           socket.send(
             JSON.stringify({ playerID: clientID, command: 2, time: Date.now() })
           );
-          console.log("sent right packet");
           break;
-        // case keyBindings.rotateClockwise:
-        //   dispatch({ type: "rotateClockwise" });
-        //   break;
-        // case keyBindings.rotateCounterClockwise:
-        //   dispatch({ type: "rotateCounterClockwise" });
-        //   break;
+        case keyBindings.rotateClockwise:
+          socket.send(
+            JSON.stringify({ playerID: clientID, command: 3, time: Date.now() })
+          );
+          break;
+        case keyBindings.rotateCounterClockwise:
+          socket.send(
+            JSON.stringify({ playerID: clientID, command: 4, time: Date.now() })
+          );
+          break;
         // case keyBindings.hardDrop:
         //   dispatch({ type: "hardDrop" });
         //   break;
