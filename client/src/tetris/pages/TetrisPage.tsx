@@ -93,9 +93,9 @@ const TetrisPage: React.FC = () => {
     const socket = new WebSocket("ws://localhost:8080/socket");
     socket.onopen = () => {
       socket.onmessage = m => {
-        console.log("got message", m);
+        // console.log("got message", m);
         const parsedData = JSON.parse(m.data);
-        console.log("parsed data", _.cloneDeep(parsedData));
+        // console.log("parsed data", _.cloneDeep(parsedData));
         if (parsedData.type && parsedData.type === "id") {
           console.log("Got client ID", parsedData.id);
           clientID = parsedData.id;
@@ -114,7 +114,7 @@ const TetrisPage: React.FC = () => {
             newState.nextPieces = newState.nextPieces.map(
               (c: any) => charMap[c]
             );
-            console.log("modified", newState);
+            // console.log("modified", newState);
             dispatch({
               type: "replaceState",
               info: newState
@@ -165,43 +165,50 @@ const TetrisPage: React.FC = () => {
     //     window.requestAnimationFrame(update);
     //   };
 
-    //   const onKeyDown = (e: KeyboardEvent) => {
-    //     if (keyDown[e.keyCode]) {
-    //       return;
-    //     }
-    //     switch (e.keyCode) {
-    //       case keyBindings.moveLeft:
-    //         dispatch({ type: "moveLeft" });
-    //         break;
-    //       case keyBindings.moveRight:
-    //         dispatch({ type: "moveRight" });
-    //         break;
-    //       case keyBindings.rotateClockwise:
-    //         dispatch({ type: "rotateClockwise" });
-    //         break;
-    //       case keyBindings.rotateCounterClockwise:
-    //         dispatch({ type: "rotateCounterClockwise" });
-    //         break;
-    //       case keyBindings.hardDrop:
-    //         dispatch({ type: "hardDrop" });
-    //         break;
-    //       case keyBindings.hold:
-    //         dispatch({ type: "hold" });
-    //         break;
-    //     }
-    //     keyDown[e.keyCode] = { downTime: Date.now(), lastTriggered: Date.now() };
-    //   };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (keyDown[e.keyCode]) {
+        return;
+      }
+      switch (e.keyCode) {
+        case keyBindings.moveLeft:
+          socket.send(
+            JSON.stringify({ playerID: clientID, command: 1, time: Date.now() })
+          );
+          console.log("sent left packet");
 
-    //   const onKeyUp = (e: KeyboardEvent) => {
-    //     delete keyDown[e.keyCode];
-    //   };
+          break;
+        case keyBindings.moveRight:
+          socket.send(
+            JSON.stringify({ playerID: clientID, command: 2, time: Date.now() })
+          );
+          console.log("sent right packet");
+          break;
+        // case keyBindings.rotateClockwise:
+        //   dispatch({ type: "rotateClockwise" });
+        //   break;
+        // case keyBindings.rotateCounterClockwise:
+        //   dispatch({ type: "rotateCounterClockwise" });
+        //   break;
+        // case keyBindings.hardDrop:
+        //   dispatch({ type: "hardDrop" });
+        //   break;
+        // case keyBindings.hold:
+        //   dispatch({ type: "hold" });
+        //   break;
+      }
+      keyDown[e.keyCode] = { downTime: Date.now(), lastTriggered: Date.now() };
+    };
+
+    const onKeyUp = (e: KeyboardEvent) => {
+      delete keyDown[e.keyCode];
+    };
 
     //   window.requestAnimationFrame(update);
-    //   window.addEventListener("keydown", onKeyDown);
-    //   window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
   }, []);
 
-  console.log("state", state);
+  // console.log("state", state);
 
   return (
     <TetrisPageDiv>

@@ -15,7 +15,6 @@ const BagPreview: React.FC<BagPreviewProps> = props => {
   const ctx = canvasRef.current && canvasRef.current.getContext("2d");
 
   const render = (ctx: CanvasRenderingContext2D) => {
-    console.log("rendering bag with", props.nextPieces);
     ctx.clearRect(0, 0, width, height);
 
     for (let i = 0; i < Math.min(5, props.nextPieces.length); i++) {
