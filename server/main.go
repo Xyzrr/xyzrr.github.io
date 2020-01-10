@@ -231,6 +231,8 @@ func updateGames(states map[string]*PlayerState, inputs []PlayerInput) map[strin
 			result[inp.PlayerID].AttemptRotateActivePiece(1)
 		case 4:
 			result[inp.PlayerID].AttemptRotateActivePiece(3)
+		case 5:
+			result[inp.PlayerID].AttemptMoveActivePiece(Pos{1, 0})
 		}
 	}
 	return result

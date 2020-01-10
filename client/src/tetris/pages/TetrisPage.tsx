@@ -164,6 +164,14 @@ const TetrisPage: React.FC = () => {
             leftKey.lastTriggered += constants.ARR;
           }
         }
+
+        const downKey = keyDown[keyBindings.softDrop];
+        if (downKey && time - downKey.lastTriggered >= constants.ARR) {
+          socket.send(
+            JSON.stringify({ playerID: clientID, command: 5, time: Date.now() })
+          );
+          downKey.lastTriggered += constants.ARR;
+        }
       });
 
       window.requestAnimationFrame(update);
@@ -192,6 +200,11 @@ const TetrisPage: React.FC = () => {
         case keyBindings.rotateCounterClockwise:
           socket.send(
             JSON.stringify({ playerID: clientID, command: 4, time: Date.now() })
+          );
+          break;
+        case keyBindings.softDrop:
+          socket.send(
+            JSON.stringify({ playerID: clientID, command: 5, time: Date.now() })
           );
           break;
         // case keyBindings.hardDrop:
