@@ -93,7 +93,7 @@ const TetrisPage: React.FC = () => {
     const socket = new WebSocket("ws://localhost:8080/socket");
     socket.onopen = () => {
       socket.onmessage = m => {
-        // console.log("got message", m);
+        console.log("got message", m);
         const parsedData = JSON.parse(m.data);
         // console.log("parsed data", _.cloneDeep(parsedData));
         if (parsedData.type && parsedData.type === "id") {
@@ -124,46 +124,50 @@ const TetrisPage: React.FC = () => {
       };
     };
 
-    //   const update = () => {
-    //     unstable_batchedUpdates(() => {
-    //       const time = Date.now();
+    const update = () => {
+      unstable_batchedUpdates(() => {
+        const time = Date.now();
 
-    //       dispatch({
-    //         type: "tick",
-    //         info: { softDrop: keyDown[keyBindings.softDrop] }
-    //       });
+        // dispatch({
+        //   type: "tick",
+        //   info: { softDrop: keyDown[keyBindings.softDrop] }
+        // });
 
-    //       const rightKey = keyDown[keyBindings.moveRight];
-    //       if (
-    //         rightKey &&
-    //         time - rightKey.downTime >= constants.DAS &&
-    //         time - rightKey.lastTriggered >= constants.ARR
-    //       ) {
-    //         dispatch({ type: "moveRight" });
-    //         if (rightKey.lastTriggered === rightKey.downTime) {
-    //           rightKey.lastTriggered += constants.DAS;
-    //         } else {
-    //           rightKey.lastTriggered += constants.ARR;
-    //         }
-    //       }
+        const rightKey = keyDown[keyBindings.moveRight];
+        if (
+          rightKey &&
+          time - rightKey.downTime >= constants.DAS &&
+          time - rightKey.lastTriggered >= constants.ARR
+        ) {
+          socket.send(
+            JSON.stringify({ playerID: clientID, command: 2, time: Date.now() })
+          );
+          if (rightKey.lastTriggered === rightKey.downTime) {
+            rightKey.lastTriggered += constants.DAS;
+          } else {
+            rightKey.lastTriggered += constants.ARR;
+          }
+        }
 
-    //       const leftKey = keyDown[keyBindings.moveLeft];
-    //       if (
-    //         leftKey &&
-    //         time - leftKey.downTime >= constants.DAS &&
-    //         time - leftKey.lastTriggered >= constants.ARR
-    //       ) {
-    //         dispatch({ type: "moveLeft" });
-    //         if (leftKey.lastTriggered === leftKey.downTime) {
-    //           leftKey.lastTriggered += constants.DAS;
-    //         } else {
-    //           leftKey.lastTriggered += constants.ARR;
-    //         }
-    //       }
-    //     });
+        const leftKey = keyDown[keyBindings.moveLeft];
+        if (
+          leftKey &&
+          time - leftKey.downTime >= constants.DAS &&
+          time - leftKey.lastTriggered >= constants.ARR
+        ) {
+          socket.send(
+            JSON.stringify({ playerID: clientID, command: 1, time: Date.now() })
+          );
+          if (leftKey.lastTriggered === leftKey.downTime) {
+            leftKey.lastTriggered += constants.DAS;
+          } else {
+            leftKey.lastTriggered += constants.ARR;
+          }
+        }
+      });
 
-    //     window.requestAnimationFrame(update);
-    //   };
+      window.requestAnimationFrame(update);
+    };
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (keyDown[e.keyCode]) {
@@ -204,7 +208,7 @@ const TetrisPage: React.FC = () => {
       delete keyDown[e.keyCode];
     };
 
-    //   window.requestAnimationFrame(update);
+    window.requestAnimationFrame(update);
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
   }, []);

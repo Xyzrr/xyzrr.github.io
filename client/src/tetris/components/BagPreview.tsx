@@ -19,6 +19,9 @@ const BagPreview: React.FC<BagPreviewProps> = props => {
 
     for (let i = 0; i < Math.min(5, props.nextPieces.length); i++) {
       const type = props.nextPieces[i];
+      if ((type as any) === ".") {
+        break;
+      }
       ctx.fillStyle = tetrominos[type].color.toString();
       for (const coord of tetrominos[type].minos[0]) {
         ctx.fillRect(

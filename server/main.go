@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"time"
@@ -28,11 +29,11 @@ type ActivePiece struct {
 type GameField [MatrixRows][MatrixCols]byte
 
 type PlayerState struct {
-	Field       GameField    `json:"field"`
-	ActivePiece ActivePiece  `json:"activePiece"`
-	Hold        byte         `json:"hold"`
-	Held        bool         `json:"held"`
-	NextPieces  [5]Tetromino `json:"nextPieces"`
+	Field       GameField     `json:"field"`
+	ActivePiece ActivePiece   `json:"activePiece"`
+	Hold        byte          `json:"hold"`
+	Held        bool          `json:"held"`
+	NextPieces  [15]Tetromino `json:"nextPieces"`
 }
 
 type PlayerInput struct {
@@ -68,18 +69,15 @@ func main() {
 }
 
 func getInitialPlayerState() PlayerState {
+	bag := GenerateRandomBag()
+	nextPieces := [15]Tetromino{}
+	copy(nextPieces[:], bag[:])
 	return PlayerState{
-		Field: GameField{},
-		ActivePiece: ActivePiece{
-			Position:      Pos{18, 2},
-			PieceType:     J,
-			Orientation:   0,
-			LastFallTime:  getTime(),
-			LockStartTime: 0,
-		},
-		Hold:       0,
-		Held:       false,
-		NextPieces: [5]Tetromino{J, Z, T, I, O},
+		Field:       GameField{},
+		ActivePiece: getInitialActivePieceState(J),
+		Hold:        0,
+		Held:        false,
+		NextPieces:  nextPieces,
 	}
 }
 
@@ -108,6 +106,23 @@ func ActivePieceIsColliding(activePiece ActivePiece, field GameField) bool {
 	return false
 }
 
+func (state *PlayerState) startLockingIfOnGround(breakLock bool) {
+	testPiece := state.ActivePiece
+	testPiece.Position.Row++
+	onGround := ActivePieceIsColliding(testPiece, state.Field)
+	if onGround {
+		if state.ActivePiece.LockStartTime == 0 || breakLock {
+			state.ActivePiece.LockStartTime = getTime()
+		}
+		state.ActivePiece.LastFallTime = 0
+	} else {
+		state.ActivePiece.LockStartTime = 0
+		if state.ActivePiece.LastFallTime == 0 {
+			state.ActivePiece.LastFallTime = getTime()
+		}
+	}
+}
+
 func (state *PlayerState) AttemptMoveActivePiece(offset Pos) {
 	ap := state.ActivePiece
 	ap.Position = AddPositions(ap.Position, offset)
@@ -115,6 +130,7 @@ func (state *PlayerState) AttemptMoveActivePiece(offset Pos) {
 	if !colliding {
 		state.ActivePiece.Position = ap.Position
 	}
+	state.startLockingIfOnGround(!colliding)
 }
 
 func RotateActivePiece(activePiece ActivePiece, rotation byte) ActivePiece {
@@ -138,6 +154,42 @@ func (state *PlayerState) AttemptRotateActivePiece(dir byte) {
 	}
 }
 
+func GenerateRandomBag() [7]Tetromino {
+	bag := [7]Tetromino{Z, S, L, J, T, O, I}
+	for i := len(bag) - 1; i > 0; i-- {
+		j := rand.Intn(i + 1)
+		bag[i], bag[j] = bag[j], bag[i]
+	}
+	return bag
+}
+
+func getInitialActivePieceState(t Tetromino) ActivePiece {
+	return ActivePiece{
+		Position:      Pos{18, 2},
+		PieceType:     t,
+		Orientation:   0,
+		LastFallTime:  getTime(),
+		LockStartTime: 0,
+	}
+}
+
+func (state *PlayerState) PopNextActivePiece() {
+	if state.NextPieces[7] == 0 {
+		bag := GenerateRandomBag()
+		copy(state.NextPieces[7:], bag[:])
+	}
+	state.ActivePiece = getInitialActivePieceState(state.NextPieces[0])
+	copy(state.NextPieces[:], state.NextPieces[1:])
+}
+
+func (state *PlayerState) LockActivePiece() {
+	minos := GetMinos(state.ActivePiece.PieceType, state.ActivePiece.Orientation)
+	for _, mino := range minos {
+		pos := AddPositions(state.ActivePiece.Position, mino)
+		state.Field[pos.Row][pos.Col] = byte(state.ActivePiece.PieceType)
+	}
+}
+
 func (state *PlayerState) Tick() {
 	time := getTime()
 
@@ -150,6 +202,12 @@ func (state *PlayerState) Tick() {
 	if state.ActivePiece.LastFallTime > 0 && time-state.ActivePiece.LastFallTime >= dropSpeed {
 		state.AttemptMoveActivePiece(Pos{1, 0})
 		state.ActivePiece.LastFallTime += dropSpeed
+	}
+
+	if state.ActivePiece.LockStartTime > 0 && time-state.ActivePiece.LockStartTime >= lockDelay {
+		state.LockActivePiece()
+		state.PopNextActivePiece()
+		state.Held = false
 	}
 }
 
