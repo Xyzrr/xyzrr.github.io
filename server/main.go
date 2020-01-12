@@ -182,12 +182,64 @@ func (state *PlayerState) PopNextActivePiece() {
 	copy(state.NextPieces[:], state.NextPieces[1:])
 }
 
+func (state *PlayerState) CheckForClears() {
+	linesCleared := 0
+	for i := 0; i < 5; i++ {
+		testRow := state.ActivePiece.Position.Row + i
+		if testRow < MatrixRows && !SliceContainsByte(state.Field[testRow][:], 0) {
+			copy(state.Field[1:], state.Field[:testRow])
+			linesCleared++
+		}
+	}
+}
+
+func SliceContainsByte(slice []byte, target byte) bool {
+	for _, v := range slice {
+		if v == target {
+			return true
+		}
+	}
+	return false
+}
+
 func (state *PlayerState) LockActivePiece() {
 	minos := GetMinos(state.ActivePiece.PieceType, state.ActivePiece.Orientation)
 	for _, mino := range minos {
 		pos := AddPositions(state.ActivePiece.Position, mino)
 		state.Field[pos.Row][pos.Col] = byte(state.ActivePiece.PieceType)
 	}
+	state.CheckForClears()
+}
+
+func MoveToGround(activePiece ActivePiece, field GameField) ActivePiece {
+	activePiece.Position.Row++
+	for !ActivePieceIsColliding(activePiece, field) {
+		activePiece.Position.Row++
+	}
+	activePiece.Position.Row--
+	return activePiece
+}
+
+func (state *PlayerState) HardDrop() {
+	state.ActivePiece = MoveToGround(state.ActivePiece, state.Field)
+	state.LockActivePiece()
+	state.PopNextActivePiece()
+	state.Held = false
+}
+
+func (state *PlayerState) HoldActivePiece() {
+	if state.Held {
+		return
+	}
+	if state.Hold != 0 {
+		tempHold := state.Hold
+		state.Hold = byte(state.ActivePiece.PieceType)
+		state.ActivePiece = getInitialActivePieceState(Tetromino(tempHold))
+	} else {
+		state.Hold = byte(state.ActivePiece.PieceType)
+		state.PopNextActivePiece()
+	}
+	state.Held = true
 }
 
 func (state *PlayerState) Tick() {
@@ -233,6 +285,10 @@ func updateGames(states map[string]*PlayerState, inputs []PlayerInput) map[strin
 			result[inp.PlayerID].AttemptRotateActivePiece(3)
 		case 5:
 			result[inp.PlayerID].AttemptMoveActivePiece(Pos{1, 0})
+		case 6:
+			result[inp.PlayerID].HardDrop()
+		case 7:
+			result[inp.PlayerID].HoldActivePiece()
 		}
 	}
 	return result

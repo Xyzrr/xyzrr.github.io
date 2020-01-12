@@ -114,7 +114,12 @@ const TetrisPage: React.FC = () => {
             newState.nextPieces = newState.nextPieces.map(
               (c: any) => charMap[c]
             );
-            // console.log("modified", newState);
+            if (newState.hold === 0) {
+              newState.hold = undefined;
+            } else {
+              newState.hold = charMap[newState.hold];
+            }
+            console.log("modified", newState);
             dispatch({
               type: "replaceState",
               info: newState
@@ -207,12 +212,16 @@ const TetrisPage: React.FC = () => {
             JSON.stringify({ playerID: clientID, command: 5, time: Date.now() })
           );
           break;
-        // case keyBindings.hardDrop:
-        //   dispatch({ type: "hardDrop" });
-        //   break;
-        // case keyBindings.hold:
-        //   dispatch({ type: "hold" });
-        //   break;
+        case keyBindings.hardDrop:
+          socket.send(
+            JSON.stringify({ playerID: clientID, command: 6, time: Date.now() })
+          );
+          break;
+        case keyBindings.hold:
+          socket.send(
+            JSON.stringify({ playerID: clientID, command: 7, time: Date.now() })
+          );
+          break;
       }
       keyDown[e.keyCode] = { downTime: Date.now(), lastTriggered: Date.now() };
     };
