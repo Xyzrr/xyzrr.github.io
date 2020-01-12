@@ -129,6 +129,17 @@ const TetrisPage: React.FC = () => {
       };
     };
 
+    const sendInput = (input: any) => {
+      const SIMULATE_POOR_CONNECTION = false;
+      if (SIMULATE_POOR_CONNECTION) {
+        window.setTimeout(() => {
+          socket.send(JSON.stringify(input));
+        }, 500);
+      } else {
+        socket.send(JSON.stringify(input));
+      }
+    };
+
     const update = () => {
       unstable_batchedUpdates(() => {
         const time = Date.now();
@@ -144,9 +155,7 @@ const TetrisPage: React.FC = () => {
           time - rightKey.downTime >= constants.DAS &&
           time - rightKey.lastTriggered >= constants.ARR
         ) {
-          socket.send(
-            JSON.stringify({ playerID: clientID, command: 2, time: Date.now() })
-          );
+          sendInput({ playerID: clientID, command: 2, time: Date.now() });
           if (rightKey.lastTriggered === rightKey.downTime) {
             rightKey.lastTriggered += constants.DAS;
           } else {
@@ -160,9 +169,7 @@ const TetrisPage: React.FC = () => {
           time - leftKey.downTime >= constants.DAS &&
           time - leftKey.lastTriggered >= constants.ARR
         ) {
-          socket.send(
-            JSON.stringify({ playerID: clientID, command: 1, time: Date.now() })
-          );
+          sendInput({ playerID: clientID, command: 1, time: Date.now() });
           if (leftKey.lastTriggered === leftKey.downTime) {
             leftKey.lastTriggered += constants.DAS;
           } else {
@@ -172,9 +179,7 @@ const TetrisPage: React.FC = () => {
 
         const downKey = keyDown[keyBindings.softDrop];
         if (downKey && time - downKey.lastTriggered >= constants.ARR) {
-          socket.send(
-            JSON.stringify({ playerID: clientID, command: 5, time: Date.now() })
-          );
+          sendInput({ playerID: clientID, command: 5, time: Date.now() });
           downKey.lastTriggered += constants.ARR;
         }
       });
@@ -188,39 +193,25 @@ const TetrisPage: React.FC = () => {
       }
       switch (e.keyCode) {
         case keyBindings.moveLeft:
-          socket.send(
-            JSON.stringify({ playerID: clientID, command: 1, time: Date.now() })
-          );
+          sendInput({ playerID: clientID, command: 1, time: Date.now() });
           break;
         case keyBindings.moveRight:
-          socket.send(
-            JSON.stringify({ playerID: clientID, command: 2, time: Date.now() })
-          );
+          sendInput({ playerID: clientID, command: 2, time: Date.now() });
           break;
         case keyBindings.rotateClockwise:
-          socket.send(
-            JSON.stringify({ playerID: clientID, command: 3, time: Date.now() })
-          );
+          sendInput({ playerID: clientID, command: 3, time: Date.now() });
           break;
         case keyBindings.rotateCounterClockwise:
-          socket.send(
-            JSON.stringify({ playerID: clientID, command: 4, time: Date.now() })
-          );
+          sendInput({ playerID: clientID, command: 4, time: Date.now() });
           break;
         case keyBindings.softDrop:
-          socket.send(
-            JSON.stringify({ playerID: clientID, command: 5, time: Date.now() })
-          );
+          sendInput({ playerID: clientID, command: 5, time: Date.now() });
           break;
         case keyBindings.hardDrop:
-          socket.send(
-            JSON.stringify({ playerID: clientID, command: 6, time: Date.now() })
-          );
+          sendInput({ playerID: clientID, command: 6, time: Date.now() });
           break;
         case keyBindings.hold:
-          socket.send(
-            JSON.stringify({ playerID: clientID, command: 7, time: Date.now() })
-          );
+          sendInput({ playerID: clientID, command: 7, time: Date.now() });
           break;
       }
       keyDown[e.keyCode] = { downTime: Date.now(), lastTriggered: Date.now() };
