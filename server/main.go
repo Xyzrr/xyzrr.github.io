@@ -88,23 +88,24 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	newID := xid.New().String()
-	conn.WriteJSON(map[string]string{"type": "id", "id": newID})
-	clients[conn] = newID
+	clientID := xid.New().String()
+	conn.WriteJSON(map[string]string{"type": "id", "id": clientID})
+	clients[conn] = clientID
 	is := getInitialPlayerState()
-	playerStates[newID] = &is
+	playerStates[clientID] = &is
 	for {
 		var input PlayerInput
 		err := conn.ReadJSON(&input)
 
 		if err != nil {
 			log.Printf("error: %v", err)
+			delete(playerStates, clientID)
 			delete(clients, conn)
 			break
 		}
 		fmt.Println("Received player input", input)
 
-		input.PlayerID = newID
+		input.PlayerID = clientID
 
 		playerInputs <- input
 	}

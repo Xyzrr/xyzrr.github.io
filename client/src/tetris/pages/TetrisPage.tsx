@@ -56,20 +56,22 @@ async function doStuff() {
 }
 
 const TetrisPage: React.FC = () => {
-  const testField: TetrisFieldTile[][] = new Array(constants.MATRIX_ROWS).fill(
-    new Array(constants.MATRIX_COLS).fill(0)
-  );
-  const {
-    activePiece: initialActivePiece,
-    nextPieces: initialBag
-  } = popNextActivePiece([]);
-  const [state, dispatch] = React.useReducer(tetrisReducer, {
-    field: testField,
-    hold: undefined,
-    held: false,
-    activePiece: initialActivePiece,
-    nextPieces: initialBag
-  });
+  // const testField: TetrisFieldTile[][] = new Array(constants.MATRIX_ROWS).fill(
+  //   new Array(constants.MATRIX_COLS).fill(0)
+  // );
+  // const {
+  //   activePiece: initialActivePiece,
+  //   nextPieces: initialBag
+  // } = popNextActivePiece([]);
+  // const [state, dispatch] = React.useReducer(tetrisReducer, {
+  //   field: testField,
+  //   hold: undefined,
+  //   held: false,
+  //   activePiece: initialActivePiece,
+  //   nextPieces: initialBag
+  // });
+  const [state, dispatch] = React.useReducer(tetrisReducer, {});
+
   let clientID: string | undefined = undefined;
 
   React.useEffect(() => {
@@ -85,18 +87,17 @@ const TetrisPage: React.FC = () => {
           console.log("Got client ID", parsedData.id);
           clientID = parsedData.id;
         } else {
-          if (clientID) {
-            const newState = parsedData[clientID];
-            newState.activePiece.position = [
-              newState.activePiece.position.row,
-              newState.activePiece.position.col
+          for (const clientID of Object.keys(parsedData)) {
+            const clientState = parsedData[clientID];
+            clientState.activePiece.position = [
+              clientState.activePiece.position.row,
+              clientState.activePiece.position.col
             ];
-            console.log("modified", newState);
-            dispatch({
-              type: "replaceState",
-              info: newState
-            });
           }
+          dispatch({
+            type: "replaceState",
+            info: parsedData
+          });
         }
       };
     };
@@ -202,16 +203,19 @@ const TetrisPage: React.FC = () => {
 
   return (
     <TetrisPageDiv>
-      {new Array(1).fill(0).map((_a, i) => (
-        <TetrisGameFrame
-          key={i}
-          field={state.field}
-          activePiece={state.activePiece}
-          hold={state.hold}
-          nextPieces={state.nextPieces}
-          held={state.held}
-        ></TetrisGameFrame>
-      ))}
+      {Object.keys(state).map(clientID => {
+        const clientState = state[clientID];
+        return (
+          <TetrisGameFrame
+            key={clientID}
+            field={clientState.field}
+            activePiece={clientState.activePiece}
+            hold={clientState.hold}
+            nextPieces={clientState.nextPieces}
+            held={clientState.held}
+          ></TetrisGameFrame>
+        );
+      })}
     </TetrisPageDiv>
   );
 };

@@ -264,6 +264,10 @@ export const tick = (
 };
 
 interface TetrisPageState {
+  [clientID: string]: GameState;
+}
+
+interface GameState {
   field: TetrisFieldTile[][];
   hold?: Mino;
   held: boolean;
@@ -280,78 +284,78 @@ export const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
   state,
   action
 ) => {
-  if (!state.activePiece) {
-    return state;
-  }
+  // if (!state.activePiece) {
+  //   return state;
+  // }
   switch (action.type) {
-    case "tick":
-      return {
-        ...state,
-        ...tick(
-          state.activePiece,
-          state.field,
-          state.nextPieces,
-          state.held,
-          action.info.softDrop
-        )
-      };
-    case "moveLeft":
-      return {
-        ...state,
-        activePiece: attemptMoveActivePiece(state.activePiece, state.field, [
-          0,
-          -1
-        ])
-      };
-    case "moveRight":
-      return {
-        ...state,
-        activePiece: attemptMoveActivePiece(state.activePiece, state.field, [
-          0,
-          1
-        ])
-      };
-    case "rotateClockwise":
-      return {
-        ...state,
-        activePiece: attemptRotateActivePiece(state.activePiece, state.field, 1)
-      };
-    case "rotateCounterClockwise":
-      return {
-        ...state,
-        activePiece: attemptRotateActivePiece(
-          state.activePiece,
-          state.field,
-          -1
-        )
-      };
-    case "hardDrop":
-      const droppedPiece = moveToGround(state.activePiece, state.field);
-      return {
-        ...state,
-        ...popNextActivePiece(state.nextPieces),
-        field: lockActivePiece(droppedPiece, state.field),
-        held: false
-      };
-    case "hold":
-      if (state.held) {
-        return state;
-      }
-      if (state.hold) {
-        return {
-          ...state,
-          activePiece: getInitialActivePieceState(state.hold),
-          hold: state.activePiece.pieceType,
-          held: true
-        };
-      } else {
-        return {
-          ...state,
-          ...popNextActivePiece(state.nextPieces),
-          hold: state.activePiece.pieceType,
-          held: true
-        };
-      }
+    //   case "tick":
+    //     return {
+    //       ...state,
+    //       ...tick(
+    //         state.activePiece,
+    //         state.field,
+    //         state.nextPieces,
+    //         state.held,
+    //         action.info.softDrop
+    //       )
+    //     };
+    //   case "moveLeft":
+    //     return {
+    //       ...state,
+    //       activePiece: attemptMoveActivePiece(state.activePiece, state.field, [
+    //         0,
+    //         -1
+    //       ])
+    //     };
+    //   case "moveRight":
+    //     return {
+    //       ...state,
+    //       activePiece: attemptMoveActivePiece(state.activePiece, state.field, [
+    //         0,
+    //         1
+    //       ])
+    //     };
+    //   case "rotateClockwise":
+    //     return {
+    //       ...state,
+    //       activePiece: attemptRotateActivePiece(state.activePiece, state.field, 1)
+    //     };
+    //   case "rotateCounterClockwise":
+    //     return {
+    //       ...state,
+    //       activePiece: attemptRotateActivePiece(
+    //         state.activePiece,
+    //         state.field,
+    //         -1
+    //       )
+    //     };
+    //   case "hardDrop":
+    //     const droppedPiece = moveToGround(state.activePiece, state.field);
+    //     return {
+    //       ...state,
+    //       ...popNextActivePiece(state.nextPieces),
+    //       field: lockActivePiece(droppedPiece, state.field),
+    //       held: false
+    //     };
+    //   case "hold":
+    //     if (state.held) {
+    //       return state;
+    //     }
+    //     if (state.hold) {
+    //       return {
+    //         ...state,
+    //         activePiece: getInitialActivePieceState(state.hold),
+    //         hold: state.activePiece.pieceType,
+    //         held: true
+    //       };
+    //     } else {
+    //       return {
+    //         ...state,
+    //         ...popNextActivePiece(state.nextPieces),
+    //         hold: state.activePiece.pieceType,
+    //         held: true
+    //       };
+    //     }
     case "replaceState":
       return action.info;
     default:
