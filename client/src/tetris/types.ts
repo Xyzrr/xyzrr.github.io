@@ -1,8 +1,16 @@
-export type Mino = "z" | "s" | "j" | "l" | "o" | "i" | "t";
-export type TetrisFieldTile = Mino | "g" | ".";
+export enum Mino {
+  S = 1,
+  Z,
+  J,
+  L,
+  T,
+  O,
+  I
+}
+export type TetrisFieldTile = Mino | 8 | 0;
 export interface ActivePiece {
   position: [number, number];
-  type: Mino;
+  pieceType: Mino;
   orientation: number;
   lastFallTime: number;
   lockStartTime: number;

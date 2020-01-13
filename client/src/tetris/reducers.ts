@@ -1,5 +1,5 @@
 import { TetrisFieldTile, ActivePiece, Mino } from "./types";
-import tetrominos from "./tetrominos";
+import { getMinos, getOffsets } from "./tetrominos";
 import * as constants from "./constants";
 import { randInt } from "../util/helpers";
 import * as _ from "lodash";
@@ -56,8 +56,7 @@ const activePieceIsColliding = (
   activePiece: ActivePiece,
   field: TetrisFieldTile[][]
 ) => {
-  const tetromino = tetrominos[activePiece.type];
-  const minos = tetromino.minos[activePiece.orientation];
+  const minos = getMinos(activePiece.pieceType, activePiece.orientation);
 
   for (const coord of minos) {
     const pos = addCoords(activePiece.position, coord);
@@ -66,7 +65,7 @@ const activePieceIsColliding = (
       pos[0] >= constants.MATRIX_ROWS ||
       pos[1] < 0 ||
       pos[1] >= constants.MATRIX_COLS ||
-      field[pos[0]][pos[1]] !== "."
+      field[pos[0]][pos[1]]
     ) {
       return true;
     }
@@ -95,11 +94,16 @@ const attemptRotateActivePiece = (
 ) => {
   let newActivePiece = activePiece;
 
-  const tetromino = tetrominos[activePiece.type];
   const rotatedPiece = rotate(activePiece, dir);
-  const beforeOffsets = tetromino.offsets[activePiece.orientation];
-  const afterOffsets = tetromino.offsets[rotatedPiece.orientation];
-  for (let i = 0; i < tetromino.offsets[0].length; i++) {
+  const beforeOffsets = getOffsets(
+    activePiece.pieceType,
+    activePiece.orientation
+  );
+  const afterOffsets = getOffsets(
+    activePiece.pieceType,
+    rotatedPiece.orientation
+  );
+  for (let i = 0; i < beforeOffsets.length; i++) {
     const testPiece = translate(
       rotatedPiece,
       subtractCoords(beforeOffsets[i], afterOffsets[i])
@@ -119,7 +123,7 @@ export const getInitialActivePieceState = (type?: Mino) => {
     return undefined;
   }
   return {
-    type: type,
+    pieceType: type,
     position: constants.START_POSITION,
     orientation: 0,
     lastFallTime: Date.now(),
@@ -149,10 +153,10 @@ const checkForClears = (
   for (let i = 0; i < 5; i++) {
     if (
       activePiece.position[0] + i < constants.MATRIX_ROWS &&
-      !newField[i + activePiece.position[0]].includes(".")
+      !newField[i + activePiece.position[0]].includes(0)
     ) {
       clearedField.splice(activePiece.position[0] + i, 1);
-      clearedField.unshift(_.fill(new Array(constants.MATRIX_COLS), "."));
+      clearedField.unshift(_.fill(new Array(constants.MATRIX_COLS), 0));
       linesCleared++;
     }
   }
@@ -167,7 +171,7 @@ const checkForClears = (
   }
   console.log(
     `Cleared ${linesCleared} lines` +
-      (spin ? ` with a ${activePiece.type} spin` : "")
+      (spin ? ` with a ${activePiece.pieceType} spin` : "")
   );
   return clearedField;
 };
@@ -176,12 +180,11 @@ const lockActivePiece = (
   activePiece: ActivePiece,
   field: TetrisFieldTile[][]
 ) => {
-  const tetromino = tetrominos[activePiece.type];
-  const minos = tetromino.minos[activePiece.orientation];
+  const minos = getMinos(activePiece.pieceType, activePiece.orientation);
   let newField = _.cloneDeep(field);
   for (const coord of minos) {
     const pos = addCoords(activePiece.position, coord);
-    newField[pos[0]][pos[1]] = activePiece.type;
+    newField[pos[0]][pos[1]] = activePiece.pieceType;
   }
   newField = checkForClears(activePiece, field, newField);
   return newField;
@@ -201,7 +204,7 @@ export const moveToGround = (
 };
 
 export const generateRandomBag = () => {
-  const bag: Mino[] = ["z", "s", "l", "j", "t", "o", "i"];
+  const bag: Mino[] = [1, 2, 3, 4, 5, 6, 7];
   for (let i = bag.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [bag[i], bag[j]] = [bag[j], bag[i]];
@@ -338,14 +341,14 @@ export const tetrisReducer: React.Reducer<TetrisPageState, TetrisPageAction> = (
         return {
           ...state,
           activePiece: getInitialActivePieceState(state.hold),
-          hold: state.activePiece.type,
+          hold: state.activePiece.pieceType,
           held: true
         };
       } else {
         return {
           ...state,
           ...popNextActivePiece(state.nextPieces),
-          hold: state.activePiece.type,
+          hold: state.activePiece.pieceType,
           held: true
         };
       }

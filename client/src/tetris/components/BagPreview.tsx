@@ -1,7 +1,7 @@
 import { Mino } from "../types";
 import { resizeCanvas } from "../../util/helpers";
 import React from "react";
-import tetrominos from "../tetrominos";
+import { getColor, getMinos } from "../tetrominos";
 
 interface BagPreviewProps {
   unit: number;
@@ -22,8 +22,8 @@ const BagPreview: React.FC<BagPreviewProps> = props => {
       if ((type as any) === ".") {
         break;
       }
-      ctx.fillStyle = tetrominos[type].color.toString();
-      for (const coord of tetrominos[type].minos[0]) {
+      ctx.fillStyle = getColor(type);
+      for (const coord of getMinos(type, 0)) {
         ctx.fillRect(
           coord[1] * props.unit,
           (i * 3 + coord[0]) * props.unit,

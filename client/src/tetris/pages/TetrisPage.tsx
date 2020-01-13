@@ -32,49 +32,33 @@ const TetrisPageDiv = styled.div`
   background: black;
 `;
 
+async function doStuff() {
+  // @ts-ignore
+  const go = new Go();
+  // @ts-ignore
+  let { instance, module } = await WebAssembly.instantiateStreaming(
+    fetch("main.wasm"),
+    go.importObject
+  );
+  window.setTimeout(() => {
+    console.log("trying sketch stuff");
+    // @ts-ignore
+    printMessage("JS calling Go and back again!", (err, message) => {
+      if (err) {
+        console.error(err);
+        return;
+      }
+
+      console.log(message);
+    });
+  }, 1000);
+  await go.run(instance);
+}
+
 const TetrisPage: React.FC = () => {
-  const testField: TetrisFieldTile[][] = [
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."],
-    [".", ".", ".", ".", ".", ".", ".", ".", ".", "."]
-  ];
+  const testField: TetrisFieldTile[][] = new Array(constants.MATRIX_ROWS).fill(
+    new Array(constants.MATRIX_COLS).fill(0)
+  );
   const {
     activePiece: initialActivePiece,
     nextPieces: initialBag
@@ -89,6 +73,7 @@ const TetrisPage: React.FC = () => {
   let clientID: string | undefined = undefined;
 
   React.useEffect(() => {
+    doStuff();
     // const socket = new WebSocket("ws://34.67.102.3:8080/socket");
     const socket = new WebSocket("ws://localhost:8080/socket");
     socket.onopen = () => {
@@ -101,24 +86,11 @@ const TetrisPage: React.FC = () => {
           clientID = parsedData.id;
         } else {
           if (clientID) {
-            const charMap = [".", "s", "z", "j", "l", "t", "o", "i"];
             const newState = parsedData[clientID];
-            newState.field = newState.field.map((row: any) =>
-              row.map((c: any) => charMap[c])
-            );
-            newState.activePiece.type = charMap[newState.activePiece.pieceType];
             newState.activePiece.position = [
               newState.activePiece.position.row,
               newState.activePiece.position.col
             ];
-            newState.nextPieces = newState.nextPieces.map(
-              (c: any) => charMap[c]
-            );
-            if (newState.hold === 0) {
-              newState.hold = undefined;
-            } else {
-              newState.hold = charMap[newState.hold];
-            }
             console.log("modified", newState);
             dispatch({
               type: "replaceState",

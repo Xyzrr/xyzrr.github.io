@@ -1,19 +1,9 @@
 import React, { useEffect } from "react";
 import { TetrisFieldTile, ActivePiece, Mino } from "../types";
-import tetrominos from "../tetrominos";
+import { getColor, getMinos } from "../tetrominos";
 import { moveToGround } from "../reducers";
 import * as constants from "../constants";
 import styled from "styled-components";
-
-const colorStrings: { [key: string]: string } = {};
-const ghostColorStrings: { [key: string]: string } = {};
-
-for (let t in tetrominos) {
-  colorStrings[t] = tetrominos[t as Mino].color.toString();
-  ghostColorStrings[t] = tetrominos[t as Mino].color
-    .alpha(constants.GHOST_ALPHA)
-    .toString();
-}
 
 const TetrisGameFieldDiv = styled.div`
   position: relative;
@@ -42,8 +32,8 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
   const renderLand = (ctx: CanvasRenderingContext2D) => {
     props.field.forEach((row, i) => {
       row.forEach((cell, j) => {
-        if (cell !== ".") {
-          ctx.fillStyle = colorStrings[cell].toString();
+        if (cell !== 0) {
+          ctx.fillStyle = getColor(cell);
           ctx.fillRect(
             props.unit * j,
             props.unit * (i - 20),
@@ -60,12 +50,13 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
     activePiece: ActivePiece,
     ghost: boolean = false
   ) => {
-    for (const coord of tetrominos[activePiece.type].minos[
+    for (const coord of getMinos(
+      activePiece.pieceType,
       activePiece.orientation
-    ]) {
+    )) {
       ctx.fillStyle = ghost
-        ? ghostColorStrings[activePiece.type]
-        : colorStrings[activePiece.type];
+        ? getColor(activePiece.pieceType, constants.GHOST_ALPHA)
+        : getColor(activePiece.pieceType);
       ctx.fillRect(
         (activePiece.position[1] + coord[1]) * props.unit,
         (activePiece.position[0] + coord[0] - 20) * props.unit,
@@ -79,6 +70,7 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
     ctx.clearRect(0, 0, width, height);
     renderLand(ctx);
     if (props.activePiece) {
+      console.log("ap is", props.activePiece);
       renderActivePiece(ctx, props.activePiece);
       const ghostPiece = moveToGround(props.activePiece, props.field);
       renderActivePiece(ctx, ghostPiece, true);

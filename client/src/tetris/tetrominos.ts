@@ -1,5 +1,6 @@
 import { Mino } from "./types";
 import { red, green, darkBlue, orange, purple, yellow, blue } from "../colors";
+import memoize from "memoizee";
 
 const jlstzOffsets: [number, number][][] = [
   [
@@ -119,43 +120,43 @@ const iMinos: [number, number][] = [
   [2, 4]
 ];
 
-const tetrominos = {
-  z: {
-    color: red,
-    minos: [zMinos],
-    offsets: jlstzOffsets
-  },
-  s: {
+const tetrominos = [
+  {
     color: green,
     minos: [sMinos],
     offsets: jlstzOffsets
   },
-  j: {
+  {
+    color: red,
+    minos: [zMinos],
+    offsets: jlstzOffsets
+  },
+  {
     color: darkBlue,
     minos: [jMinos],
     offsets: jlstzOffsets
   },
-  l: {
+  {
     color: orange,
     minos: [lMinos],
     offsets: jlstzOffsets
   },
-  t: {
+  {
     color: purple,
     minos: [tMinos],
     offsets: jlstzOffsets
   },
-  o: {
+  {
     color: yellow,
     minos: [oMinos],
     offsets: oOffsets
   },
-  i: {
+  {
     color: blue,
     minos: [iMinos],
     offsets: iOffsets
   }
-};
+];
 
 const rotateCoords = (coords: [number, number][], size: number) => {
   const result: [number, number][] = [];
@@ -165,11 +166,24 @@ const rotateCoords = (coords: [number, number][], size: number) => {
   return result;
 };
 
-for (let type in tetrominos) {
-  const tetromino = tetrominos[type as Mino];
+for (let type = 1; type < 8; type++) {
+  const tetromino = tetrominos[type - 1]!;
   for (let i = 0; i < 3; i++) {
     tetromino.minos.push(rotateCoords(tetromino.minos[i], 5));
   }
 }
 
-export default tetrominos;
+export const getOffsets = (type: Mino, orientation: number) => {
+  return tetrominos[type - 1].offsets[orientation];
+};
+
+export const getMinos = (type: Mino, orientation: number) => {
+  console.log("minos of", type);
+  return tetrominos[type - 1].minos[orientation];
+};
+
+const _getColor = (type: Mino, alpha: number = 1) => {
+  return tetrominos[type - 1].color.alpha(alpha).toString();
+};
+
+export const getColor = memoize(_getColor, { length: 2 });
