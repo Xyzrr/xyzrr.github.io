@@ -195,11 +195,7 @@ func (state *PlayerState) Tick() {
 	time := getTime()
 
 	// handle falling
-	// const dropSpeed = softDrop
-	//   ? constants.SOFT_DROP_SPEED
-	//   : constants.TICK_DURATION;
 	dropSpeed := int64(200)
-	// fmt.Println("Tick", time, state.ActivePiece.LastFallTime)
 	if state.ActivePiece.LastFallTime > 0 && time-state.ActivePiece.LastFallTime >= dropSpeed {
 		state.AttemptMoveActivePiece(Pos{1, 0})
 		state.ActivePiece.LastFallTime += dropSpeed

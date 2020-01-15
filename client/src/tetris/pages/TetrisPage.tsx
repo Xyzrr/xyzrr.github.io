@@ -41,7 +41,7 @@ interface PlayerInput {
 
 export let playerInputs: PlayerInput[] = [];
 
-async function doStuff() {
+async function startLocalGameEngine() {
   // @ts-ignore
   const go = new Go();
   // @ts-ignore
@@ -86,27 +86,13 @@ export const jsToGoPlayerState = (s: PlayerState) => {
 };
 
 const TetrisPage: React.FC = () => {
-  // const testField: TetrisFieldTile[][] = new Array(constants.MATRIX_ROWS).fill(
-  //   new Array(constants.MATRIX_COLS).fill(0)
-  // );
-  // const {
-  //   activePiece: initialActivePiece,
-  //   nextPieces: initialBag
-  // } = popNextActivePiece([]);
-  // const [state, dispatch] = React.useReducer(tetrisReducer, {
-  //   field: testField,
-  //   hold: undefined,
-  //   held: false,
-  //   activePiece: initialActivePiece,
-  //   nextPieces: initialBag
-  // });
   const [state, dispatch] = React.useReducer(tetrisReducer, {
     serverState: {},
     predictedStates: []
   });
 
   React.useEffect(() => {
-    doStuff();
+    startLocalGameEngine();
     // const socket = new WebSocket("ws://34.67.102.3:8080/socket");
     const socket = new WebSocket("ws://localhost:8080/socket");
     socket.onopen = () => {
