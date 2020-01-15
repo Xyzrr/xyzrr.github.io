@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { TetrisFieldTile, ActivePiece, Mino } from "../types";
+import { TetrisFieldTile, ActivePiece } from "../types";
 import { getColor, getMinos } from "../tetrominos";
 import * as constants from "../constants";
 import styled from "styled-components";

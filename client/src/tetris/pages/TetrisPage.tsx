@@ -7,6 +7,7 @@ import * as constants from "../constants";
 import { unstable_batchedUpdates } from "react-dom";
 import * as _ from "lodash";
 import produce from "immer";
+import "../wasm_exec";
 
 export let clientID: string | undefined = undefined;
 
