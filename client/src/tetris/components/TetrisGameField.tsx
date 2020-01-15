@@ -1,9 +1,51 @@
 import React, { useEffect } from "react";
 import { TetrisFieldTile, ActivePiece, Mino } from "../types";
 import { getColor, getMinos } from "../tetrominos";
-import { moveToGround } from "../reducers";
 import * as constants from "../constants";
 import styled from "styled-components";
+
+const addCoords = (a: [number, number], b: [number, number]) => {
+  const result: [number, number] = [a[0] + b[0], a[1] + b[1]];
+  return result;
+};
+
+const translate = (activePiece: ActivePiece, translation: [number, number]) => {
+  return {
+    ...activePiece,
+    position: addCoords(activePiece.position, translation)
+  };
+};
+
+const activePieceIsColliding = (
+  activePiece: ActivePiece,
+  field: TetrisFieldTile[][]
+) => {
+  const minos = getMinos(activePiece.pieceType, activePiece.orientation);
+
+  for (const coord of minos) {
+    const pos = addCoords(activePiece.position, coord);
+    if (
+      pos[0] < 0 ||
+      pos[0] >= constants.MATRIX_ROWS ||
+      pos[1] < 0 ||
+      pos[1] >= constants.MATRIX_COLS ||
+      field[pos[0]][pos[1]]
+    ) {
+      return true;
+    }
+  }
+  return false;
+};
+
+const moveToGround = (activePiece: ActivePiece, field: TetrisFieldTile[][]) => {
+  let testShift = 0;
+  while (
+    !activePieceIsColliding(translate(activePiece, [testShift, 0]), field)
+  ) {
+    testShift++;
+  }
+  return translate(activePiece, [testShift - 1, 0]);
+};
 
 const TetrisGameFieldDiv = styled.div`
   position: relative;
