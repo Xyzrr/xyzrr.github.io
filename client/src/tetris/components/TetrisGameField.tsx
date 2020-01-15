@@ -70,7 +70,6 @@ const TetrisGameField: React.FC<TetrisGameFieldProps> = props => {
     ctx.clearRect(0, 0, width, height);
     renderLand(ctx);
     if (props.activePiece) {
-      console.log("ap is", props.activePiece);
       renderActivePiece(ctx, props.activePiece);
       const ghostPiece = moveToGround(props.activePiece, props.field);
       renderActivePiece(ctx, ghostPiece, true);

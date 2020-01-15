@@ -23,8 +23,6 @@ var playerStates = make(map[string]*PlayerState)
 var playerInputs = make(chan PlayerInput, 16384)
 
 func main() {
-	InitTetrominos()
-
 	// use PORT environment variable, or default to 8080
 	port := "8080"
 	if fromEnv := os.Getenv("PORT"); fromEnv != "" {
@@ -56,7 +54,7 @@ func runGames() {
 			inputs = append(inputs, <-playerInputs)
 		}
 		playerStates = updateGames(playerStates, inputs)
-		if tick%1 == 0 {
+		if tick%10 == 0 {
 			for client := range clients {
 				client.WriteJSON(playerStates)
 			}

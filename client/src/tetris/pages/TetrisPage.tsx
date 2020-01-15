@@ -2,11 +2,13 @@ import React from "react";
 
 import styled from "styled-components";
 import TetrisGameFrame from "../components/TetrisGameFrame";
-import { TetrisFieldTile } from "../types";
-import { tetrisReducer, popNextActivePiece } from "../reducers";
+import { tetrisReducer, PlayerState, ServerState } from "../reducers";
 import * as constants from "../constants";
 import { unstable_batchedUpdates } from "react-dom";
 import * as _ from "lodash";
+import produce from "immer";
+
+export let clientID: string | undefined = undefined;
 
 const keyBindings = {
   moveLeft: 37,
@@ -32,6 +34,13 @@ const TetrisPageDiv = styled.div`
   background: black;
 `;
 
+interface PlayerInput {
+  time: number;
+  command: number;
+}
+
+export let playerInputs: PlayerInput[] = [];
+
 async function doStuff() {
   // @ts-ignore
   const go = new Go();
@@ -40,20 +49,41 @@ async function doStuff() {
     fetch("main.wasm"),
     go.importObject
   );
-  window.setTimeout(() => {
-    console.log("trying sketch stuff");
-    // @ts-ignore
-    printMessage("JS calling Go and back again!", (err, message) => {
-      if (err) {
-        console.error(err);
-        return;
-      }
-
-      console.log(message);
-    });
-  }, 1000);
   await go.run(instance);
 }
+
+const goToJSState = (s: any) => {
+  return produce(s, (draft: any) => {
+    for (const clientID of Object.keys(s)) {
+      draft[clientID] = goToJSPlayerState(s[clientID]);
+    }
+  }) as ServerState;
+};
+
+export const goToJSPlayerState = (s: any) => {
+  return {
+    ...s,
+    activePiece: {
+      ...s.activePiece,
+      position: [s.activePiece.position.row, s.activePiece.position.col]
+    }
+  } as PlayerState;
+};
+
+export const jsToGoPlayerState = (s: PlayerState) => {
+  return {
+    ...s,
+    activePiece: s.activePiece
+      ? {
+          ...s.activePiece,
+          position: {
+            row: s.activePiece.position[0],
+            col: s.activePiece.position[1]
+          }
+        }
+      : undefined
+  };
+};
 
 const TetrisPage: React.FC = () => {
   // const testField: TetrisFieldTile[][] = new Array(constants.MATRIX_ROWS).fill(
@@ -70,9 +100,10 @@ const TetrisPage: React.FC = () => {
   //   activePiece: initialActivePiece,
   //   nextPieces: initialBag
   // });
-  const [state, dispatch] = React.useReducer(tetrisReducer, {});
-
-  let clientID: string | undefined = undefined;
+  const [state, dispatch] = React.useReducer(tetrisReducer, {
+    serverState: {},
+    predictedStates: []
+  });
 
   React.useEffect(() => {
     doStuff();
@@ -81,39 +112,48 @@ const TetrisPage: React.FC = () => {
     socket.onopen = () => {
       socket.onmessage = m => {
         console.log("got message", m);
-        const parsedData = JSON.parse(m.data);
-        // console.log("parsed data", _.cloneDeep(parsedData));
+
+        let parsedData = JSON.parse(m.data);
+
         if (parsedData.type && parsedData.type === "id") {
           console.log("Got client ID", parsedData.id);
           clientID = parsedData.id;
         } else {
-          for (const clientID of Object.keys(parsedData)) {
-            const clientState = parsedData[clientID];
-            clientState.activePiece.position = [
-              clientState.activePiece.position.row,
-              clientState.activePiece.position.col
-            ];
-          }
+          parsedData = goToJSState(parsedData);
           dispatch({
-            type: "replaceState",
+            type: "reconcileServerState",
             info: parsedData
           });
         }
       };
     };
 
-    const sendInput = (input: any) => {
-      const SIMULATE_POOR_CONNECTION = false;
+    const sendInput = (command: number) => {
+      const clientPlayerInput = { time: Date.now(), command };
+      playerInputs.push(clientPlayerInput);
+
+      const serverPlayerInput = {
+        playerID: clientID,
+        command,
+        time: Date.now()
+      };
+      const SIMULATE_POOR_CONNECTION = true;
       if (SIMULATE_POOR_CONNECTION) {
         window.setTimeout(() => {
-          socket.send(JSON.stringify(input));
+          socket.send(JSON.stringify(serverPlayerInput));
         }, 500);
       } else {
-        socket.send(JSON.stringify(input));
+        socket.send(JSON.stringify(serverPlayerInput));
       }
     };
 
     const update = () => {
+      dispatch({
+        type: "predictState",
+        info: playerInputs
+      });
+      playerInputs = [];
+
       unstable_batchedUpdates(() => {
         const time = Date.now();
 
@@ -128,7 +168,7 @@ const TetrisPage: React.FC = () => {
           time - rightKey.downTime >= constants.DAS &&
           time - rightKey.lastTriggered >= constants.ARR
         ) {
-          sendInput({ playerID: clientID, command: 2, time: Date.now() });
+          sendInput(2);
           if (rightKey.lastTriggered === rightKey.downTime) {
             rightKey.lastTriggered += constants.DAS;
           } else {
@@ -142,7 +182,7 @@ const TetrisPage: React.FC = () => {
           time - leftKey.downTime >= constants.DAS &&
           time - leftKey.lastTriggered >= constants.ARR
         ) {
-          sendInput({ playerID: clientID, command: 1, time: Date.now() });
+          sendInput(1);
           if (leftKey.lastTriggered === leftKey.downTime) {
             leftKey.lastTriggered += constants.DAS;
           } else {
@@ -152,7 +192,7 @@ const TetrisPage: React.FC = () => {
 
         const downKey = keyDown[keyBindings.softDrop];
         if (downKey && time - downKey.lastTriggered >= constants.ARR) {
-          sendInput({ playerID: clientID, command: 5, time: Date.now() });
+          sendInput(5);
           downKey.lastTriggered += constants.ARR;
         }
       });
@@ -166,25 +206,25 @@ const TetrisPage: React.FC = () => {
       }
       switch (e.keyCode) {
         case keyBindings.moveLeft:
-          sendInput({ playerID: clientID, command: 1, time: Date.now() });
+          sendInput(1);
           break;
         case keyBindings.moveRight:
-          sendInput({ playerID: clientID, command: 2, time: Date.now() });
+          sendInput(2);
           break;
         case keyBindings.rotateClockwise:
-          sendInput({ playerID: clientID, command: 3, time: Date.now() });
+          sendInput(3);
           break;
         case keyBindings.rotateCounterClockwise:
-          sendInput({ playerID: clientID, command: 4, time: Date.now() });
+          sendInput(4);
           break;
         case keyBindings.softDrop:
-          sendInput({ playerID: clientID, command: 5, time: Date.now() });
+          sendInput(5);
           break;
         case keyBindings.hardDrop:
-          sendInput({ playerID: clientID, command: 6, time: Date.now() });
+          sendInput(6);
           break;
         case keyBindings.hold:
-          sendInput({ playerID: clientID, command: 7, time: Date.now() });
+          sendInput(7);
           break;
       }
       keyDown[e.keyCode] = { downTime: Date.now(), lastTriggered: Date.now() };
@@ -199,15 +239,18 @@ const TetrisPage: React.FC = () => {
     window.addEventListener("keyup", onKeyUp);
   }, []);
 
-  // console.log("state", state);
-
   return (
     <TetrisPageDiv>
-      {Object.keys(state).map(clientID => {
-        const clientState = state[clientID];
+      {Object.keys(state.serverState).map(cid => {
+        let clientState: PlayerState;
+        if (cid === clientID) {
+          clientState = state.predictedStates[state.predictedStates.length - 1];
+        } else {
+          clientState = state.serverState[cid];
+        }
         return (
           <TetrisGameFrame
-            key={clientID}
+            key={cid}
             field={clientState.field}
             activePiece={clientState.activePiece}
             hold={clientState.hold}

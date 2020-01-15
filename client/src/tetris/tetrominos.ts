@@ -178,7 +178,6 @@ export const getOffsets = (type: Mino, orientation: number) => {
 };
 
 export const getMinos = (type: Mino, orientation: number) => {
-  console.log("minos of", type);
   return tetrominos[type - 1].minos[orientation];
 };
 
