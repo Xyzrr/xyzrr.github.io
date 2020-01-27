@@ -10,6 +10,11 @@ import produce from "immer";
 import "../wasm_exec";
 
 export let clientID: string | undefined = undefined;
+export let globals = {
+  frameStartTime: 0,
+  serverTimeOffset: 0,
+  actionIndex: 0
+};
 
 const keyBindings = {
   moveLeft: 37,
@@ -37,6 +42,7 @@ const TetrisPageDiv = styled.div`
 
 interface PlayerInput {
   time: number;
+  index: number;
   command: number;
 }
 
@@ -102,9 +108,11 @@ const TetrisPage: React.FC = () => {
 
         let parsedData = JSON.parse(m.data);
 
-        if (parsedData.type && parsedData.type === "id") {
+        if (parsedData.messageType && parsedData.messageType === "id") {
           console.log("Got client ID", parsedData.id);
           clientID = parsedData.id;
+          globals.frameStartTime = parsedData.time;
+          globals.serverTimeOffset = Date.now() - globals.frameStartTime;
         } else {
           parsedData = goToJSState(parsedData);
           dispatch({
@@ -116,13 +124,19 @@ const TetrisPage: React.FC = () => {
     };
 
     const sendInput = (command: number) => {
-      const clientPlayerInput = { time: Date.now(), command };
+      const clientPlayerInput = {
+        time: globals.frameStartTime,
+        command,
+        index: globals.actionIndex
+      };
       playerInputs.push(clientPlayerInput);
+      globals.actionIndex++;
 
       const serverPlayerInput = {
         playerID: clientID,
         command,
-        time: Date.now()
+        time: globals.frameStartTime,
+        index: globals.actionIndex
       };
       const SIMULATE_POOR_CONNECTION = true;
       if (SIMULATE_POOR_CONNECTION) {
@@ -135,6 +149,11 @@ const TetrisPage: React.FC = () => {
     };
 
     const update = () => {
+      if (globals.frameStartTime === 0) {
+        window.setTimeout(update, 17);
+        return;
+      }
+      globals.frameStartTime += 17;
       dispatch({
         type: "predictState",
         info: playerInputs
@@ -184,7 +203,9 @@ const TetrisPage: React.FC = () => {
         }
       });
 
-      window.requestAnimationFrame(update);
+      const msUntilNextUpdate =
+        globals.frameStartTime + 17 - (Date.now() - globals.serverTimeOffset);
+      window.setTimeout(update, msUntilNextUpdate);
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -220,8 +241,7 @@ const TetrisPage: React.FC = () => {
     const onKeyUp = (e: KeyboardEvent) => {
       delete keyDown[e.keyCode];
     };
-
-    window.requestAnimationFrame(update);
+    window.setTimeout(update, 17);
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
   }, []);

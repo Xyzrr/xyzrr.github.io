@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
-	"time"
 )
 
 type Pos struct {
@@ -29,8 +27,8 @@ type PlayerState struct {
 	NextPieces  [15]Tetromino `json:"nextPieces"`
 }
 
-func getTime() int64 {
-	return time.Now().UnixNano() / int64(time.Millisecond)
+func getFrameStartTime() int64 {
+	return frameStartTime
 }
 
 func AddPositions(a Pos, b Pos) Pos {
@@ -60,13 +58,13 @@ func (state *PlayerState) startLockingIfOnGround(breakLock bool) {
 	onGround := ActivePieceIsColliding(testPiece, state.Field)
 	if onGround {
 		if state.ActivePiece.LockStartTime == 0 || breakLock {
-			state.ActivePiece.LockStartTime = getTime()
+			state.ActivePiece.LockStartTime = getFrameStartTime()
 		}
 		state.ActivePiece.LastFallTime = 0
 	} else {
 		state.ActivePiece.LockStartTime = 0
 		if state.ActivePiece.LastFallTime == 0 {
-			state.ActivePiece.LastFallTime = getTime()
+			state.ActivePiece.LastFallTime = getFrameStartTime()
 		}
 	}
 }
@@ -95,7 +93,6 @@ func (state *PlayerState) AttemptRotateActivePiece(dir byte) {
 		trueOffset := SubPositions(beforeOffsets[i], afterOffsets[i])
 		testPiece.Position = AddPositions(testPiece.Position, trueOffset)
 		if !ActivePieceIsColliding(testPiece, state.Field) {
-			fmt.Println("HEY", trueOffset, i, testPiece.Position)
 			state.ActivePiece = testPiece
 			break
 		}
@@ -116,7 +113,7 @@ func getInitialActivePieceState(t Tetromino) ActivePiece {
 		Position:      Pos{18, 2},
 		PieceType:     t,
 		Orientation:   0,
-		LastFallTime:  getTime(),
+		LastFallTime:  getFrameStartTime(),
 		LockStartTime: 0,
 	}
 }
@@ -191,7 +188,7 @@ func (state *PlayerState) HoldActivePiece() {
 }
 
 func (state *PlayerState) Tick() {
-	time := getTime()
+	time := getFrameStartTime()
 
 	// handle falling
 	dropSpeed := int64(200)

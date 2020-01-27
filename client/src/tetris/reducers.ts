@@ -4,7 +4,8 @@ import {
   jsToGoPlayerState,
   goToJSPlayerState,
   clientID,
-  playerInputs
+  playerInputs,
+  globals
 } from "./pages/TetrisPage";
 import * as _ from "lodash";
 
@@ -52,7 +53,8 @@ const _tetrisReducer = (state: TetrisPageState, action: TetrisPageAction) => {
               state.predictedStates[state.predictedStates.length - 1]
             )
           ),
-          JSON.stringify(playerInputs)
+          JSON.stringify(playerInputs),
+          globals.frameStartTime.toString()
         );
         const newPlayerState = goToJSPlayerState(JSON.parse(goResult));
         state.predictedStates.push(newPlayerState);

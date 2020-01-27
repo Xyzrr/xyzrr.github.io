@@ -16,11 +16,17 @@ type PlayerInput struct {
 	Time     int64  `json:"time"`
 	Command  byte   `json:"command"`
 	PlayerID string `json:"playerID`
+	Index    int    `json:index`
 }
 
+var frameStartTime int64
 var clients = make(map[*websocket.Conn]string)
 var playerStates = make(map[string]*PlayerState)
 var playerInputs = make(chan PlayerInput, 16384)
+
+func getTime() int64 {
+	return time.Now().UnixNano() / int64(time.Millisecond)
+}
 
 func main() {
 	// use PORT environment variable, or default to 8080
@@ -44,11 +50,13 @@ func main() {
 
 func runGames() {
 	fmt.Println("Starting to run games")
+	frameStartTime = getTime()
 	tick := 0
 	ticker := time.NewTicker(17 * time.Millisecond)
 
 	for {
 		<-ticker.C
+		frameStartTime += 17
 		inputs := make([]PlayerInput, 0)
 		for len(playerInputs) > 0 {
 			inputs = append(inputs, <-playerInputs)
@@ -78,6 +86,12 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
+type initMessage struct {
+	MessageType string `json:"messageType"`
+	ID          string `json:"id"`
+	Time        int64  `json:"time"`
+}
+
 func socketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -87,7 +101,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	clientID := xid.New().String()
-	conn.WriteJSON(map[string]string{"type": "id", "id": clientID})
+	conn.WriteJSON(initMessage{"id", clientID, getFrameStartTime()})
 	clients[conn] = clientID
 	is := getInitialPlayerState()
 	playerStates[clientID] = &is
