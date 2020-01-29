@@ -26,8 +26,6 @@ type WorldState struct {
 var frameStartTime int64
 var clients = make(map[*websocket.Conn]string)
 var playerInputs = make(chan PlayerInput, 16384)
-var newConnections = make(chan string, 256)
-var killedConnections = make(chan string, 256)
 var worldHistory = make([]WorldState, 0)
 
 func getTime() int64 {
@@ -84,19 +82,6 @@ func runGames() {
 
 		newState := copyWorldState(worldHistory[len(worldHistory)-1])
 
-		// add new players
-		for len(newConnections) > 0 {
-			clientID := <-newConnections
-			is := getInitialPlayerState()
-			newState.playerStates[clientID] = &is
-		}
-
-		// remove disconnected players
-		for len(killedConnections) > 0 {
-			clientID := <-killedConnections
-			delete(newState.playerStates, clientID)
-		}
-
 		// process inputs
 		inputs := make([]PlayerInput, 0)
 		for len(playerInputs) > 0 {
@@ -111,7 +96,6 @@ func runGames() {
 			}
 		}
 
-		fmt.Println("history", worldHistory)
 		// get ready for next iteration
 		worldHistory = append(worldHistory, newState)
 		if len(worldHistory) > 128 {
@@ -154,14 +138,14 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	conn.WriteJSON(initMessage{"id", clientID, getFrameStartTime()})
 	clients[conn] = clientID
 
-	newConnections <- clientID
+	playerInputs <- PlayerInput{Time: frameStartTime, Command: 8, PlayerID: clientID}
 	for {
 		var input PlayerInput
 		err := conn.ReadJSON(&input)
 
 		if err != nil {
 			log.Printf("error: %v", err)
-			killedConnections <- clientID
+			playerInputs <- PlayerInput{Time: frameStartTime, Command: 9, PlayerID: clientID}
 			delete(clients, conn)
 			break
 		}

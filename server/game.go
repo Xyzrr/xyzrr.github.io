@@ -224,6 +224,11 @@ func updateGames(states map[string]*PlayerState, inputs []PlayerInput) {
 			states[inp.PlayerID].HardDrop()
 		case 7:
 			states[inp.PlayerID].HoldActivePiece()
+		case 8:
+			is := getInitialPlayerState()
+			states[inp.PlayerID] = &is
+		case 9:
+			delete(states, inp.PlayerID)
 		}
 	}
 	// since ticks are computed after all user input in the frame
