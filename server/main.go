@@ -19,10 +19,16 @@ type PlayerInput struct {
 	Index    int    `json:index`
 }
 
+type WorldState struct {
+	playerStates map[string]*PlayerState
+}
+
 var frameStartTime int64
 var clients = make(map[*websocket.Conn]string)
-var playerStates = make(map[string]*PlayerState)
 var playerInputs = make(chan PlayerInput, 16384)
+var newConnections = make(chan string, 256)
+var killedConnections = make(chan string, 256)
+var worldHistory = make([]WorldState, 0)
 
 func getTime() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
@@ -48,8 +54,26 @@ func main() {
 	log.Fatal(err)
 }
 
+type UpdateMessage struct {
+	NewState PlayerState
+	Time     int64
+}
+
+func copyWorldState(ws WorldState) WorldState {
+	var result WorldState
+	result.playerStates = make(map[string]*PlayerState)
+	for k, v := range ws.playerStates {
+		c := *v
+		result.playerStates[k] = &c
+	}
+	return result
+}
+
 func runGames() {
 	fmt.Println("Starting to run games")
+
+	worldHistory = append(worldHistory, WorldState{make(map[string]*PlayerState)})
+
 	frameStartTime = getTime()
 	tick := 0
 	ticker := time.NewTicker(17 * time.Millisecond)
@@ -57,15 +81,41 @@ func runGames() {
 	for {
 		<-ticker.C
 		frameStartTime += 17
+
+		newState := copyWorldState(worldHistory[len(worldHistory)-1])
+
+		// add new players
+		for len(newConnections) > 0 {
+			clientID := <-newConnections
+			is := getInitialPlayerState()
+			newState.playerStates[clientID] = &is
+		}
+
+		// remove disconnected players
+		for len(killedConnections) > 0 {
+			clientID := <-killedConnections
+			delete(newState.playerStates, clientID)
+		}
+
+		// process inputs
 		inputs := make([]PlayerInput, 0)
 		for len(playerInputs) > 0 {
 			inputs = append(inputs, <-playerInputs)
 		}
-		playerStates = updateGames(playerStates, inputs)
+		updateGames(newState.playerStates, inputs)
+
+		// update clients
 		if tick%10 == 0 {
 			for client := range clients {
-				client.WriteJSON(playerStates)
+				client.WriteJSON(newState.playerStates)
 			}
+		}
+
+		fmt.Println("history", worldHistory)
+		// get ready for next iteration
+		worldHistory = append(worldHistory, newState)
+		if len(worldHistory) > 128 {
+			worldHistory = worldHistory[1:]
 		}
 		tick++
 	}
@@ -103,15 +153,15 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	clientID := xid.New().String()
 	conn.WriteJSON(initMessage{"id", clientID, getFrameStartTime()})
 	clients[conn] = clientID
-	is := getInitialPlayerState()
-	playerStates[clientID] = &is
+
+	newConnections <- clientID
 	for {
 		var input PlayerInput
 		err := conn.ReadJSON(&input)
 
 		if err != nil {
 			log.Printf("error: %v", err)
-			delete(playerStates, clientID)
+			killedConnections <- clientID
 			delete(clients, conn)
 			break
 		}

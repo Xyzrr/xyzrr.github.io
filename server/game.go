@@ -205,39 +205,33 @@ func (state *PlayerState) Tick() {
 	}
 }
 
-func updateGames(states map[string]*PlayerState, inputs []PlayerInput) map[string]*PlayerState {
+func updateGames(states map[string]*PlayerState, inputs []PlayerInput) {
 	sort.Slice(inputs, func(i, j int) bool { return inputs[i].Index < inputs[j].Index })
 
-	result := make(map[string]*PlayerState)
-	for k, v := range states {
-		c := *v
-		result[k] = &c
-	}
 	for _, inp := range inputs {
 		switch inp.Command {
 		case 1:
-			result[inp.PlayerID].AttemptMoveActivePiece(Pos{0, -1})
+			states[inp.PlayerID].AttemptMoveActivePiece(Pos{0, -1})
 		case 2:
-			result[inp.PlayerID].AttemptMoveActivePiece(Pos{0, 1})
+			states[inp.PlayerID].AttemptMoveActivePiece(Pos{0, 1})
 		case 3:
-			result[inp.PlayerID].AttemptRotateActivePiece(1)
+			states[inp.PlayerID].AttemptRotateActivePiece(1)
 		case 4:
-			result[inp.PlayerID].AttemptRotateActivePiece(3)
+			states[inp.PlayerID].AttemptRotateActivePiece(3)
 		case 5:
-			result[inp.PlayerID].AttemptMoveActivePiece(Pos{1, 0})
+			states[inp.PlayerID].AttemptMoveActivePiece(Pos{1, 0})
 		case 6:
-			result[inp.PlayerID].HardDrop()
+			states[inp.PlayerID].HardDrop()
 		case 7:
-			result[inp.PlayerID].HoldActivePiece()
+			states[inp.PlayerID].HoldActivePiece()
 		}
 	}
 	// since ticks are computed after all user input in the frame
 	// has been processed, their intervals aren't as precise,
 	// but meh
-	for id := range result {
-		result[id].Tick()
+	for id := range states {
+		states[id].Tick()
 	}
-	return result
 }
 
 func getInitialPlayerState() PlayerState {
