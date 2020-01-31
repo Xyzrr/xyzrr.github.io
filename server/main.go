@@ -20,7 +20,7 @@ type PlayerInput struct {
 }
 
 type WorldState struct {
-	playerStates map[string]*PlayerState
+	PlayerStates map[string]*PlayerState `json:"playerStates"`
 }
 
 var frameStartTime int64
@@ -53,16 +53,16 @@ func main() {
 }
 
 type UpdateMessage struct {
-	NewState PlayerState
-	Time     int64
+	NewState WorldState `json:"newState"`
+	Time     int64      `json:"time"`
 }
 
 func copyWorldState(ws WorldState) WorldState {
 	var result WorldState
-	result.playerStates = make(map[string]*PlayerState)
-	for k, v := range ws.playerStates {
+	result.PlayerStates = make(map[string]*PlayerState)
+	for k, v := range ws.PlayerStates {
 		c := *v
-		result.playerStates[k] = &c
+		result.PlayerStates[k] = &c
 	}
 	return result
 }
@@ -80,27 +80,47 @@ func runGames() {
 		<-ticker.C
 		frameStartTime += 17
 
-		newState := copyWorldState(worldHistory[len(worldHistory)-1])
-
 		// process inputs
-		inputs := make([]PlayerInput, 0)
+		inputs := make(map[int][]PlayerInput)
 		for len(playerInputs) > 0 {
-			inputs = append(inputs, <-playerInputs)
+			inp := <-playerInputs
+			historyIndex := int64(len(worldHistory)) - 1 - (frameStartTime-inp.Time)/17
+
+			if historyIndex > 0 {
+				inputs[int(historyIndex)] = append(inputs[int(historyIndex)], inp)
+			}
 		}
-		updateGames(newState.playerStates, inputs)
+
+		earliestInput := len(worldHistory) - 1
+		for k := range inputs {
+			if k < earliestInput {
+				earliestInput = k
+			}
+		}
+
+		// fmt.Println(inputs)
+		for i := earliestInput; i < len(worldHistory); i++ {
+			newState := copyWorldState(worldHistory[i])
+			updateGames(newState.PlayerStates, inputs[i])
+			if i == len(worldHistory)-1 {
+				worldHistory = append(worldHistory, newState)
+				if len(worldHistory) > 128 {
+					worldHistory = worldHistory[1:]
+				}
+			} else {
+				worldHistory[i+1] = newState
+			}
+		}
 
 		// update clients
 		if tick%10 == 0 {
 			for client := range clients {
-				client.WriteJSON(newState.playerStates)
+				// j, _ := json.Marshal(UpdateMessage{worldHistory[0], frameStartTime - int64((len(worldHistory)-1)*17)})
+				// fmt.Println("sending to client", string(j))
+				client.WriteJSON(UpdateMessage{worldHistory[0], frameStartTime - int64((len(worldHistory)-1)*17)})
 			}
 		}
 
-		// get ready for next iteration
-		worldHistory = append(worldHistory, newState)
-		if len(worldHistory) > 128 {
-			worldHistory = worldHistory[1:]
-		}
 		tick++
 	}
 }
@@ -126,6 +146,8 @@ type initMessage struct {
 	Time        int64  `json:"time"`
 }
 
+var lastTime = int64(0)
+
 func socketHandler(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -149,7 +171,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 			delete(clients, conn)
 			break
 		}
-		fmt.Println("Received player input", input)
+		lastTime = input.Time
 
 		input.PlayerID = clientID
 

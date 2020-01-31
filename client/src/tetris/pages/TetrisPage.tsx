@@ -40,7 +40,7 @@ const TetrisPageDiv = styled.div`
   background: black;
 `;
 
-interface PlayerInput {
+export interface PlayerInput {
   time: number;
   index: number;
   command: number;
@@ -61,8 +61,10 @@ async function startLocalGameEngine() {
 
 const goToJSState = (s: any) => {
   return produce(s, (draft: any) => {
-    for (const clientID of Object.keys(s)) {
-      draft[clientID] = goToJSPlayerState(s[clientID]);
+    for (const clientID of Object.keys(s.playerStates)) {
+      draft.playerStates[clientID] = goToJSPlayerState(
+        s.playerStates[clientID]
+      );
     }
   }) as ServerState;
 };
@@ -94,11 +96,46 @@ export const jsToGoPlayerState = (s: PlayerState) => {
 
 const TetrisPage: React.FC = () => {
   const [state, dispatch] = React.useReducer(tetrisReducer, {
-    serverState: {},
-    predictedStates: []
+    serverState: { playerStates: {} },
+    predictedStates: [null],
+    inputHistory: []
   });
 
   React.useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (keyDown[e.keyCode]) {
+        return;
+      }
+      switch (e.keyCode) {
+        case keyBindings.moveLeft:
+          sendInput(1);
+          break;
+        case keyBindings.moveRight:
+          sendInput(2);
+          break;
+        case keyBindings.rotateClockwise:
+          sendInput(3);
+          break;
+        case keyBindings.rotateCounterClockwise:
+          sendInput(4);
+          break;
+        case keyBindings.softDrop:
+          sendInput(5);
+          break;
+        case keyBindings.hardDrop:
+          sendInput(6);
+          break;
+        case keyBindings.hold:
+          sendInput(7);
+          break;
+      }
+      keyDown[e.keyCode] = { downTime: Date.now(), lastTriggered: Date.now() };
+    };
+
+    const onKeyUp = (e: KeyboardEvent) => {
+      delete keyDown[e.keyCode];
+    };
+
     startLocalGameEngine();
     // const socket = new WebSocket("ws://34.67.102.3:8080/socket");
     const socket = new WebSocket("ws://localhost:8080/socket");
@@ -113,11 +150,16 @@ const TetrisPage: React.FC = () => {
           clientID = parsedData.id;
           globals.frameStartTime = parsedData.time;
           globals.serverTimeOffset = Date.now() - globals.frameStartTime;
+
+          window.setTimeout(update, 17);
+          window.addEventListener("keydown", onKeyDown);
+          window.addEventListener("keyup", onKeyUp);
         } else {
-          parsedData = goToJSState(parsedData);
+          let { newState, time } = parsedData;
+          newState = goToJSState(newState);
           dispatch({
             type: "reconcileServerState",
-            info: parsedData
+            info: { newState, time }
           });
         }
       };
@@ -149,10 +191,6 @@ const TetrisPage: React.FC = () => {
     };
 
     const update = () => {
-      if (globals.frameStartTime === 0) {
-        window.setTimeout(update, 17);
-        return;
-      }
       globals.frameStartTime += 17;
       dispatch({
         type: "predictState",
@@ -207,53 +245,21 @@ const TetrisPage: React.FC = () => {
         globals.frameStartTime + 17 - (Date.now() - globals.serverTimeOffset);
       window.setTimeout(update, msUntilNextUpdate);
     };
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (keyDown[e.keyCode]) {
-        return;
-      }
-      switch (e.keyCode) {
-        case keyBindings.moveLeft:
-          sendInput(1);
-          break;
-        case keyBindings.moveRight:
-          sendInput(2);
-          break;
-        case keyBindings.rotateClockwise:
-          sendInput(3);
-          break;
-        case keyBindings.rotateCounterClockwise:
-          sendInput(4);
-          break;
-        case keyBindings.softDrop:
-          sendInput(5);
-          break;
-        case keyBindings.hardDrop:
-          sendInput(6);
-          break;
-        case keyBindings.hold:
-          sendInput(7);
-          break;
-      }
-      keyDown[e.keyCode] = { downTime: Date.now(), lastTriggered: Date.now() };
-    };
-
-    const onKeyUp = (e: KeyboardEvent) => {
-      delete keyDown[e.keyCode];
-    };
-    window.setTimeout(update, 17);
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("keyup", onKeyUp);
   }, []);
 
   return (
     <TetrisPageDiv>
-      {Object.keys(state.serverState).map(cid => {
-        let clientState: PlayerState;
+      {Object.keys(state.serverState.playerStates).map(cid => {
+        let clientState: PlayerState | null;
         if (cid === clientID) {
+          console.log("correct client ID", cid, clientID);
           clientState = state.predictedStates[state.predictedStates.length - 1];
         } else {
-          clientState = state.serverState[cid];
+          console.log("wrong client ID", cid, clientID);
+          clientState = state.serverState.playerStates[cid];
+        }
+        if (clientState == null) {
+          return <></>;
         }
         return (
           <TetrisGameFrame
