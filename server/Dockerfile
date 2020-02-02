@@ -1,4 +1,4 @@
 FROM alpine:latest
-COPY ./hello-app ./hello-app
+COPY ./main ./main
 ENV PORT 8080
-CMD ["./hello-app"]
+CMD ["./main"]
