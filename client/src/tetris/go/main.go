@@ -16,7 +16,6 @@ type PlayerInput struct {
 }
 
 var c chan bool
-var frameStartTime int64
 
 // init is called even before main is called. This ensures that as soon as our WebAssembly module is ready in the browser, it runs and prints "Hello, webAssembly!" to the console. It then proceeds to create a new channel. The aim of this channel is to keep our Go app running until we tell it to abort.
 func init() {
@@ -38,7 +37,6 @@ func updateGame(jsV js.Value, params []js.Value) interface{} {
 	if err != nil {
 		log.Fatal("received non int64 time")
 	}
-	frameStartTime = time
 
 	for _, inp := range inputs {
 		switch inp.Command {
@@ -61,7 +59,7 @@ func updateGame(jsV js.Value, params []js.Value) interface{} {
 	// since ticks are computed after all user input in the frame
 	// has been processed, their intervals aren't as precise,
 	// but meh
-	state.Tick()
+	state.Tick(time)
 
 	response, _ := json.Marshal(state)
 	return js.ValueOf(string(response))

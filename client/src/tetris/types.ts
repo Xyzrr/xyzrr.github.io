@@ -12,6 +12,6 @@ export interface ActivePiece {
   position: [number, number];
   pieceType: Mino;
   orientation: number;
-  lastFallTime: number;
-  lockStartTime: number;
+  fallTimer: number;
+  lockTimer: number;
 }

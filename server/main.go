@@ -101,7 +101,7 @@ func runGames() {
 		// fmt.Println(inputs)
 		for i := earliestInput; i < len(worldHistory); i++ {
 			newState := copyWorldState(worldHistory[i])
-			updateGames(newState.PlayerStates, inputs[i])
+			updateGames(newState.PlayerStates, inputs[i], frameStartTime)
 			if i == len(worldHistory)-1 {
 				worldHistory = append(worldHistory, newState)
 				if len(worldHistory) > 128 {
@@ -144,6 +144,7 @@ type initMessage struct {
 	MessageType string `json:"messageType"`
 	ID          string `json:"id"`
 	Time        int64  `json:"time"`
+	Seed        int    `json:"seed"`
 }
 
 var lastTime = int64(0)
@@ -157,7 +158,11 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 
 	clientID := xid.New().String()
-	conn.WriteJSON(initMessage{"id", clientID, getFrameStartTime()})
+	conn.WriteJSON(initMessage{
+		MessageType: "id",
+		ID:          clientID,
+		Time:        frameStartTime,
+	})
 	clients[conn] = clientID
 
 	playerInputs <- PlayerInput{Time: frameStartTime, Command: 8, PlayerID: clientID}

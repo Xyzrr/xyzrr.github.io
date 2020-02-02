@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math/rand"
 	"sort"
 )
@@ -11,11 +12,11 @@ type Pos struct {
 }
 
 type ActivePiece struct {
-	Position      Pos       `json:"position"`
-	PieceType     Tetromino `json:"pieceType"`
-	Orientation   byte      `json:"orientation"`
-	LastFallTime  int64     `json:"lastFallTime"`
-	LockStartTime int64     `json:"lockStartTime"`
+	Position    Pos       `json:"position"`
+	PieceType   Tetromino `json:"pieceType"`
+	Orientation byte      `json:"orientation"`
+	FallTimer   int64     `json:"fallTimer"`
+	LockTimer   int64     `json:"lockTimer"`
 }
 
 type GameField [MatrixRows][MatrixCols]byte
@@ -26,10 +27,7 @@ type PlayerState struct {
 	Hold        byte          `json:"hold"`
 	Held        bool          `json:"held"`
 	NextPieces  [15]Tetromino `json:"nextPieces"`
-}
-
-func getFrameStartTime() int64 {
-	return frameStartTime
+	Time        int64         `json:"time"`
 }
 
 func AddPositions(a Pos, b Pos) Pos {
@@ -58,14 +56,14 @@ func (state *PlayerState) startLockingIfOnGround(breakLock bool) {
 	testPiece.Position.Row++
 	onGround := ActivePieceIsColliding(testPiece, state.Field)
 	if onGround {
-		if state.ActivePiece.LockStartTime == 0 || breakLock {
-			state.ActivePiece.LockStartTime = getFrameStartTime()
+		if state.ActivePiece.LockTimer == -1 || breakLock {
+			state.ActivePiece.LockTimer = 500
 		}
-		state.ActivePiece.LastFallTime = 0
+		state.ActivePiece.FallTimer = -1
 	} else {
-		state.ActivePiece.LockStartTime = 0
-		if state.ActivePiece.LastFallTime == 0 {
-			state.ActivePiece.LastFallTime = getFrameStartTime()
+		state.ActivePiece.LockTimer = -1
+		if state.ActivePiece.FallTimer == -1 {
+			state.ActivePiece.FallTimer = 200
 		}
 	}
 }
@@ -100,7 +98,9 @@ func (state *PlayerState) AttemptRotateActivePiece(dir byte) {
 	}
 }
 
-func GenerateRandomBag() [7]Tetromino {
+func GenerateRandomBag(seed int64) [7]Tetromino {
+	rand.Seed(seed)
+	fmt.Println("bagging with seed", seed)
 	bag := [7]Tetromino{Z, S, L, J, T, O, I}
 	for i := len(bag) - 1; i > 0; i-- {
 		j := rand.Intn(i + 1)
@@ -111,17 +111,17 @@ func GenerateRandomBag() [7]Tetromino {
 
 func getInitialActivePieceState(t Tetromino) ActivePiece {
 	return ActivePiece{
-		Position:      Pos{18, 2},
-		PieceType:     t,
-		Orientation:   0,
-		LastFallTime:  getFrameStartTime(),
-		LockStartTime: 0,
+		Position:    Pos{18, 2},
+		PieceType:   t,
+		Orientation: 0,
+		FallTimer:   200,
+		LockTimer:   -1,
 	}
 }
 
 func (state *PlayerState) PopNextActivePiece() {
 	if state.NextPieces[7] == 0 {
-		bag := GenerateRandomBag()
+		bag := GenerateRandomBag(state.Time)
 		copy(state.NextPieces[7:], bag[:])
 	}
 	state.ActivePiece = getInitialActivePieceState(state.NextPieces[0])
@@ -188,24 +188,31 @@ func (state *PlayerState) HoldActivePiece() {
 	state.Held = true
 }
 
-func (state *PlayerState) Tick() {
-	time := getFrameStartTime()
-
+func (state *PlayerState) Tick(time int64) {
 	// handle falling
-	dropSpeed := int64(200)
-	if state.ActivePiece.LastFallTime > 0 && time-state.ActivePiece.LastFallTime >= dropSpeed {
-		state.AttemptMoveActivePiece(Pos{1, 0})
-		state.ActivePiece.LastFallTime += dropSpeed
+	timePassed := time - state.Time
+
+	if state.ActivePiece.FallTimer != -1 {
+		state.ActivePiece.FallTimer -= timePassed
+		if state.ActivePiece.FallTimer <= 0 {
+			state.AttemptMoveActivePiece(Pos{1, 0})
+			state.ActivePiece.FallTimer = 200
+		}
 	}
 
-	if state.ActivePiece.LockStartTime > 0 && time-state.ActivePiece.LockStartTime >= lockDelay {
-		state.LockActivePiece()
-		state.PopNextActivePiece()
-		state.Held = false
+	if state.ActivePiece.LockTimer != -1 {
+		state.ActivePiece.LockTimer -= timePassed
+		if state.ActivePiece.LockTimer <= 0 {
+			state.LockActivePiece()
+			state.PopNextActivePiece()
+			state.Held = false
+		}
 	}
+
+	state.Time = time
 }
 
-func updateGames(states map[string]*PlayerState, inputs []PlayerInput) {
+func updateGames(states map[string]*PlayerState, inputs []PlayerInput, frameStartTime int64) {
 	sort.Slice(inputs, func(i, j int) bool { return inputs[i].Index < inputs[j].Index })
 
 	for _, inp := range inputs {
@@ -225,7 +232,7 @@ func updateGames(states map[string]*PlayerState, inputs []PlayerInput) {
 		case 7:
 			states[inp.PlayerID].HoldActivePiece()
 		case 8:
-			is := getInitialPlayerState()
+			is := getInitialPlayerState(frameStartTime)
 			states[inp.PlayerID] = &is
 		case 9:
 			delete(states, inp.PlayerID)
@@ -235,12 +242,12 @@ func updateGames(states map[string]*PlayerState, inputs []PlayerInput) {
 	// has been processed, their intervals aren't as precise,
 	// but meh
 	for id := range states {
-		states[id].Tick()
+		states[id].Tick(frameStartTime)
 	}
 }
 
-func getInitialPlayerState() PlayerState {
-	bag := GenerateRandomBag()
+func getInitialPlayerState(frameStartTime int64) PlayerState {
+	bag := GenerateRandomBag(frameStartTime)
 	nextPieces := [15]Tetromino{}
 	copy(nextPieces[:], bag[:])
 	return PlayerState{
@@ -249,5 +256,6 @@ func getInitialPlayerState() PlayerState {
 		Hold:        0,
 		Held:        false,
 		NextPieces:  nextPieces,
+		Time:        frameStartTime,
 	}
 }
