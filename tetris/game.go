@@ -97,10 +97,11 @@ func (state *PlayerState) AttemptRotateActivePiece(dir byte) {
 }
 
 func GenerateRandomBag(seed int64) [7]Tetromino {
-	rand.Seed(seed)
+	src := rand.NewSource(seed)
+	r := rand.New(src)
 	bag := [7]Tetromino{Z, S, L, J, T, O, I}
 	for i := len(bag) - 1; i > 0; i-- {
-		j := rand.Intn(i + 1)
+		j := r.Intn(i + 1)
 		bag[i], bag[j] = bag[j], bag[i]
 	}
 	return bag
