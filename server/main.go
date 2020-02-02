@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sort"
 	"time"
 
 	"github.com/Xyzrr/interactive-ml/tetris"
@@ -28,7 +27,7 @@ type WorldState struct {
 var frameStartTime int64
 var clients = make(map[*websocket.Conn]string)
 var playerInputs = make(chan PlayerInput, 16384)
-var worldHistory = make([]WorldState, 0)
+var worldBuffers = map[string]*tetris.PlayerStateBuffer{}
 
 func main() {
 	// use PORT environment variable, or default to 8080
@@ -55,20 +54,8 @@ type UpdateMessage struct {
 	Time     int64      `json:"time"`
 }
 
-func copyWorldState(ws WorldState) WorldState {
-	var result WorldState
-	result.PlayerStates = make(map[string]*tetris.PlayerState)
-	for k, v := range ws.PlayerStates {
-		c := *v
-		result.PlayerStates[k] = &c
-	}
-	return result
-}
-
 func runGames() {
 	fmt.Println("Starting to run games")
-
-	worldHistory = append(worldHistory, WorldState{make(map[string]*tetris.PlayerState)})
 
 	frameStartTime = getTime()
 	tick := 0
@@ -79,36 +66,47 @@ func runGames() {
 		frameStartTime += 17
 
 		// process inputs
-		inputs := make(map[int][]PlayerInput)
+		joins := map[string]int64{}
+		leaves := map[string]struct{}{}
+		inputs := map[string][]PlayerInput{}
 		for len(playerInputs) > 0 {
 			inp := <-playerInputs
-			historyIndex := int64(len(worldHistory)) - 1 - (frameStartTime-inp.Time)/17
 
-			if historyIndex > 0 {
-				inputs[int(historyIndex)] = append(inputs[int(historyIndex)], inp)
-			}
-		}
-
-		earliestInput := len(worldHistory) - 1
-		for k := range inputs {
-			if k < earliestInput {
-				earliestInput = k
-			}
-		}
-
-		// fmt.Println(inputs)
-		for i := earliestInput; i < len(worldHistory); i++ {
-			ftime := frameStartTime - int64(len(worldHistory)-1-i)*17
-			newState := copyWorldState(worldHistory[i])
-			updateGames(newState.PlayerStates, inputs[i], ftime)
-			if i == len(worldHistory)-1 {
-				worldHistory = append(worldHistory, newState)
-				if len(worldHistory) > 128 {
-					worldHistory = worldHistory[1:]
-				}
+			if inp.Command == 8 {
+				joins[inp.PlayerID] = inp.Time
+			} else if inp.Command == 9 {
+				leaves[inp.PlayerID] = struct{}{}
 			} else {
-				worldHistory[i+1] = newState
+				inputs[inp.PlayerID] = append(inputs[inp.PlayerID], inp)
 			}
+		}
+
+		for k, t := range joins {
+			worldBuffers[k] = tetris.NewStateBuffer(t)
+			for t < frameStartTime {
+				worldBuffers[k].Tick()
+				t += 17
+			}
+		}
+
+		for k, inps := range inputs {
+			ins := make([]tetris.PlayerInput, len(inps))
+			for i, inp := range inps {
+				ins[i] = tetris.PlayerInput{
+					Time:    inp.Time,
+					Command: inp.Command,
+					Index:   inp.Index,
+				}
+			}
+			worldBuffers[k].AddInputs(ins)
+		}
+
+		for k := range leaves {
+			delete(worldBuffers, k)
+		}
+
+		for _, b := range worldBuffers {
+			b.Tick()
 		}
 
 		// update clients
@@ -116,7 +114,16 @@ func runGames() {
 			for client := range clients {
 				// j, _ := json.Marshal(UpdateMessage{worldHistory[0], frameStartTime - int64((len(worldHistory)-1)*17)})
 				// fmt.Println("sending to client", string(j))
-				client.WriteJSON(UpdateMessage{worldHistory[0], frameStartTime - int64((len(worldHistory)-1)*17)})
+				worldState := WorldState{
+					PlayerStates: map[string]*tetris.PlayerState{},
+				}
+				var time int64
+				for k, b := range worldBuffers {
+					state := b.GetFirst()
+					worldState.PlayerStates[k] = &state
+					time = state.Time
+				}
+				client.WriteJSON(UpdateMessage{worldState, time})
 			}
 		}
 
@@ -126,40 +133,6 @@ func runGames() {
 
 func getTime() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
-}
-
-func updateGames(states map[string]*tetris.PlayerState, inputs []PlayerInput, frameStartTime int64) {
-	sort.Slice(inputs, func(i, j int) bool { return inputs[i].Index < inputs[j].Index })
-
-	for _, inp := range inputs {
-		switch inp.Command {
-		case 1:
-			states[inp.PlayerID].AttemptMoveActivePiece(tetris.Pos{0, -1})
-		case 2:
-			states[inp.PlayerID].AttemptMoveActivePiece(tetris.Pos{0, 1})
-		case 3:
-			states[inp.PlayerID].AttemptRotateActivePiece(1)
-		case 4:
-			states[inp.PlayerID].AttemptRotateActivePiece(3)
-		case 5:
-			states[inp.PlayerID].AttemptMoveActivePiece(tetris.Pos{1, 0})
-		case 6:
-			states[inp.PlayerID].HardDrop()
-		case 7:
-			states[inp.PlayerID].HoldActivePiece()
-		case 8:
-			is := tetris.GetInitialPlayerState(frameStartTime)
-			states[inp.PlayerID] = &is
-		case 9:
-			delete(states, inp.PlayerID)
-		}
-	}
-	// since ticks are computed after all user input in the frame
-	// has been processed, their intervals aren't as precise,
-	// but meh
-	for id := range states {
-		states[id].Tick(frameStartTime)
-	}
 }
 
 // hello responds to the request with a plain-text "Hello, world" message.
@@ -193,15 +166,17 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
+	joinTime := frameStartTime
+
 	clientID := xid.New().String()
 	conn.WriteJSON(initMessage{
 		MessageType: "id",
 		ID:          clientID,
-		Time:        frameStartTime,
+		Time:        joinTime,
 	})
 	clients[conn] = clientID
 
-	playerInputs <- PlayerInput{Time: frameStartTime, Command: 8, PlayerID: clientID}
+	playerInputs <- PlayerInput{Time: joinTime, Command: 8, PlayerID: clientID}
 	for {
 		var input PlayerInput
 		err := conn.ReadJSON(&input)
