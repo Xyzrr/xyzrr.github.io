@@ -28,7 +28,7 @@ type WorldState struct {
 var frameStartTime int64
 var clients = make(map[*websocket.Conn]string)
 var playerInputs = make(chan PlayerInput, 16384)
-var worldHistory = make([]WorldState, 0)
+var worldBuffers = map[string]*tetris.PlayerStateBuffer{}
 
 func main() {
 	// use PORT environment variable, or default to 8080
@@ -68,8 +68,6 @@ func copyWorldState(ws WorldState) WorldState {
 func runGames() {
 	fmt.Println("Starting to run games")
 
-	worldHistory = append(worldHistory, WorldState{make(map[string]*tetris.PlayerState)})
-
 	frameStartTime = getTime()
 	tick := 0
 	ticker := time.NewTicker(17 * time.Millisecond)
@@ -79,36 +77,47 @@ func runGames() {
 		frameStartTime += 17
 
 		// process inputs
-		inputs := make(map[int][]PlayerInput)
+		joins := map[string]int64{}
+		leaves := map[string]struct{}{}
+		inputs := map[string][]PlayerInput{}
 		for len(playerInputs) > 0 {
 			inp := <-playerInputs
-			historyIndex := int64(len(worldHistory)) - 1 - (frameStartTime-inp.Time)/17
 
-			if historyIndex > 0 {
-				inputs[int(historyIndex)] = append(inputs[int(historyIndex)], inp)
-			}
-		}
-
-		earliestInput := len(worldHistory) - 1
-		for k := range inputs {
-			if k < earliestInput {
-				earliestInput = k
-			}
-		}
-
-		// fmt.Println(inputs)
-		for i := earliestInput; i < len(worldHistory); i++ {
-			ftime := frameStartTime - int64(len(worldHistory)-1-i)*17
-			newState := copyWorldState(worldHistory[i])
-			updateGames(newState.PlayerStates, inputs[i], ftime)
-			if i == len(worldHistory)-1 {
-				worldHistory = append(worldHistory, newState)
-				if len(worldHistory) > 128 {
-					worldHistory = worldHistory[1:]
-				}
+			if inp.Command == 8 {
+				joins[inp.PlayerID] = inp.Time
+			} else if inp.Command == 9 {
+				leaves[inp.PlayerID] = struct{}{}
 			} else {
-				worldHistory[i+1] = newState
+				inputs[inp.PlayerID] = append(inputs[inp.PlayerID], inp)
 			}
+		}
+
+		for k, t := range joins {
+			worldBuffers[k] = tetris.NewStateBuffer(t)
+			for t < frameStartTime {
+				worldBuffers[k].Tick()
+				t += 17
+			}
+		}
+
+		for k, inps := range inputs {
+			ins := make([]tetris.PlayerInput, len(inps))
+			for i, inp := range inps {
+				ins[i] = tetris.PlayerInput{
+					Time:    inp.Time,
+					Command: inp.Command,
+					Index:   inp.Index,
+				}
+			}
+			worldBuffers[k].AddInputs(ins)
+		}
+
+		for k := range leaves {
+			delete(worldBuffers, k)
+		}
+
+		for _, b := range worldBuffers {
+			b.Tick()
 		}
 
 		// update clients
@@ -116,7 +125,16 @@ func runGames() {
 			for client := range clients {
 				// j, _ := json.Marshal(UpdateMessage{worldHistory[0], frameStartTime - int64((len(worldHistory)-1)*17)})
 				// fmt.Println("sending to client", string(j))
-				client.WriteJSON(UpdateMessage{worldHistory[0], frameStartTime - int64((len(worldHistory)-1)*17)})
+				worldState := WorldState{
+					PlayerStates: map[string]*tetris.PlayerState{},
+				}
+				var time int64
+				for k, b := range worldBuffers {
+					state := b.GetFirst()
+					worldState.PlayerStates[k] = &state
+					time = state.Time
+				}
+				client.WriteJSON(UpdateMessage{worldState, time})
 			}
 		}
 
@@ -193,15 +211,17 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
+	joinTime := frameStartTime
+
 	clientID := xid.New().String()
 	conn.WriteJSON(initMessage{
 		MessageType: "id",
 		ID:          clientID,
-		Time:        frameStartTime,
+		Time:        joinTime,
 	})
 	clients[conn] = clientID
 
-	playerInputs <- PlayerInput{Time: frameStartTime, Command: 8, PlayerID: clientID}
+	playerInputs <- PlayerInput{Time: joinTime, Command: 8, PlayerID: clientID}
 	for {
 		var input PlayerInput
 		err := conn.ReadJSON(&input)
