@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sort"
 	"time"
 
 	"github.com/Xyzrr/interactive-ml/tetris"
@@ -53,16 +52,6 @@ func main() {
 type UpdateMessage struct {
 	NewState WorldState `json:"newState"`
 	Time     int64      `json:"time"`
-}
-
-func copyWorldState(ws WorldState) WorldState {
-	var result WorldState
-	result.PlayerStates = make(map[string]*tetris.PlayerState)
-	for k, v := range ws.PlayerStates {
-		c := *v
-		result.PlayerStates[k] = &c
-	}
-	return result
 }
 
 func runGames() {
@@ -144,40 +133,6 @@ func runGames() {
 
 func getTime() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
-}
-
-func updateGames(states map[string]*tetris.PlayerState, inputs []PlayerInput, frameStartTime int64) {
-	sort.Slice(inputs, func(i, j int) bool { return inputs[i].Index < inputs[j].Index })
-
-	for _, inp := range inputs {
-		switch inp.Command {
-		case 1:
-			states[inp.PlayerID].AttemptMoveActivePiece(tetris.Pos{0, -1})
-		case 2:
-			states[inp.PlayerID].AttemptMoveActivePiece(tetris.Pos{0, 1})
-		case 3:
-			states[inp.PlayerID].AttemptRotateActivePiece(1)
-		case 4:
-			states[inp.PlayerID].AttemptRotateActivePiece(3)
-		case 5:
-			states[inp.PlayerID].AttemptMoveActivePiece(tetris.Pos{1, 0})
-		case 6:
-			states[inp.PlayerID].HardDrop()
-		case 7:
-			states[inp.PlayerID].HoldActivePiece()
-		case 8:
-			is := tetris.GetInitialPlayerState(frameStartTime)
-			states[inp.PlayerID] = &is
-		case 9:
-			delete(states, inp.PlayerID)
-		}
-	}
-	// since ticks are computed after all user input in the frame
-	// has been processed, their intervals aren't as precise,
-	// but meh
-	for id := range states {
-		states[id].Tick(frameStartTime)
-	}
 }
 
 // hello responds to the request with a plain-text "Hello, world" message.
