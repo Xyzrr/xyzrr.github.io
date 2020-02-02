@@ -1,7 +1,6 @@
-package main
+package tetris
 
 import (
-	"fmt"
 	"math/rand"
 )
 
@@ -99,7 +98,6 @@ func (state *PlayerState) AttemptRotateActivePiece(dir byte) {
 
 func GenerateRandomBag(seed int64) [7]Tetromino {
 	rand.Seed(seed)
-	fmt.Println("bagging with seed", seed)
 	bag := [7]Tetromino{Z, S, L, J, T, O, I}
 	for i := len(bag) - 1; i > 0; i-- {
 		j := rand.Intn(i + 1)
@@ -188,9 +186,9 @@ func (state *PlayerState) HoldActivePiece() {
 }
 
 func (state *PlayerState) Tick(time int64) {
-	// handle falling
 	timePassed := time - state.Time
 
+	// handle falling
 	if state.ActivePiece.FallTimer != -1 {
 		state.ActivePiece.FallTimer -= timePassed
 		if state.ActivePiece.FallTimer <= 0 {
@@ -199,6 +197,7 @@ func (state *PlayerState) Tick(time int64) {
 		}
 	}
 
+	// handle locking
 	if state.ActivePiece.LockTimer != -1 {
 		state.ActivePiece.LockTimer -= timePassed
 		if state.ActivePiece.LockTimer <= 0 {
@@ -211,7 +210,7 @@ func (state *PlayerState) Tick(time int64) {
 	state.Time = time
 }
 
-func getInitialPlayerState(frameStartTime int64) PlayerState {
+func GetInitialPlayerState(frameStartTime int64) PlayerState {
 	bag := GenerateRandomBag(frameStartTime)
 	nextPieces := [15]Tetromino{}
 	copy(nextPieces[:], bag[:])

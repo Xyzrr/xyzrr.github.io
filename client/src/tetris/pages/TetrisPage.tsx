@@ -59,6 +59,7 @@ async function startLocalGameEngine() {
   await go.run(instance);
 }
 
+//TODO: fix types
 const goToJSState = (s: any) => {
   return produce(s, (draft: any) => {
     for (const clientID of Object.keys(s.playerStates)) {
@@ -66,7 +67,7 @@ const goToJSState = (s: any) => {
         s.playerStates[clientID]
       );
     }
-  }) as ServerState;
+  }) as any;
 };
 
 export const goToJSPlayerState = (s: any) => {

@@ -8,6 +8,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/Xyzrr/interactive-ml/tetris"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	"github.com/rs/xid"
@@ -21,7 +22,7 @@ type PlayerInput struct {
 }
 
 type WorldState struct {
-	PlayerStates map[string]*PlayerState `json:"playerStates"`
+	PlayerStates map[string]*tetris.PlayerState `json:"playerStates"`
 }
 
 var frameStartTime int64
@@ -56,7 +57,7 @@ type UpdateMessage struct {
 
 func copyWorldState(ws WorldState) WorldState {
 	var result WorldState
-	result.PlayerStates = make(map[string]*PlayerState)
+	result.PlayerStates = make(map[string]*tetris.PlayerState)
 	for k, v := range ws.PlayerStates {
 		c := *v
 		result.PlayerStates[k] = &c
@@ -67,7 +68,7 @@ func copyWorldState(ws WorldState) WorldState {
 func runGames() {
 	fmt.Println("Starting to run games")
 
-	worldHistory = append(worldHistory, WorldState{make(map[string]*PlayerState)})
+	worldHistory = append(worldHistory, WorldState{make(map[string]*tetris.PlayerState)})
 
 	frameStartTime = getTime()
 	tick := 0
@@ -126,27 +127,27 @@ func getTime() int64 {
 	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
-func updateGames(states map[string]*PlayerState, inputs []PlayerInput, frameStartTime int64) {
+func updateGames(states map[string]*tetris.PlayerState, inputs []PlayerInput, frameStartTime int64) {
 	sort.Slice(inputs, func(i, j int) bool { return inputs[i].Index < inputs[j].Index })
 
 	for _, inp := range inputs {
 		switch inp.Command {
 		case 1:
-			states[inp.PlayerID].AttemptMoveActivePiece(Pos{0, -1})
+			states[inp.PlayerID].AttemptMoveActivePiece(tetris.Pos{0, -1})
 		case 2:
-			states[inp.PlayerID].AttemptMoveActivePiece(Pos{0, 1})
+			states[inp.PlayerID].AttemptMoveActivePiece(tetris.Pos{0, 1})
 		case 3:
 			states[inp.PlayerID].AttemptRotateActivePiece(1)
 		case 4:
 			states[inp.PlayerID].AttemptRotateActivePiece(3)
 		case 5:
-			states[inp.PlayerID].AttemptMoveActivePiece(Pos{1, 0})
+			states[inp.PlayerID].AttemptMoveActivePiece(tetris.Pos{1, 0})
 		case 6:
 			states[inp.PlayerID].HardDrop()
 		case 7:
 			states[inp.PlayerID].HoldActivePiece()
 		case 8:
-			is := getInitialPlayerState(frameStartTime)
+			is := tetris.GetInitialPlayerState(frameStartTime)
 			states[inp.PlayerID] = &is
 		case 9:
 			delete(states, inp.PlayerID)

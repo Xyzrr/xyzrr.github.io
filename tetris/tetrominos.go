@@ -1,4 +1,4 @@
-package main
+package tetris
 
 type Tetromino byte
 

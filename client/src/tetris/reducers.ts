@@ -132,7 +132,7 @@ const _tetrisReducer = (state: TetrisPageState, action: TetrisPageAction) => {
       state.inputHistory.push(action.info);
       break;
     default:
-      throw new Error("Invalid action type");
+      throw `Invalid action type`;
   }
 };
 
