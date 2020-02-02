@@ -25,6 +25,7 @@ export interface PlayerState {
   held: boolean;
   activePiece?: ActivePiece;
   nextPieces: Mino[];
+  time: number;
 }
 
 interface TetrisPageAction {
@@ -54,14 +55,16 @@ const _tetrisReducer = (state: TetrisPageState, action: TetrisPageAction) => {
         break;
       }
 
-      if ((globals.frameStartTime - action.info.time) % 17 !== 0) {
-        throw `frameStartTime ${globals.frameStartTime} and server update time ${action.info.time} misaligned`;
+      const actionTime = newClientState.time;
+
+      if ((globals.frameStartTime - actionTime) % 17 !== 0) {
+        throw `frameStartTime ${globals.frameStartTime} and server update time ${actionTime} misaligned`;
       }
 
       const replaceIndex =
         state.predictedStates.length -
         1 -
-        (globals.frameStartTime - action.info.time) / 17;
+        (globals.frameStartTime - actionTime) / 17;
 
       if (replaceIndex < 0) {
         throw `Received server update from before the last update (index ${replaceIndex}); predictedStates is probably too short (length ${state.predictedStates.length}).`;
@@ -86,7 +89,7 @@ const _tetrisReducer = (state: TetrisPageState, action: TetrisPageAction) => {
       );
 
       state.inputHistory = state.inputHistory.slice(replaceIndex);
-      let predictingTime = action.info.time;
+      let predictingTime = actionTime;
       state.predictedStates = [newClientState];
       for (const inputs of state.inputHistory) {
         predictingTime += 17;

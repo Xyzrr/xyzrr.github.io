@@ -17,8 +17,8 @@ import (
 type PlayerInput struct {
 	Time     int64  `json:"time"`
 	Command  byte   `json:"command"`
-	PlayerID string `json:"playerID`
-	Index    int    `json:index`
+	PlayerID string `json:"playerID"`
+	Index    int    `json:"index"`
 }
 
 type WorldState struct {
@@ -98,8 +98,9 @@ func runGames() {
 
 		// fmt.Println(inputs)
 		for i := earliestInput; i < len(worldHistory); i++ {
+			ftime := frameStartTime - int64(len(worldHistory)-1-i)*17
 			newState := copyWorldState(worldHistory[i])
-			updateGames(newState.PlayerStates, inputs[i], frameStartTime)
+			updateGames(newState.PlayerStates, inputs[i], ftime)
 			if i == len(worldHistory)-1 {
 				worldHistory = append(worldHistory, newState)
 				if len(worldHistory) > 128 {
