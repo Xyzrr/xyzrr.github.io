@@ -51,12 +51,15 @@ export let playerInputs: PlayerInput[] = [];
 async function startLocalGameEngine() {
   // @ts-ignore
   const go = new Go();
+  console.log("fetching go");
   // @ts-ignore
   let { instance, module } = await WebAssembly.instantiateStreaming(
     fetch("main.wasm"),
     go.importObject
   );
+  console.log("finished fetching");
   await go.run(instance);
+  console.log("go program halted");
 }
 
 //TODO: fix types
@@ -179,7 +182,7 @@ const TetrisPage: React.FC = () => {
         playerID: clientID,
         ...clientPlayerInput
       };
-      const SIMULATE_POOR_CONNECTION = false;
+      const SIMULATE_POOR_CONNECTION = true;
       if (SIMULATE_POOR_CONNECTION) {
         window.setTimeout(() => {
           socket.send(JSON.stringify(serverPlayerInput));

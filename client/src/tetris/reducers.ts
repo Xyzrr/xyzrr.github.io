@@ -36,11 +36,6 @@ interface TetrisPageAction {
 const _tetrisReducer = (state: TetrisPageState, action: TetrisPageAction) => {
   switch (action.type) {
     case "reconcileServerState":
-      console.log(
-        "predictedStates",
-        state.predictedStates.length,
-        state.inputHistory.length
-      );
       if (clientID == null) {
         throw "clientID is null when reconciling server state";
       }
@@ -70,12 +65,26 @@ const _tetrisReducer = (state: TetrisPageState, action: TetrisPageAction) => {
         throw `Received server update from before the last update (index ${replaceIndex}); predictedStates is probably too short (length ${state.predictedStates.length}).`;
       }
 
+      if (replaceIndex >= state.predictedStates.length) {
+        console.log(
+          `Received server update from the future (index ${replaceIndex}); predictedStates is probably lagging behind (length ${state.predictedStates.length}). Dropping update.`
+        );
+        break;
+      }
+
       if (_.isEqual(state.predictedStates[replaceIndex], newClientState)) {
-        console.log("Success: server state matches with client!");
+        console.log(
+          `Success: server state matches with client! Slicing predictedStates from index ${replaceIndex} to ${state.predictedStates.length}`
+        );
         state.predictedStates = state.predictedStates.slice(replaceIndex);
         state.inputHistory = state.inputHistory.slice(replaceIndex);
         break;
       }
+
+      console.log(
+        "stringified predicted states",
+        JSON.stringify(state.predictedStates)
+      );
 
       console.log(
         "Server state",
@@ -98,6 +107,16 @@ const _tetrisReducer = (state: TetrisPageState, action: TetrisPageAction) => {
         if (lastPredictedState == null) {
           throw `last predicted state was null while reconciling`;
         }
+
+        // @ts-ignore
+        if (typeof updateGame == "undefined") {
+          console.log(
+            "updateGame not ready at first reconciliation, pushing duplicated server state for now"
+          );
+          state.predictedStates.push(lastPredictedState);
+          continue;
+        }
+
         // @ts-ignore
         const goResult = updateGame(
           JSON.stringify(jsToGoPlayerState(lastPredictedState)),
@@ -112,16 +131,14 @@ const _tetrisReducer = (state: TetrisPageState, action: TetrisPageAction) => {
     case "predictState":
       const lastPredictedState =
         state.predictedStates[state.predictedStates.length - 1];
-      if (lastPredictedState == null) {
-        state.predictedStates.push(null);
+
+      // @ts-ignore
+      if (lastPredictedState == null || typeof updateGame == "undefined") {
+        state.predictedStates.push(lastPredictedState);
         state.inputHistory.push(action.info);
         break;
       }
 
-      // @ts-ignore
-      if (typeof updateGame == "undefined") {
-        throw "updateGame not ready at first predict";
-      }
       // @ts-ignore
       const goResult = updateGame(
         JSON.stringify(jsToGoPlayerState(lastPredictedState)),

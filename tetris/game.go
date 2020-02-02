@@ -61,7 +61,7 @@ func (state *PlayerState) startLockingIfOnGround(breakLock bool) {
 	} else {
 		state.ActivePiece.LockTimer = -1
 		if state.ActivePiece.FallTimer == -1 {
-			state.ActivePiece.FallTimer = 50
+			state.ActivePiece.FallTimer = 120
 		}
 	}
 }
@@ -113,7 +113,7 @@ func getInitialActivePieceState(t Tetromino) ActivePiece {
 		Position:    Pos{18, 2},
 		PieceType:   t,
 		Orientation: 0,
-		FallTimer:   50,
+		FallTimer:   120,
 		LockTimer:   -1,
 	}
 }
@@ -195,7 +195,7 @@ func (state *PlayerState) Tick(time int64) {
 		state.ActivePiece.FallTimer -= timePassed
 		if state.ActivePiece.FallTimer <= 0 {
 			state.AttemptMoveActivePiece(Pos{1, 0})
-			state.ActivePiece.FallTimer = 50
+			state.ActivePiece.FallTimer = 120
 		}
 	}
 
