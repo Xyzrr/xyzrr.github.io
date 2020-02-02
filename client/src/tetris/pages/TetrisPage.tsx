@@ -7,15 +7,13 @@ import produce from "immer";
 import "../wasm_exec";
 import useWindowSize from "../../util/useWindowSize";
 import { resizeCanvas } from "../../util/helpers";
-import { TetrisFieldTile, ActivePiece, Mino } from "../types";
+import {
+  EverythingState,
+  ServerState,
+  PlayerState,
+  PlayerInput
+} from "../types";
 import Renderer from "../Renderer";
-
-export let clientID: string | undefined = undefined;
-export let globals = {
-  frameStartTime: 0,
-  serverTimeOffset: 0,
-  actionIndex: 0
-};
 
 const keyBindings = {
   moveLeft: 37,
@@ -40,12 +38,6 @@ const TetrisPageDiv = styled.div`
   flex-wrap: wrap;
   background: black;
 `;
-
-export interface PlayerInput {
-  time: number;
-  index: number;
-  command: number;
-}
 
 export let playerInputs: PlayerInput[] = [];
 
@@ -99,31 +91,12 @@ export const jsToGoPlayerState = (s: PlayerState) => {
   };
 };
 
-export interface EverythingState {
-  serverState: ServerState;
-  predictedStates: (PlayerState | null)[];
-  inputHistory: PlayerInput[][];
-}
-
-export interface ServerState {
-  playerStates: { [clientID: string]: PlayerState };
-}
-
-export interface PlayerState {
-  field: TetrisFieldTile[][];
-  hold?: Mino;
-  held: boolean;
-  activePiece?: ActivePiece;
-  nextPieces: Mino[];
-  time: number;
-}
-
 const reconcileServerState = (
   everything: EverythingState,
   newState: ServerState,
   time: number
 ) => {
-  if (clientID == null) {
+  if (everything.clientID == null) {
     throw "clientID is null when reconciling server state";
   }
 
@@ -132,19 +105,20 @@ const reconcileServerState = (
   }
   everything.serverState = newState;
 
-  const newClientState = everything.serverState.playerStates[clientID];
+  const newClientState =
+    everything.serverState.playerStates[everything.clientID];
   if (newClientState == null) {
     return;
   }
 
-  if ((globals.frameStartTime - time) % 17 !== 0) {
-    throw `frameStartTime ${globals.frameStartTime} and server update time ${time} misaligned`;
+  if ((everything.frameStartTime - time) % 17 !== 0) {
+    throw `frameStartTime ${everything.frameStartTime} and server update time ${time} misaligned`;
   }
 
   const replaceIndex =
     everything.predictedStates.length -
     1 -
-    (globals.frameStartTime - time) / 17;
+    (everything.frameStartTime - time) / 17;
 
   if (replaceIndex < 0) {
     throw `Received server update from before the last update (index ${replaceIndex}); predictedStates is probably too short (length ${everything.predictedStates.length}).`;
@@ -228,7 +202,7 @@ const predictState = (everything: EverythingState, inputs: PlayerInput[]) => {
   const goResult = updateGame(
     JSON.stringify(jsToGoPlayerState(lastPredictedState)),
     JSON.stringify(inputs),
-    globals.frameStartTime.toString()
+    everything.frameStartTime.toString()
   );
   const newPlayerState = goToJSPlayerState(JSON.parse(goResult));
 
@@ -241,7 +215,11 @@ const TetrisPage: React.FC = () => {
   const everythingState = useRef<EverythingState>({
     serverState: { playerStates: {} },
     predictedStates: [null],
-    inputHistory: []
+    inputHistory: [],
+    actionIndex: 0,
+    clientID: undefined,
+    frameStartTime: 0,
+    serverTimeOffset: 0
   });
   const renderer = React.useRef<Renderer | null>(null);
   const windowSize = useWindowSize();
@@ -300,9 +278,10 @@ const TetrisPage: React.FC = () => {
 
         if (parsedData.messageType && parsedData.messageType === "id") {
           console.log("Got client ID", parsedData.id);
-          clientID = parsedData.id;
-          globals.frameStartTime = parsedData.time;
-          globals.serverTimeOffset = Date.now() - globals.frameStartTime;
+          everythingState.current.clientID = parsedData.id;
+          everythingState.current.frameStartTime = parsedData.time;
+          everythingState.current.serverTimeOffset =
+            Date.now() - everythingState.current.frameStartTime;
 
           window.setTimeout(update, 17);
           window.addEventListener("keydown", onKeyDown);
@@ -317,15 +296,15 @@ const TetrisPage: React.FC = () => {
 
     const sendInput = (command: number) => {
       const clientPlayerInput = {
-        time: globals.frameStartTime,
+        time: everythingState.current.frameStartTime,
         command,
-        index: globals.actionIndex
+        index: everythingState.current.actionIndex
       };
       playerInputs.push(clientPlayerInput);
-      globals.actionIndex++;
+      everythingState.current.actionIndex++;
 
       const serverPlayerInput = {
-        playerID: clientID,
+        playerID: everythingState.current.clientID,
         ...clientPlayerInput
       };
       const SIMULATE_POOR_CONNECTION = true;
@@ -339,14 +318,14 @@ const TetrisPage: React.FC = () => {
     };
 
     const update = () => {
-      globals.frameStartTime += 17;
+      everythingState.current.frameStartTime += 17;
 
       predictState(everythingState.current, playerInputs);
-      if (renderer.current && clientID) {
+      if (renderer.current && everythingState.current.clientID) {
         renderer.current.renderEverything(
           everythingState.current.serverState,
           everythingState.current.predictedStates,
-          clientID
+          everythingState.current.clientID
         );
       }
 
@@ -389,7 +368,9 @@ const TetrisPage: React.FC = () => {
       }
 
       const msUntilNextUpdate =
-        globals.frameStartTime + 17 - (Date.now() - globals.serverTimeOffset);
+        everythingState.current.frameStartTime +
+        17 -
+        (Date.now() - everythingState.current.serverTimeOffset);
       window.setTimeout(update, msUntilNextUpdate);
     };
   }, []);

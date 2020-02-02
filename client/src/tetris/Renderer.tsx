@@ -1,7 +1,12 @@
 import { getColor, getMinos } from "./tetrominos";
 import * as constants from "./constants";
-import { TetrisFieldTile, ActivePiece, Mino } from "./types";
-import { ServerState, PlayerState } from "./reducers";
+import {
+  TetrisFieldTile,
+  ActivePiece,
+  Mino,
+  ServerState,
+  PlayerState
+} from "./types";
 import { gray } from "../colors";
 
 const addCoords = (a: [number, number], b: [number, number]) => {

@@ -15,3 +15,32 @@ export interface ActivePiece {
   fallTimer: number;
   lockTimer: number;
 }
+
+export interface EverythingState {
+  serverState: ServerState;
+  predictedStates: (PlayerState | null)[];
+  inputHistory: PlayerInput[][];
+  actionIndex: number;
+  clientID: string | undefined;
+  frameStartTime: number;
+  serverTimeOffset: number;
+}
+
+export interface ServerState {
+  playerStates: { [clientID: string]: PlayerState };
+}
+
+export interface PlayerState {
+  field: TetrisFieldTile[][];
+  hold?: Mino;
+  held: boolean;
+  activePiece?: ActivePiece;
+  nextPieces: Mino[];
+  time: number;
+}
+
+export interface PlayerInput {
+  time: number;
+  index: number;
+  command: number;
+}
