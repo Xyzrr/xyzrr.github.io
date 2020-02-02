@@ -179,7 +179,7 @@ const TetrisPage: React.FC = () => {
         playerID: clientID,
         ...clientPlayerInput
       };
-      const SIMULATE_POOR_CONNECTION = false;
+      const SIMULATE_POOR_CONNECTION = true;
       if (SIMULATE_POOR_CONNECTION) {
         window.setTimeout(() => {
           socket.send(JSON.stringify(serverPlayerInput));

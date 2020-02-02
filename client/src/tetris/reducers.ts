@@ -36,11 +36,6 @@ interface TetrisPageAction {
 const _tetrisReducer = (state: TetrisPageState, action: TetrisPageAction) => {
   switch (action.type) {
     case "reconcileServerState":
-      console.log(
-        "predictedStates",
-        state.predictedStates.length,
-        state.inputHistory.length
-      );
       if (clientID == null) {
         throw "clientID is null when reconciling server state";
       }
@@ -55,16 +50,14 @@ const _tetrisReducer = (state: TetrisPageState, action: TetrisPageAction) => {
         break;
       }
 
-      const actionTime = newClientState.time;
-
-      if ((globals.frameStartTime - actionTime) % 17 !== 0) {
-        throw `frameStartTime ${globals.frameStartTime} and server update time ${actionTime} misaligned`;
+      if ((globals.frameStartTime - action.info.time) % 17 !== 0) {
+        throw `frameStartTime ${globals.frameStartTime} and server update time ${action.info.time} misaligned`;
       }
 
       const replaceIndex =
         state.predictedStates.length -
         1 -
-        (globals.frameStartTime - actionTime) / 17;
+        (globals.frameStartTime - action.info.time) / 17;
 
       if (replaceIndex < 0) {
         throw `Received server update from before the last update (index ${replaceIndex}); predictedStates is probably too short (length ${state.predictedStates.length}).`;
@@ -89,7 +82,7 @@ const _tetrisReducer = (state: TetrisPageState, action: TetrisPageAction) => {
       );
 
       state.inputHistory = state.inputHistory.slice(replaceIndex);
-      let predictingTime = actionTime;
+      let predictingTime = action.info.time;
       state.predictedStates = [newClientState];
       for (const inputs of state.inputHistory) {
         predictingTime += 17;
