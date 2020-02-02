@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"math/rand"
-	"sort"
 )
 
 type Pos struct {
@@ -100,7 +98,6 @@ func (state *PlayerState) AttemptRotateActivePiece(dir byte) {
 
 func GenerateRandomBag(seed int64) [7]Tetromino {
 	rand.Seed(seed)
-	fmt.Println("bagging with seed", seed)
 	bag := [7]Tetromino{Z, S, L, J, T, O, I}
 	for i := len(bag) - 1; i > 0; i-- {
 		j := rand.Intn(i + 1)
@@ -210,40 +207,6 @@ func (state *PlayerState) Tick(time int64) {
 	}
 
 	state.Time = time
-}
-
-func updateGames(states map[string]*PlayerState, inputs []PlayerInput, frameStartTime int64) {
-	sort.Slice(inputs, func(i, j int) bool { return inputs[i].Index < inputs[j].Index })
-
-	for _, inp := range inputs {
-		switch inp.Command {
-		case 1:
-			states[inp.PlayerID].AttemptMoveActivePiece(Pos{0, -1})
-		case 2:
-			states[inp.PlayerID].AttemptMoveActivePiece(Pos{0, 1})
-		case 3:
-			states[inp.PlayerID].AttemptRotateActivePiece(1)
-		case 4:
-			states[inp.PlayerID].AttemptRotateActivePiece(3)
-		case 5:
-			states[inp.PlayerID].AttemptMoveActivePiece(Pos{1, 0})
-		case 6:
-			states[inp.PlayerID].HardDrop()
-		case 7:
-			states[inp.PlayerID].HoldActivePiece()
-		case 8:
-			is := getInitialPlayerState(frameStartTime)
-			states[inp.PlayerID] = &is
-		case 9:
-			delete(states, inp.PlayerID)
-		}
-	}
-	// since ticks are computed after all user input in the frame
-	// has been processed, their intervals aren't as precise,
-	// but meh
-	for id := range states {
-		states[id].Tick(frameStartTime)
-	}
 }
 
 func getInitialPlayerState(frameStartTime int64) PlayerState {

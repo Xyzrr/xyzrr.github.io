@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -27,10 +28,6 @@ var frameStartTime int64
 var clients = make(map[*websocket.Conn]string)
 var playerInputs = make(chan PlayerInput, 16384)
 var worldHistory = make([]WorldState, 0)
-
-func getTime() int64 {
-	return time.Now().UnixNano() / int64(time.Millisecond)
-}
 
 func main() {
 	// use PORT environment variable, or default to 8080
@@ -125,6 +122,44 @@ func runGames() {
 	}
 }
 
+func getTime() int64 {
+	return time.Now().UnixNano() / int64(time.Millisecond)
+}
+
+func updateGames(states map[string]*PlayerState, inputs []PlayerInput, frameStartTime int64) {
+	sort.Slice(inputs, func(i, j int) bool { return inputs[i].Index < inputs[j].Index })
+
+	for _, inp := range inputs {
+		switch inp.Command {
+		case 1:
+			states[inp.PlayerID].AttemptMoveActivePiece(Pos{0, -1})
+		case 2:
+			states[inp.PlayerID].AttemptMoveActivePiece(Pos{0, 1})
+		case 3:
+			states[inp.PlayerID].AttemptRotateActivePiece(1)
+		case 4:
+			states[inp.PlayerID].AttemptRotateActivePiece(3)
+		case 5:
+			states[inp.PlayerID].AttemptMoveActivePiece(Pos{1, 0})
+		case 6:
+			states[inp.PlayerID].HardDrop()
+		case 7:
+			states[inp.PlayerID].HoldActivePiece()
+		case 8:
+			is := getInitialPlayerState(frameStartTime)
+			states[inp.PlayerID] = &is
+		case 9:
+			delete(states, inp.PlayerID)
+		}
+	}
+	// since ticks are computed after all user input in the frame
+	// has been processed, their intervals aren't as precise,
+	// but meh
+	for id := range states {
+		states[id].Tick(frameStartTime)
+	}
+}
+
 // hello responds to the request with a plain-text "Hello, world" message.
 func hello(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Serving request: %s", r.URL.Path)
@@ -144,7 +179,6 @@ type initMessage struct {
 	MessageType string `json:"messageType"`
 	ID          string `json:"id"`
 	Time        int64  `json:"time"`
-	Seed        int    `json:"seed"`
 }
 
 var lastTime = int64(0)
