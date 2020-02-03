@@ -177,6 +177,7 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 	clients[conn] = clientID
 
 	playerInputs <- PlayerInput{Time: joinTime, Command: 8, PlayerID: clientID}
+
 	for {
 		var input PlayerInput
 		err := conn.ReadJSON(&input)

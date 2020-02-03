@@ -216,7 +216,13 @@ export default class Renderer {
 
     Object.entries(enemyCoords).forEach(([cid, coords]) => {
       const enemyState = worldState.playerStates[cid];
-      this.renderGameField(coords[0], coords[1], unit, enemyState.field);
+      this.renderGameField(
+        coords[0],
+        coords[1],
+        unit,
+        enemyState.field,
+        enemyState.activePiece
+      );
     });
   }
 
