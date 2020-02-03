@@ -1,20 +1,19 @@
-import React from "react";
+import React, { useRef } from "react";
 
 import styled from "styled-components";
-import TetrisGameFrame from "../components/TetrisGameFrame";
-import { tetrisReducer, PlayerState, ServerState } from "../reducers";
 import * as constants from "../constants";
-import { unstable_batchedUpdates } from "react-dom";
 import * as _ from "lodash";
 import produce from "immer";
 import "../wasm_exec";
-
-export let clientID: string | undefined = undefined;
-export let globals = {
-  frameStartTime: 0,
-  serverTimeOffset: 0,
-  actionIndex: 0
-};
+import useWindowSize from "../../util/useWindowSize";
+import { resizeCanvas } from "../../util/helpers";
+import {
+  EverythingState,
+  ServerState,
+  PlayerState,
+  PlayerInput
+} from "../types";
+import Renderer from "../Renderer";
 
 const keyBindings = {
   moveLeft: 37,
@@ -40,23 +39,20 @@ const TetrisPageDiv = styled.div`
   background: black;
 `;
 
-export interface PlayerInput {
-  time: number;
-  index: number;
-  command: number;
-}
-
 export let playerInputs: PlayerInput[] = [];
 
 async function startLocalGameEngine() {
   // @ts-ignore
   const go = new Go();
+  console.log("fetching go");
   // @ts-ignore
   let { instance, module } = await WebAssembly.instantiateStreaming(
     fetch("main.wasm"),
     go.importObject
   );
+  console.log("finished fetching");
   await go.run(instance);
+  console.log("go program halted");
 }
 
 //TODO: fix types
@@ -95,14 +91,148 @@ export const jsToGoPlayerState = (s: PlayerState) => {
   };
 };
 
+const reconcileServerState = (
+  everything: EverythingState,
+  newState: ServerState,
+  time: number
+) => {
+  if (everything.clientID == null) {
+    throw "clientID is null when reconciling server state";
+  }
+
+  if (newState.playerStates == null) {
+    throw `server state is malformed: ${newState.playerStates}`;
+  }
+  everything.serverState = newState;
+
+  const newClientState =
+    everything.serverState.playerStates[everything.clientID];
+  if (newClientState == null) {
+    return;
+  }
+
+  if ((everything.frameStartTime - time) % 17 !== 0) {
+    throw `frameStartTime ${everything.frameStartTime} and server update time ${time} misaligned`;
+  }
+
+  const replaceIndex =
+    everything.predictedStates.length -
+    1 -
+    (everything.frameStartTime - time) / 17;
+
+  if (replaceIndex < 0) {
+    throw `Received server update from before the last update (index ${replaceIndex}); predictedStates is probably too short (length ${everything.predictedStates.length}).`;
+  }
+
+  if (replaceIndex >= everything.predictedStates.length) {
+    console.log(
+      `Received server update from the future (index ${replaceIndex}); predictedStates is probably lagging behind (length ${everything.predictedStates.length}). Dropping update.`
+    );
+    return;
+  }
+
+  if (_.isEqual(everything.predictedStates[replaceIndex], newClientState)) {
+    console.log(
+      `Success: server state matches with client! Slicing predictedStates from index ${replaceIndex} to ${everything.predictedStates.length}`
+    );
+    everything.predictedStates = everything.predictedStates.slice(replaceIndex);
+    everything.inputHistory = everything.inputHistory.slice(replaceIndex);
+    return;
+  }
+
+  console.log(
+    "stringified predicted states",
+    JSON.stringify(everything.predictedStates)
+  );
+
+  console.log(
+    "Server state",
+    newClientState,
+    "conflicts with client state",
+    JSON.parse(JSON.stringify(everything.predictedStates[replaceIndex])),
+    ". Reconciling from index",
+    replaceIndex,
+    "to",
+    everything.predictedStates.length
+  );
+
+  everything.inputHistory = everything.inputHistory.slice(replaceIndex);
+  let predictingTime = time;
+  everything.predictedStates = [newClientState];
+  for (const inputs of everything.inputHistory) {
+    predictingTime += 17;
+    const lastPredictedState =
+      everything.predictedStates[everything.predictedStates.length - 1];
+    if (lastPredictedState == null) {
+      throw `last predicted state was null while reconciling`;
+    }
+
+    // @ts-ignore
+    if (typeof updateGame == "undefined") {
+      console.log(
+        "updateGame not ready at first reconciliation, pushing duplicated server state for now"
+      );
+      everything.predictedStates.push(lastPredictedState);
+      continue;
+    }
+
+    // @ts-ignore
+    const goResult = updateGame(
+      JSON.stringify(jsToGoPlayerState(lastPredictedState)),
+      JSON.stringify(inputs),
+      predictingTime
+    );
+    const newPlayerState = goToJSPlayerState(JSON.parse(goResult));
+    everything.predictedStates.push(newPlayerState);
+  }
+};
+
+const predictState = (everything: EverythingState, inputs: PlayerInput[]) => {
+  const lastPredictedState =
+    everything.predictedStates[everything.predictedStates.length - 1];
+
+  // @ts-ignore
+  if (lastPredictedState == null || typeof updateGame == "undefined") {
+    everything.predictedStates.push(lastPredictedState);
+    everything.inputHistory.push(inputs);
+    return;
+  }
+
+  // @ts-ignore
+  const goResult = updateGame(
+    JSON.stringify(jsToGoPlayerState(lastPredictedState)),
+    JSON.stringify(inputs),
+    everything.frameStartTime.toString()
+  );
+  const newPlayerState = goToJSPlayerState(JSON.parse(goResult));
+
+  console.log("inputs", inputs);
+  everything.predictedStates.push(newPlayerState);
+  everything.inputHistory.push(inputs);
+};
+
 const TetrisPage: React.FC = () => {
-  const [state, dispatch] = React.useReducer(tetrisReducer, {
+  const everythingState = useRef<EverythingState>({
     serverState: { playerStates: {} },
     predictedStates: [null],
-    inputHistory: []
+    inputHistory: [],
+    actionIndex: 0,
+    clientID: undefined,
+    frameStartTime: 0,
+    serverTimeOffset: 0
   });
+  const renderer = React.useRef<Renderer | null>(null);
+  const windowSize = useWindowSize();
+  const canvasRef = React.useRef<HTMLCanvasElement>(null);
 
   React.useEffect(() => {
+    if (renderer.current == null && canvasRef.current != null) {
+      const ctx = canvasRef.current.getContext("2d");
+      if (ctx) {
+        renderer.current = new Renderer(ctx);
+      }
+    }
+
     const onKeyDown = (e: KeyboardEvent) => {
       if (keyDown[e.keyCode]) {
         return;
@@ -148,9 +278,10 @@ const TetrisPage: React.FC = () => {
 
         if (parsedData.messageType && parsedData.messageType === "id") {
           console.log("Got client ID", parsedData.id);
-          clientID = parsedData.id;
-          globals.frameStartTime = parsedData.time;
-          globals.serverTimeOffset = Date.now() - globals.frameStartTime;
+          everythingState.current.clientID = parsedData.id;
+          everythingState.current.frameStartTime = parsedData.time;
+          everythingState.current.serverTimeOffset =
+            Date.now() - everythingState.current.frameStartTime;
 
           window.setTimeout(update, 17);
           window.addEventListener("keydown", onKeyDown);
@@ -158,25 +289,22 @@ const TetrisPage: React.FC = () => {
         } else {
           let { newState, time } = parsedData;
           newState = goToJSState(newState);
-          dispatch({
-            type: "reconcileServerState",
-            info: { newState, time }
-          });
+          reconcileServerState(everythingState.current, newState, time);
         }
       };
     };
 
     const sendInput = (command: number) => {
       const clientPlayerInput = {
-        time: globals.frameStartTime,
+        time: everythingState.current.frameStartTime,
         command,
-        index: globals.actionIndex
+        index: everythingState.current.actionIndex
       };
       playerInputs.push(clientPlayerInput);
-      globals.actionIndex++;
+      everythingState.current.actionIndex++;
 
       const serverPlayerInput = {
-        playerID: clientID,
+        playerID: everythingState.current.clientID,
         ...clientPlayerInput
       };
       const SIMULATE_POOR_CONNECTION = true;
@@ -190,87 +318,79 @@ const TetrisPage: React.FC = () => {
     };
 
     const update = () => {
-      globals.frameStartTime += 17;
-      dispatch({
-        type: "predictState",
-        info: playerInputs
-      });
+      everythingState.current.frameStartTime += 17;
+
+      predictState(everythingState.current, playerInputs);
+      if (renderer.current && everythingState.current.clientID) {
+        renderer.current.renderEverything(
+          everythingState.current.serverState,
+          everythingState.current.predictedStates,
+          everythingState.current.clientID
+        );
+      }
+
       playerInputs = [];
 
-      unstable_batchedUpdates(() => {
-        const time = Date.now();
+      const time = Date.now();
 
-        // dispatch({
-        //   type: "tick",
-        //   info: { softDrop: keyDown[keyBindings.softDrop] }
-        // });
-
-        const rightKey = keyDown[keyBindings.moveRight];
-        if (
-          rightKey &&
-          time - rightKey.downTime >= constants.DAS &&
-          time - rightKey.lastTriggered >= constants.ARR
-        ) {
-          sendInput(2);
-          if (rightKey.lastTriggered === rightKey.downTime) {
-            rightKey.lastTriggered += constants.DAS;
-          } else {
-            rightKey.lastTriggered += constants.ARR;
-          }
+      const rightKey = keyDown[keyBindings.moveRight];
+      if (
+        rightKey &&
+        time - rightKey.downTime >= constants.DAS &&
+        time - rightKey.lastTriggered >= constants.ARR
+      ) {
+        sendInput(2);
+        if (rightKey.lastTriggered === rightKey.downTime) {
+          rightKey.lastTriggered += constants.DAS;
+        } else {
+          rightKey.lastTriggered += constants.ARR;
         }
+      }
 
-        const leftKey = keyDown[keyBindings.moveLeft];
-        if (
-          leftKey &&
-          time - leftKey.downTime >= constants.DAS &&
-          time - leftKey.lastTriggered >= constants.ARR
-        ) {
-          sendInput(1);
-          if (leftKey.lastTriggered === leftKey.downTime) {
-            leftKey.lastTriggered += constants.DAS;
-          } else {
-            leftKey.lastTriggered += constants.ARR;
-          }
+      const leftKey = keyDown[keyBindings.moveLeft];
+      if (
+        leftKey &&
+        time - leftKey.downTime >= constants.DAS &&
+        time - leftKey.lastTriggered >= constants.ARR
+      ) {
+        sendInput(1);
+        if (leftKey.lastTriggered === leftKey.downTime) {
+          leftKey.lastTriggered += constants.DAS;
+        } else {
+          leftKey.lastTriggered += constants.ARR;
         }
+      }
 
-        const downKey = keyDown[keyBindings.softDrop];
-        if (downKey && time - downKey.lastTriggered >= constants.ARR) {
-          sendInput(5);
-          downKey.lastTriggered += constants.ARR;
-        }
-      });
+      const downKey = keyDown[keyBindings.softDrop];
+      if (downKey && time - downKey.lastTriggered >= constants.ARR) {
+        sendInput(5);
+        downKey.lastTriggered += constants.ARR;
+      }
 
       const msUntilNextUpdate =
-        globals.frameStartTime + 17 - (Date.now() - globals.serverTimeOffset);
+        everythingState.current.frameStartTime +
+        17 -
+        (Date.now() - everythingState.current.serverTimeOffset);
       window.setTimeout(update, msUntilNextUpdate);
     };
   }, []);
 
+  React.useEffect(() => {
+    if (windowSize.width && windowSize.height) {
+      resizeCanvas(canvasRef, windowSize.width, windowSize.height);
+    }
+  }, [windowSize]);
+
   return (
     <TetrisPageDiv>
-      {Object.keys(state.serverState.playerStates).map(cid => {
-        let clientState: PlayerState | null;
-        if (cid === clientID) {
-          console.log("correct client ID", cid, clientID);
-          clientState = state.predictedStates[state.predictedStates.length - 1];
-        } else {
-          console.log("wrong client ID", cid, clientID);
-          clientState = state.serverState.playerStates[cid];
-        }
-        if (clientState == null) {
-          return <></>;
-        }
-        return (
-          <TetrisGameFrame
-            key={cid}
-            field={clientState.field}
-            activePiece={clientState.activePiece}
-            hold={clientState.hold}
-            nextPieces={clientState.nextPieces}
-            held={clientState.held}
-          ></TetrisGameFrame>
-        );
-      })}
+      <canvas
+        style={{
+          width: "100%",
+          height: "100%",
+          background: "black"
+        }}
+        ref={canvasRef}
+      />
     </TetrisPageDiv>
   );
 };
