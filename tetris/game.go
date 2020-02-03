@@ -119,9 +119,9 @@ func getInitialActivePieceState(t Tetromino) ActivePiece {
 }
 
 func (state *PlayerState) PopNextActivePiece() {
-	if state.NextPieces[7] == 0 {
+	if state.NextPieces[6] == 0 {
 		bag := GenerateRandomBag(state.Time)
-		copy(state.NextPieces[7:], bag[:])
+		copy(state.NextPieces[6:], bag[:])
 	}
 	state.ActivePiece = getInitialActivePieceState(state.NextPieces[0])
 	copy(state.NextPieces[:], state.NextPieces[1:])
@@ -215,10 +215,10 @@ func (state *PlayerState) Tick(time int64) {
 func GetInitialPlayerState(frameStartTime int64) PlayerState {
 	bag := GenerateRandomBag(frameStartTime)
 	nextPieces := [15]Tetromino{}
-	copy(nextPieces[:], bag[:])
+	copy(nextPieces[:], bag[1:])
 	return PlayerState{
 		Field:       GameField{},
-		ActivePiece: getInitialActivePieceState(J),
+		ActivePiece: getInitialActivePieceState(bag[0]),
 		Hold:        0,
 		Held:        false,
 		NextPieces:  nextPieces,
