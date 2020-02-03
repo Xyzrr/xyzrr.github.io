@@ -275,8 +275,8 @@ export default class Renderer {
 export class EnemyGrid {
   WIDTH_HEIGHT_RATIO = constants.MATRIX_COLS / constants.MATRIX_ROWS_VISIBLE;
   GUTTER_WIDTH_RATIO = 2 / constants.MATRIX_COLS;
-  grid: (string | null)[][];
-  enemies: Set<string>;
+  grid: (string | null)[][] = [];
+  enemies = new Set<string>();
   enemyWidth = 0;
   animatedEnemyWidth = 0;
   maxEnemyWidth?: number;
@@ -284,11 +284,6 @@ export class EnemyGrid {
   fullHeight = 0;
   gapWidth = 0;
   yOffset = 0;
-
-  constructor() {
-    this.grid = [];
-    this.enemies = new Set<string>();
-  }
 
   setMaxEnemyWidth(max: number) {
     this.maxEnemyWidth = max;
