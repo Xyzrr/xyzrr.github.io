@@ -292,7 +292,13 @@ export class EnemyGrid {
     }
   }
 
-  getOptimalDimensions(enemyCount: number) {
+  /**
+   * @param compact Make grid as small as possible; currently unused
+   * @returns The enemyWidth, rowCount and colCount that fits
+   * all the enemies in the available space such that they're
+   * as large as possible.
+   */
+  getOptimalDimensions(enemyCount: number, compact = false) {
     const sideWidth = this.getSideWidth();
 
     // try fitting horizontally
@@ -336,17 +342,27 @@ export class EnemyGrid {
       rows++;
     }
 
-    let bestEnemyWidth = enemyWidthWide;
-    // let bestRowCount = Math.ceil(enemyCount / (sideCols * 2));
-    let bestRowCount = rowCap;
-    let bestColCount = sideCols * 2;
+    let bestEnemyWidth: number;
+    let bestRowCount: number;
+    let bestColCount: number;
 
     const enemyWidthTall = enemyHeightTall * this.WIDTH_HEIGHT_RATIO;
     if (enemyWidthTall > enemyWidthWide) {
       bestEnemyWidth = enemyWidthTall;
       bestRowCount = rows;
-      // bestColCount = Math.ceil(enemyCount / rows / 2) * 2;
-      bestColCount = colCap * 2;
+      if (compact) {
+        bestColCount = Math.ceil(enemyCount / rows / 2) * 2;
+      } else {
+        bestColCount = colCap * 2;
+      }
+    } else {
+      bestEnemyWidth = enemyWidthWide;
+      if (compact) {
+        bestRowCount = rowCap;
+      } else {
+        bestRowCount = Math.ceil(enemyCount / (sideCols * 2));
+      }
+      bestColCount = sideCols * 2;
     }
 
     if (this.maxEnemyWidth && bestEnemyWidth > this.maxEnemyWidth) {
@@ -356,7 +372,9 @@ export class EnemyGrid {
     return [bestEnemyWidth, bestRowCount, bestColCount];
   }
 
-  // adapt to screen resize
+  /**
+   * Adapt to screen resize.
+   */
   reshape(newEnemies: Set<string>) {
     console.log("RESHAPING");
     const [enemyWidth, rows, cols] = this.getOptimalDimensions(newEnemies.size);
@@ -373,7 +391,7 @@ export class EnemyGrid {
     return this.grid.length === 0 ? 0 : this.grid.length * this.grid[0].length;
   }
 
-  // grow to accomodate new enemies, anchored at center-top
+  /** Grow to accomodate new enemies, anchored at center-top */
   expand(enemyCount: number) {
     console.log("EXPANDING");
     const [enemyWidth, rows, cols] = this.getOptimalDimensions(enemyCount);
@@ -392,6 +410,7 @@ export class EnemyGrid {
     return this.enemyWidth * this.GUTTER_WIDTH_RATIO;
   }
 
+  // not used anymore but may be useful later
   getGridExpectedSideWidth() {
     if (this.grid.length === 0) {
       return 0;
@@ -447,30 +466,7 @@ export class EnemyGrid {
     }
   }
 
-  update(
-    newEnemies: Set<string>,
-    fullWidth: number,
-    fullHeight: number,
-    gapWidth: number
-  ) {
-    console.log("GRID", this.grid);
-
-    this.gapWidth = gapWidth;
-
-    if (fullWidth !== this.fullWidth || fullHeight !== this.fullHeight) {
-      this.fullWidth = fullWidth;
-      this.fullHeight = fullHeight;
-      this.reshape(newEnemies);
-      this.updateYOffset();
-      return;
-    }
-
-    const sameEnemies = _.isEqual(this.enemies, newEnemies);
-    if (sameEnemies) {
-      return;
-    }
-
-    // remove missing enemies
+  removeMissingEnemies(newEnemies: Set<string>) {
     for (let i in this.grid) {
       for (let j in this.grid[i]) {
         const enemy = this.grid[i][j];
@@ -479,12 +475,9 @@ export class EnemyGrid {
         }
       }
     }
+  }
 
-    if (newEnemies.size > this.getGridCapacity()) {
-      this.expand(newEnemies.size);
-    }
-
-    // add new enemies
+  addNewEnemies(newEnemies: Set<string>) {
     let i = 0;
     let j = 0;
     // @ts-ignore
@@ -503,6 +496,40 @@ export class EnemyGrid {
         this.grid[i][j] = enemy;
       }
     }
+  }
+
+  /**
+   * Adapts the grid to new information.
+   */
+  update(
+    newEnemies: Set<string>,
+    fullWidth: number,
+    fullHeight: number,
+    gapWidth: number
+  ) {
+    console.log("GRID", this.grid);
+
+    this.gapWidth = gapWidth;
+
+    if (fullWidth !== this.fullWidth || fullHeight !== this.fullHeight) {
+      this.fullWidth = fullWidth;
+      this.fullHeight = fullHeight;
+      this.reshape(newEnemies);
+      this.updateYOffset();
+      return;
+    }
+
+    if (_.isEqual(this.enemies, newEnemies)) {
+      return;
+    }
+
+    this.removeMissingEnemies(newEnemies);
+
+    if (newEnemies.size > this.getGridCapacity()) {
+      this.expand(newEnemies.size);
+    }
+
+    this.addNewEnemies(newEnemies);
 
     this.updateYOffset(this.enemies.size === 0 ? 0 : 2000);
 
