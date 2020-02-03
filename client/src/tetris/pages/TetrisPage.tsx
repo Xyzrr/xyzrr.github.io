@@ -1,3 +1,4 @@
+import TWEEN from "@tweenjs/tween.js";
 import React, { useRef } from "react";
 
 import styled from "styled-components";
@@ -373,6 +374,12 @@ const TetrisPage: React.FC = () => {
         (Date.now() - everythingState.current.serverTimeOffset);
       window.setTimeout(update, msUntilNextUpdate);
     };
+
+    function animate(time: number) {
+      requestAnimationFrame(animate);
+      TWEEN.update(time);
+    }
+    requestAnimationFrame(animate);
   }, []);
 
   React.useEffect(() => {

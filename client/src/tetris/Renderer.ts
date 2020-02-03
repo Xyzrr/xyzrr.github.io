@@ -1,3 +1,4 @@
+import TWEEN from "@tweenjs/tween.js";
 import { getColor, getMinos } from "./tetrominos";
 import * as constants from "./constants";
 import {
@@ -9,6 +10,7 @@ import {
 } from "./types";
 import { gray } from "../colors";
 import { array2D } from "../util/helpers";
+import * as _ from "lodash";
 
 const addCoords = (a: [number, number], b: [number, number]) => {
   const result: [number, number] = [a[0] + b[0], a[1] + b[1]];
@@ -174,19 +176,35 @@ export default class Renderer {
     }
   }
 
-  renderGameFrame(x: number, y: number, unit: number, state: PlayerState) {
-    this.renderHoldSlot(x - unit - 4, y, unit, state.hold, state.held);
-    this.renderGameField(x + unit * 4, y, unit, state.field, state.activePiece);
-    this.renderBagPreview(x + unit * 14 + 4, y, unit, state.nextPieces);
+  renderGameFrame(
+    x: number,
+    y: number,
+    unit: number,
+    state: PlayerState | null
+  ) {
+    if (state) {
+      this.renderHoldSlot(x - unit - 4, y, unit, state.hold, state.held);
+      this.renderGameField(
+        x + unit * 4,
+        y,
+        unit,
+        state.field,
+        state.activePiece
+      );
+      this.renderBagPreview(x + unit * 14 + 4, y, unit, state.nextPieces);
+    } else {
+      this.renderGrid(x + unit * 4, y, unit);
+    }
   }
 
-  renderSelf(state: PlayerState) {
+  renderSelf(state: PlayerState | null) {
     let unit = 28;
     if (unit * 22 > this.getHeight()) {
       unit = 20;
     }
     const frameWidth = unit * 19 + 8;
     const frameHeight = unit * 20;
+
     this.renderGameFrame(
       this.getWidth() / 2 - frameWidth / 2,
       this.getHeight() / 2 - frameHeight / 2,
@@ -207,11 +225,7 @@ export default class Renderer {
     this.enemyGrid.setMaxEnemyWidth(gapWidth * 0.4);
     this.enemyGrid.update(enemies, this.getWidth(), this.getHeight(), gapWidth);
 
-    const [enemyCoords, enemyWidth] = this.enemyGrid.getEnemyCoordinates(
-      this.getWidth(),
-      this.getHeight(),
-      gapWidth
-    );
+    const [enemyCoords, enemyWidth] = this.enemyGrid.getEnemyCoordinates();
     const unit = enemyWidth / 10;
 
     Object.entries(enemyCoords).forEach(([cid, coords]) => {
@@ -234,12 +248,8 @@ export default class Renderer {
     this.ctx.clearRect(0, 0, this.getWidth(), this.getHeight());
 
     let selfWidth = 0;
-    if (worldState.playerStates[clientID] != null) {
-      const lastPredictedFrame = predictedStates[predictedStates.length - 1];
-      if (lastPredictedFrame != null) {
-        selfWidth = this.renderSelf(lastPredictedFrame);
-      }
-    }
+    const lastPredictedFrame = predictedStates[predictedStates.length - 1];
+    selfWidth = this.renderSelf(lastPredictedFrame);
 
     const sideWidth = (this.getWidth() - selfWidth) / 2;
     if (sideWidth > 80 && this.getHeight() > 80) {
@@ -253,22 +263,38 @@ export class EnemyGrid {
   GUTTER_WIDTH_RATIO = 2 / 10;
   grid: (string | null)[][];
   enemies: Set<string>;
-  enemyWidth: number;
+  enemyWidth = 0;
+  animatedEnemyWidth = 0;
   maxEnemyWidth?: number;
-  lastFullWidth?: number;
-  lastFullHeight?: number;
+  fullWidth = 0;
+  fullHeight = 0;
+  gapWidth = 0;
+  yOffset = 0;
 
   constructor() {
     this.grid = [];
     this.enemies = new Set<string>();
-    this.enemyWidth = 0;
   }
 
   setMaxEnemyWidth(max: number) {
     this.maxEnemyWidth = max;
   }
 
-  getOptimalDimensions(enemyCount: number, sideWidth: number, height: number) {
+  setEnemyWidth(width: number, duration = 0) {
+    this.enemyWidth = width;
+    if (duration === 0) {
+      this.animatedEnemyWidth = width;
+    } else {
+      new TWEEN.Tween(this)
+        .to({ animatedEnemyWidth: width }, duration)
+        .easing(TWEEN.Easing.Quadratic.InOut)
+        .start();
+    }
+  }
+
+  getOptimalDimensions(enemyCount: number) {
+    const sideWidth = this.getSideWidth();
+
     // try fitting horizontally
     let enemyWidthWide = 0;
     let rowCap = 0;
@@ -278,7 +304,9 @@ export class EnemyGrid {
         sideWidth / (sideCols + (sideCols + 1) * this.GUTTER_WIDTH_RATIO);
       const enemyHeight = enemyWidthWide / this.WIDTH_HEIGHT_RATIO;
       const gutterWidth = enemyWidthWide * this.GUTTER_WIDTH_RATIO;
-      rowCap = Math.floor((height - gutterWidth) / (enemyHeight + gutterWidth));
+      rowCap = Math.floor(
+        (this.fullHeight - gutterWidth) / (enemyHeight + gutterWidth)
+      );
 
       if (rowCap * sideCols >= Math.ceil(enemyCount / 2)) {
         break;
@@ -293,7 +321,7 @@ export class EnemyGrid {
     let rows = 1;
     while (true) {
       enemyHeightTall =
-        height /
+        this.fullHeight /
         (rows + (rows + 1) * this.WIDTH_HEIGHT_RATIO * this.GUTTER_WIDTH_RATIO);
       const enemyWidth = enemyHeightTall * this.WIDTH_HEIGHT_RATIO;
       const gutterWidth = enemyWidth * this.GUTTER_WIDTH_RATIO;
@@ -309,14 +337,16 @@ export class EnemyGrid {
     }
 
     let bestEnemyWidth = enemyWidthWide;
-    let bestRowCount = Math.ceil(enemyCount / (sideCols * 2));
+    // let bestRowCount = Math.ceil(enemyCount / (sideCols * 2));
+    let bestRowCount = rowCap;
     let bestColCount = sideCols * 2;
 
     const enemyWidthTall = enemyHeightTall * this.WIDTH_HEIGHT_RATIO;
     if (enemyWidthTall > enemyWidthWide) {
       bestEnemyWidth = enemyWidthTall;
       bestRowCount = rows;
-      bestColCount = Math.ceil(enemyCount / rows / 2) * 2;
+      // bestColCount = Math.ceil(enemyCount / rows / 2) * 2;
+      bestColCount = colCap * 2;
     }
 
     if (this.maxEnemyWidth && bestEnemyWidth > this.maxEnemyWidth) {
@@ -327,14 +357,10 @@ export class EnemyGrid {
   }
 
   // adapt to screen resize
-  reshape(newEnemies: Set<string>, sideWidth: number, height: number) {
+  reshape(newEnemies: Set<string>) {
     console.log("RESHAPING");
-    const [enemyWidth, rows, cols] = this.getOptimalDimensions(
-      newEnemies.size,
-      sideWidth,
-      height
-    );
-    this.enemyWidth = enemyWidth;
+    const [enemyWidth, rows, cols] = this.getOptimalDimensions(newEnemies.size);
+    this.setEnemyWidth(enemyWidth);
     this.grid = array2D<string | null>(rows, cols, null);
     let currentIndex = 0;
     newEnemies.forEach(enemy => {
@@ -348,13 +374,9 @@ export class EnemyGrid {
   }
 
   // grow to accomodate new enemies, anchored at center-top
-  expand(enemyCount: number, sideWidth: number, height: number) {
+  expand(enemyCount: number) {
     console.log("EXPANDING");
-    const [enemyWidth, rows, cols] = this.getOptimalDimensions(
-      enemyCount,
-      sideWidth,
-      height
-    );
+    const [enemyWidth, rows, cols] = this.getOptimalDimensions(enemyCount);
     const newGrid = array2D<string | null>(rows, cols, null);
     for (let i = 0; i < this.grid.length; i++) {
       for (let j = 0; j < this.grid[i].length; j++) {
@@ -362,7 +384,7 @@ export class EnemyGrid {
         newGrid[i][j + offset] = this.grid[i][j];
       }
     }
-    this.enemyWidth = enemyWidth;
+    this.setEnemyWidth(enemyWidth, 1001);
     this.grid = newGrid;
   }
 
@@ -374,15 +396,55 @@ export class EnemyGrid {
     if (this.grid.length === 0) {
       return 0;
     }
-    const cols = this.grid[0].length / 2;
+
+    let cols = this.grid[0].length / 2;
+    findEmptyColsLoop: for (let j = 0; j < this.grid[0].length / 2; j++) {
+      for (let i = 0; i < this.grid.length; i++) {
+        if (
+          this.grid[i][j] != null ||
+          this.grid[i][this.grid[i].length - 1 - j] != null
+        ) {
+          break findEmptyColsLoop;
+        }
+      }
+      cols--;
+    }
+
     return this.enemyWidth * cols + this.getGutterWidth() * (cols + 1);
   }
 
   getGridExpectedHeight() {
+    let rows = this.grid.length;
+    findEmptyRowsLoop: for (let i = this.grid.length - 1; i > 0; i--) {
+      for (let j = 0; j < this.grid[i].length; j++) {
+        if (this.grid[i][j] != null) {
+          break findEmptyRowsLoop;
+        }
+      }
+      rows--;
+    }
+
     return (
-      (this.enemyWidth / this.WIDTH_HEIGHT_RATIO) * this.grid.length +
-      this.getGutterWidth() * (this.grid.length + 1)
+      (this.enemyWidth / this.WIDTH_HEIGHT_RATIO) * rows +
+      this.getGutterWidth() * (rows + 1)
     );
+  }
+
+  getSideWidth() {
+    return (this.fullWidth - this.gapWidth) / 2;
+  }
+
+  updateYOffset(duration = 0) {
+    const expectedHeight = this.getGridExpectedHeight();
+    const yOffset = (this.fullHeight - expectedHeight) / 2;
+    if (duration === 0) {
+      this.yOffset = yOffset;
+    } else {
+      new TWEEN.Tween(this)
+        .to({ yOffset }, duration)
+        .easing(TWEEN.Easing.Quadratic.InOut)
+        .start();
+    }
   }
 
   update(
@@ -393,12 +455,18 @@ export class EnemyGrid {
   ) {
     console.log("GRID", this.grid);
 
-    const sideWidth = (fullWidth - gapWidth) / 2;
+    this.gapWidth = gapWidth;
 
-    if (fullWidth != this.lastFullWidth || fullHeight != this.lastFullHeight) {
-      this.reshape(newEnemies, sideWidth, fullHeight);
-      this.lastFullWidth = fullWidth;
-      this.lastFullHeight = fullHeight;
+    if (fullWidth !== this.fullWidth || fullHeight !== this.fullHeight) {
+      this.fullWidth = fullWidth;
+      this.fullHeight = fullHeight;
+      this.reshape(newEnemies);
+      this.updateYOffset();
+      return;
+    }
+
+    const sameEnemies = _.isEqual(this.enemies, newEnemies);
+    if (sameEnemies) {
       return;
     }
 
@@ -413,7 +481,7 @@ export class EnemyGrid {
     }
 
     if (newEnemies.size > this.getGridCapacity()) {
-      this.expand(newEnemies.size, sideWidth, fullHeight);
+      this.expand(newEnemies.size);
     }
 
     // add new enemies
@@ -422,7 +490,6 @@ export class EnemyGrid {
     // @ts-ignore
     addEnemiesLoop: for (let enemy of newEnemies) {
       if (!this.enemies.has(enemy)) {
-        this.grid[i][j] = enemy;
         while (this.grid[i][j] != null) {
           j++;
           if (j == this.grid[0].length) {
@@ -433,41 +500,47 @@ export class EnemyGrid {
             break addEnemiesLoop;
           }
         }
+        this.grid[i][j] = enemy;
       }
     }
+
+    this.updateYOffset(this.enemies.size === 0 ? 0 : 2000);
 
     this.enemies = newEnemies;
   }
 
-  getEnemyCoordinates(
-    fullWidth: number,
-    fullHeight: number,
-    gapWidth: number
-  ): [{ [cid: string]: number[] }, number] {
+  getEnemyCoordinates(): [{ [cid: string]: number[] }, number] {
     const enemyCoords: { [cid: string]: number[] } = {};
-    const expectedWidth = 2 * this.getGridExpectedSideWidth() + gapWidth;
-    const expectedHeight = this.getGridExpectedHeight();
-    const xOffset = (fullWidth - expectedWidth) / 2;
-    const yOffset = (fullHeight - expectedHeight) / 2;
+    const centerX = this.fullWidth / 2;
+
     for (let i = 0; i < this.grid.length; i++) {
       for (let j = 0; j < this.grid[i].length; j++) {
         const enemy = this.grid[i][j];
         if (enemy != null) {
-          const x =
-            xOffset +
-            j * this.enemyWidth +
-            (j + 1) * this.getGutterWidth() +
-            (j >= this.grid[i].length / 2
-              ? gapWidth + this.getGutterWidth()
-              : 0);
+          let x: number;
+          if (j >= this.grid[i].length / 2) {
+            const colsRight = j - this.grid[i].length / 2;
+            x =
+              centerX +
+              this.gapWidth / 2 +
+              colsRight * this.animatedEnemyWidth +
+              (colsRight + 1) * this.getGutterWidth();
+          } else {
+            const colsLeft = this.grid[i].length / 2 - 1 - j;
+            x =
+              centerX -
+              this.gapWidth / 2 -
+              (colsLeft + 1) *
+                (this.animatedEnemyWidth + this.getGutterWidth());
+          }
           const y =
-            yOffset +
-            i * (this.enemyWidth / this.WIDTH_HEIGHT_RATIO) +
+            this.yOffset +
+            i * (this.animatedEnemyWidth / this.WIDTH_HEIGHT_RATIO) +
             (i + 1) * this.getGutterWidth();
           enemyCoords[enemy] = [x, y];
         }
       }
     }
-    return [enemyCoords, this.enemyWidth];
+    return [enemyCoords, this.animatedEnemyWidth];
   }
 }
