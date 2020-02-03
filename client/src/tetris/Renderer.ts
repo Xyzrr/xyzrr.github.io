@@ -73,13 +73,13 @@ export default class Renderer {
   }
 
   renderGrid(x: number, y: number, unit: number) {
-    const width = unit * 10;
-    const height = unit * 20;
+    const width = unit * constants.MATRIX_COLS;
+    const height = unit * constants.MATRIX_ROWS_VISIBLE;
     this.ctx.strokeStyle = "#666";
     this.ctx.strokeRect(x - 1, y - 1, width + 2, height + 2);
 
     this.ctx.strokeStyle = "#161616";
-    for (let i = 0; i < constants.MATRIX_ROWS / 2; i++) {
+    for (let i = 0; i < constants.MATRIX_ROWS_VISIBLE; i++) {
       this.ctx.beginPath();
       this.ctx.moveTo(x, y + i * unit);
       this.ctx.lineTo(x + width, y + i * unit);
@@ -108,7 +108,8 @@ export default class Renderer {
         ? getColor(activePiece.pieceType, constants.GHOST_ALPHA)
         : getColor(activePiece.pieceType);
       const col = activePiece.position[1] + coord[1];
-      const row = activePiece.position[0] + coord[0] - 20;
+      const row =
+        activePiece.position[0] + coord[0] - constants.MATRIX_ROWS_HIDDEN;
       if (row >= 0) {
         this.ctx.fillRect(x + col * unit, y + row * unit, unit, unit);
       }
@@ -116,12 +117,17 @@ export default class Renderer {
   }
 
   renderLand(x: number, y: number, unit: number, field: TetrisFieldTile[][]) {
-    for (let i = 20; i < field.length; i++) {
-      for (let j = 0; j < field[i].length; j++) {
+    for (let i = constants.MATRIX_ROWS_HIDDEN; i < constants.MATRIX_ROWS; i++) {
+      for (let j = 0; j < constants.MATRIX_COLS; j++) {
         const cell = field[i][j];
         if (cell !== 0) {
           this.ctx.fillStyle = getColor(cell);
-          this.ctx.fillRect(x + unit * j, y + unit * (i - 20), unit, unit);
+          this.ctx.fillRect(
+            x + unit * j,
+            y + unit * (i - constants.MATRIX_ROWS_HIDDEN),
+            unit,
+            unit
+          );
         }
       }
     }
@@ -180,10 +186,11 @@ export default class Renderer {
     x: number,
     y: number,
     unit: number,
+    margin: number,
     state: PlayerState | null
   ) {
     if (state) {
-      this.renderHoldSlot(x - unit - 4, y, unit, state.hold, state.held);
+      this.renderHoldSlot(x - unit - margin, y, unit, state.hold, state.held);
       this.renderGameField(
         x + unit * 4,
         y,
@@ -191,7 +198,12 @@ export default class Renderer {
         state.field,
         state.activePiece
       );
-      this.renderBagPreview(x + unit * 14 + 4, y, unit, state.nextPieces);
+      this.renderBagPreview(
+        x + unit * (constants.MATRIX_COLS + 4) + margin,
+        y,
+        unit,
+        state.nextPieces
+      );
     } else {
       this.renderGrid(x + unit * 4, y, unit);
     }
@@ -202,13 +214,15 @@ export default class Renderer {
     if (unit * 22 > this.getHeight()) {
       unit = 20;
     }
-    const frameWidth = unit * 19 + 8;
-    const frameHeight = unit * 20;
+    const margin = 4;
+    const frameWidth = unit * (constants.MATRIX_COLS + 4 + 5) + margin * 2;
+    const frameHeight = unit * constants.MATRIX_ROWS_VISIBLE;
 
     this.renderGameFrame(
       this.getWidth() / 2 - frameWidth / 2,
       this.getHeight() / 2 - frameHeight / 2,
       unit,
+      margin,
       state
     );
 
@@ -226,7 +240,7 @@ export default class Renderer {
     this.enemyGrid.update(enemies, this.getWidth(), this.getHeight(), gapWidth);
 
     const [enemyCoords, enemyWidth] = this.enemyGrid.getEnemyCoordinates();
-    const unit = enemyWidth / 10;
+    const unit = enemyWidth / constants.MATRIX_COLS;
 
     Object.entries(enemyCoords).forEach(([cid, coords]) => {
       const enemyState = worldState.playerStates[cid];
@@ -259,8 +273,8 @@ export default class Renderer {
 }
 
 export class EnemyGrid {
-  WIDTH_HEIGHT_RATIO = 10 / 20;
-  GUTTER_WIDTH_RATIO = 2 / 10;
+  WIDTH_HEIGHT_RATIO = constants.MATRIX_COLS / constants.MATRIX_ROWS_VISIBLE;
+  GUTTER_WIDTH_RATIO = 2 / constants.MATRIX_COLS;
   grid: (string | null)[][];
   enemies: Set<string>;
   enemyWidth = 0;
