@@ -10,6 +10,14 @@ export function zero2D(rows: number, cols: number) {
   return array;
 }
 
+export function array2D<T>(rows: number, cols: number, val: T) {
+  var array = [],
+    row = [];
+  while (cols--) row.push(val);
+  while (rows--) array.push(row.slice());
+  return array;
+}
+
 export function randInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min)) + min;
 }

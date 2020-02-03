@@ -8,6 +8,7 @@
     "@types/classnames": "^2.2.9",
     "@types/color": "^3.0.0",
     "@types/gl-matrix": "^2.4.5",
+    "@types/jest": "^25.1.1",
     "@types/katex": "^0.10.2",
     "@types/lodash": "^4.14.147",
     "@types/memoizee": "^0.4.3",
