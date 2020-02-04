@@ -61,8 +61,13 @@ func runGames() {
 	tick := 0
 	ticker := time.NewTicker(17 * time.Millisecond)
 
+	var processTime time.Duration
+
 	for {
 		<-ticker.C
+
+		start := time.Now()
+
 		frameStartTime += 17
 
 		// process inputs
@@ -128,6 +133,15 @@ func runGames() {
 		}
 
 		tick++
+
+		end := time.Now()
+
+		processTime += end.Sub(start)
+
+		if tick%34 == 0 {
+			fmt.Println(processTime / 34)
+			processTime = 0
+		}
 	}
 }
 
