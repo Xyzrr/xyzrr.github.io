@@ -12,7 +12,7 @@ import (
 const cmdLag = 250 * time.Millisecond
 const cmdRate = 100 * time.Millisecond
 const joinRate = 100 * time.Millisecond
-const maxClients = 20
+const maxClients = 100
 
 func main() {
 	clientCount := 1
@@ -83,7 +83,7 @@ func runClient(commandRate time.Duration) {
 			// do something?
 			_ = umsg
 		case <-cmdTick.C:
-			itime := time.Now().Add(-cmdLag).Unix()
+			itime := time.Now().Add(-cmdLag).UnixNano() / int64(time.Millisecond)
 			itime -= (itime - idMsg.Time) % 17
 			if err := c.WriteJSON(&PlayerInput{
 				Time:    itime,

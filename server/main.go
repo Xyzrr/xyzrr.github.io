@@ -1,11 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"time"
+
+	_ "net/http/pprof"
 
 	"github.com/Xyzrr/interactive-ml/tetris"
 	"github.com/gorilla/websocket"
@@ -25,9 +29,11 @@ type WorldState struct {
 }
 
 var frameStartTime int64
-var clients = make(map[*websocket.Conn]string)
-var playerInputs = make(chan PlayerInput, 16384)
+var playerInputs = make(chan PlayerInput, 1<<14)
 var worldBuffers = map[string]*tetris.PlayerStateBuffer{}
+
+var clientsMu sync.Mutex
+var clients = make(map[*websocket.Conn]string)
 
 func main() {
 	// use PORT environment variable, or default to 8080
@@ -37,7 +43,7 @@ func main() {
 	}
 
 	// register hello function to handle all requests
-	server := http.NewServeMux()
+	server := http.DefaultServeMux
 	server.HandleFunc("/", hello)
 	server.HandleFunc("/socket", socketHandler)
 
@@ -116,20 +122,36 @@ func runGames() {
 
 		// update clients
 		if tick%10 == 0 {
+			worldState := WorldState{
+				PlayerStates: map[string]*tetris.PlayerState{},
+			}
+			var time int64
+			for k, b := range worldBuffers {
+				state := b.GetFirst()
+				worldState.PlayerStates[k] = &state
+				time = state.Time
+			}
+			msg, _ := json.Marshal(UpdateMessage{worldState, time})
+
+			var clientList []*websocket.Conn
+			clientsMu.Lock()
 			for client := range clients {
+				clientList = append(clientList, client)
+			}
+			clientsMu.Unlock()
+
+			var wg sync.WaitGroup
+			for _, client := range clientList {
 				// j, _ := json.Marshal(UpdateMessage{worldHistory[0], frameStartTime - int64((len(worldHistory)-1)*17)})
 				// fmt.Println("sending to client", string(j))
-				worldState := WorldState{
-					PlayerStates: map[string]*tetris.PlayerState{},
-				}
-				var time int64
-				for k, b := range worldBuffers {
-					state := b.GetFirst()
-					worldState.PlayerStates[k] = &state
-					time = state.Time
-				}
-				client.WriteJSON(UpdateMessage{worldState, time})
+				client := client
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					client.WriteMessage(websocket.TextMessage, msg)
+				}()
 			}
+			wg.Wait()
 		}
 
 		tick++
@@ -138,8 +160,8 @@ func runGames() {
 
 		processTime += end.Sub(start)
 
-		if tick%34 == 0 {
-			fmt.Println(processTime / 34)
+		if tick%60 == 0 {
+			fmt.Println(processTime/60, time.Now().Sub(time.Unix(frameStartTime/1000, (frameStartTime%1000)*1000000)))
 			processTime = 0
 		}
 	}
@@ -188,7 +210,10 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 		ID:          clientID,
 		Time:        joinTime,
 	})
+
+	clientsMu.Lock()
 	clients[conn] = clientID
+	clientsMu.Unlock()
 
 	playerInputs <- PlayerInput{Time: joinTime, Command: 8, PlayerID: clientID}
 
@@ -199,7 +224,11 @@ func socketHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("error: %v", err)
 			playerInputs <- PlayerInput{Time: frameStartTime, Command: 9, PlayerID: clientID}
+
+			clientsMu.Lock()
 			delete(clients, conn)
+			clientsMu.Unlock()
+
 			break
 		}
 		lastTime = input.Time
