@@ -1,4 +1,5 @@
 import Renderer, { EnemyGrid } from "./Renderer";
+import { array2D } from "../util/helpers";
 
 it("enemyGrid.getOptimalDimensions", () => {
   const grid = new EnemyGrid();
@@ -16,3 +17,14 @@ it("enemyGrid.getOptimalDimensions", () => {
   grid.fullHeight = height * 2 + gutterWidth * 3;
   expect(grid.getOptimalDimensions(7)).toEqual([25, 2, 4]);
 });
+
+// it("enemyGrid.sidePath", () => {
+//   const grid = new EnemyGrid();
+//   grid.grid = array2D(5, 6, "hey");
+
+//   const gen = grid.sidePath();
+//   for (let coord of gen) {
+
+//   }
+//   expect(grid.si(7)).toEqual([25, 2, 4]);
+// });

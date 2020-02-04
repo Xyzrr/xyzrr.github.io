@@ -489,7 +489,6 @@ export class EnemyGrid {
   addNewEnemies(newEnemies: Set<string>) {
     let i = 0;
     let j = 0;
-    // @ts-ignore
     addEnemiesLoop: for (let enemy of newEnemies) {
       if (!this.enemies.has(enemy)) {
         while (this.grid[i][j] != null) {
@@ -503,6 +502,31 @@ export class EnemyGrid {
           }
         }
         this.grid[i][j] = enemy;
+      }
+    }
+  }
+
+  *sidePath() {
+    for (let r = 0; r < Math.max(this.grid.length, this.grid[0].length); r++) {
+      const j = this.grid[0].length / 2 - 1 - r;
+      if (j >= 0) {
+        for (let i = 0; i < r; i++) {
+          if (i < this.grid.length) {
+            yield [i, j];
+          }
+        }
+      }
+      const i = r;
+      if (i < this.grid.length) {
+        for (
+          let j = this.grid[0].length / 2 - 1;
+          j >= this.grid[0].length / 2 - 1 - r;
+          j--
+        ) {
+          if (j > 0) {
+            yield [i, j];
+          }
+        }
       }
     }
   }
