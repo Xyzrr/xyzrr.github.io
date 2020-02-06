@@ -389,11 +389,8 @@ export class EnemyGrid {
     const [enemyWidth, rows, cols] = this.getOptimalDimensions(newEnemies.size);
     this.setEnemyWidth(enemyWidth);
     this.grid = array2D<string | null>(rows, cols, null);
-    let currentIndex = 0;
-    newEnemies.forEach(enemy => {
-      this.grid[Math.floor(currentIndex / cols)][currentIndex % cols] = enemy;
-      currentIndex++;
-    });
+    this.enemies = new Set();
+    this.addNewEnemies(newEnemies);
   }
 
   getGridCapacity() {
@@ -487,47 +484,70 @@ export class EnemyGrid {
   }
 
   addNewEnemies(newEnemies: Set<string>) {
-    let i = 0;
-    let j = 0;
+    const gen = this.addPath();
+    let coord = gen.next().value as number[];
+    console.error("ABC attempting with grid", _.cloneDeep(this.grid));
+    console.error("enemies", this.enemies, newEnemies);
     addEnemiesLoop: for (let enemy of newEnemies) {
       if (!this.enemies.has(enemy)) {
-        while (this.grid[i][j] != null) {
-          j++;
-          if (j == this.grid[0].length) {
-            j = 0;
-            i++;
-          }
-          if (i === this.grid.length) {
-            break addEnemiesLoop;
-          }
+        while (this.grid[coord[0]][coord[1]] != null) {
+          coord = gen.next().value as number[];
+          console.error("ABC coord", coord);
         }
-        this.grid[i][j] = enemy;
+        this.grid[coord[0]][coord[1]] = enemy;
       }
     }
   }
 
-  *sidePath() {
+  *sidePath(side: "left" | "right") {
+    if (this.grid.length === 0) {
+      return;
+    }
+
+    let startJ: number;
+    if (side === "left") {
+      startJ = this.grid[0].length / 2 - 1;
+    } else {
+      startJ = this.grid[0].length / 2;
+    }
     for (let r = 0; r < Math.max(this.grid.length, this.grid[0].length); r++) {
-      const j = this.grid[0].length / 2 - 1 - r;
-      if (j >= 0) {
+      let endJ: Number;
+      if (side === "left") {
+        endJ = this.grid[0].length / 2 - 1 - r;
+      } else {
+        endJ = this.grid[0].length / 2 + r;
+      }
+
+      // move vertically
+      if (endJ >= 0 && endJ < this.grid[0].length) {
         for (let i = 0; i < r; i++) {
           if (i < this.grid.length) {
-            yield [i, j];
+            yield [i, endJ];
           }
         }
       }
-      const i = r;
-      if (i < this.grid.length) {
+
+      // move horizontally
+      if (r < this.grid.length) {
         for (
-          let j = this.grid[0].length / 2 - 1;
-          j >= this.grid[0].length / 2 - 1 - r;
-          j--
+          let j = startJ;
+          side === "left" ? j >= endJ : j <= endJ;
+          j += side === "left" ? -1 : 1
         ) {
-          if (j > 0) {
-            yield [i, j];
+          if (j >= 0 && j < this.grid[0].length) {
+            yield [r, j];
           }
         }
       }
+    }
+  }
+
+  *addPath() {
+    const left = this.sidePath("left");
+    const right = this.sidePath("right");
+    for (const l of left) {
+      yield l;
+      yield right.next().value;
     }
   }
 
@@ -549,6 +569,7 @@ export class EnemyGrid {
       this.fullHeight = fullHeight;
       this.reshape(newEnemies);
       this.updateYOffset();
+      this.enemies = newEnemies;
       return;
     }
 
