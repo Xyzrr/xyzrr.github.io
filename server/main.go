@@ -57,7 +57,6 @@ func main() {
 
 type UpdateMessage struct {
 	NewState WorldState `json:"newState"`
-	Time     int64      `json:"time"`
 }
 
 func runGames() {
@@ -125,13 +124,11 @@ func runGames() {
 			worldState := WorldState{
 				PlayerStates: map[string]*tetris.PlayerState{},
 			}
-			var time int64
 			for k, b := range worldBuffers {
 				state := b.GetFirst()
 				worldState.PlayerStates[k] = &state
-				time = state.Time
 			}
-			msg, _ := json.Marshal(UpdateMessage{worldState, time})
+			msg, _ := json.Marshal(UpdateMessage{worldState})
 
 			var clientList []*websocket.Conn
 			clientsMu.Lock()

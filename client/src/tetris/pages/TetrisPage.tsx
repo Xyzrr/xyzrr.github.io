@@ -94,8 +94,7 @@ export const jsToGoPlayerState = (s: PlayerState) => {
 
 const reconcileServerState = (
   everything: EverythingState,
-  newState: ServerState,
-  time: number
+  newState: ServerState
 ) => {
   if (everything.clientID == null) {
     throw "clientID is null when reconciling server state";
@@ -111,6 +110,8 @@ const reconcileServerState = (
   if (newClientState == null) {
     return;
   }
+
+  const time = newClientState.time;
 
   if ((everything.frameStartTime - time) % 17 !== 0) {
     throw `frameStartTime ${everything.frameStartTime} and server update time ${time} misaligned`;
@@ -160,6 +161,7 @@ const reconcileServerState = (
   everything.inputHistory = everything.inputHistory.slice(replaceIndex);
   let predictingTime = time;
   everything.predictedStates = [newClientState];
+
   for (const inputs of everything.inputHistory) {
     predictingTime += 17;
     const lastPredictedState =
@@ -288,9 +290,9 @@ const TetrisPage: React.FC = () => {
           window.addEventListener("keydown", onKeyDown);
           window.addEventListener("keyup", onKeyUp);
         } else {
-          let { newState, time } = parsedData;
+          let { newState } = parsedData;
           newState = goToJSState(newState);
-          reconcileServerState(everythingState.current, newState, time);
+          reconcileServerState(everythingState.current, newState);
           if (renderer.current && everythingState.current.clientID) {
             renderer.current.updateFromServer(
               everythingState.current.serverState,
