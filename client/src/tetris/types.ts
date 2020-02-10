@@ -44,3 +44,9 @@ export interface PlayerInput {
   index: number;
   command: number;
 }
+
+export interface EnemyAnimationState {
+  animationType: "joining" | "disconnecting" | null;
+  animationProgress: number;
+  tween: TWEEN.Tween | null;
+}

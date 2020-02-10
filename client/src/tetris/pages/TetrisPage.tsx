@@ -291,6 +291,12 @@ const TetrisPage: React.FC = () => {
           let { newState, time } = parsedData;
           newState = goToJSState(newState);
           reconcileServerState(everythingState.current, newState, time);
+          if (renderer.current && everythingState.current.clientID) {
+            renderer.current.updateFromServer(
+              everythingState.current.serverState,
+              everythingState.current.clientID
+            );
+          }
         }
       };
     };
@@ -323,10 +329,10 @@ const TetrisPage: React.FC = () => {
 
       predictState(everythingState.current, playerInputs);
       if (renderer.current && everythingState.current.clientID) {
-        renderer.current.renderEverything(
-          everythingState.current.serverState,
-          everythingState.current.predictedStates,
-          everythingState.current.clientID
+        renderer.current.updateFromPrediction(
+          everythingState.current.predictedStates[
+            everythingState.current.predictedStates.length - 1
+          ]
         );
       }
 
@@ -378,6 +384,9 @@ const TetrisPage: React.FC = () => {
     function animate(time: number) {
       requestAnimationFrame(animate);
       TWEEN.update(time);
+      if (renderer.current) {
+        renderer.current.renderEverything();
+      }
     }
     requestAnimationFrame(animate);
   }, []);

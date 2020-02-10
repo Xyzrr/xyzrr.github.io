@@ -12,7 +12,7 @@ import (
 const cmdLag = 250 * time.Millisecond
 const cmdRate = 100 * time.Millisecond
 const joinRate = 100 * time.Millisecond
-const maxClients = 100
+const maxClients = 10
 
 func main() {
 	clientCount := 1
