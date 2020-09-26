@@ -1,8 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
-import QLearningPage from "./pages/QLearningPage";
-import HomePage from "./pages/HomePage";
+import QLearningPage from "./interactive-ml/pages/QLearningPage";
+import HomePage from "./portfolio/pages/HomePage";
 import TetrisPage from "./tetris/pages/TetrisPage";
 
 function DQNPage() {

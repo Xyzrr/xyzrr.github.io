@@ -1,5 +1,13 @@
 import { Mino } from "./types";
-import { red, green, darkBlue, orange, purple, yellow, blue } from "../colors";
+import {
+  red,
+  green,
+  darkBlue,
+  orange,
+  purple,
+  yellow,
+  blue,
+} from "../common/colors";
 import memoize from "memoizee";
 
 const jlstzOffsets: [number, number][][] = [
@@ -8,36 +16,36 @@ const jlstzOffsets: [number, number][][] = [
     [0, 0],
     [0, 0],
     [0, 0],
-    [0, 0]
+    [0, 0],
   ],
   [
     [0, 0],
     [0, 1],
     [1, 1],
     [-2, 0],
-    [-2, 1]
+    [-2, 1],
   ],
   [
     [0, 0],
     [0, 0],
     [0, 0],
     [0, 0],
-    [0, 0]
+    [0, 0],
   ],
   [
     [0, 0],
     [0, -1],
     [1, -1],
     [-2, 0],
-    [-2, -1]
-  ]
+    [-2, -1],
+  ],
 ];
 
 const oOffsets: [number, number][][] = [
   [[0, 0]],
   [[1, 0]],
   [[1, -1]],
-  [[0, -1]]
+  [[0, -1]],
 ];
 
 const iOffsets: [number, number][][] = [
@@ -46,116 +54,116 @@ const iOffsets: [number, number][][] = [
     [0, -1],
     [0, 2],
     [0, -1],
-    [0, 2]
+    [0, 2],
   ],
   [
     [0, -1],
     [0, 0],
     [0, 0],
     [-1, 0],
-    [2, 0]
+    [2, 0],
   ],
   [
     [-1, -1],
     [-1, 1],
     [-1, -2],
     [0, 1],
-    [0, -2]
+    [0, -2],
   ],
   [
     [-1, 0],
     [-1, 0],
     [-1, 0],
     [1, 0],
-    [-2, 0]
-  ]
+    [-2, 0],
+  ],
 ];
 
 const zMinos: [number, number][] = [
   [1, 1],
   [1, 2],
   [2, 2],
-  [2, 3]
+  [2, 3],
 ];
 
 const sMinos: [number, number][] = [
   [1, 2],
   [1, 3],
   [2, 1],
-  [2, 2]
+  [2, 2],
 ];
 
 const jMinos: [number, number][] = [
   [1, 1],
   [2, 1],
   [2, 2],
-  [2, 3]
+  [2, 3],
 ];
 
 const lMinos: [number, number][] = [
   [1, 3],
   [2, 1],
   [2, 2],
-  [2, 3]
+  [2, 3],
 ];
 
 const tMinos: [number, number][] = [
   [1, 2],
   [2, 1],
   [2, 2],
-  [2, 3]
+  [2, 3],
 ];
 
 const oMinos: [number, number][] = [
   [1, 2],
   [1, 3],
   [2, 2],
-  [2, 3]
+  [2, 3],
 ];
 
 const iMinos: [number, number][] = [
   [2, 1],
   [2, 2],
   [2, 3],
-  [2, 4]
+  [2, 4],
 ];
 
 const tetrominos = [
   {
     color: green,
     minos: [sMinos],
-    offsets: jlstzOffsets
+    offsets: jlstzOffsets,
   },
   {
     color: red,
     minos: [zMinos],
-    offsets: jlstzOffsets
+    offsets: jlstzOffsets,
   },
   {
     color: darkBlue,
     minos: [jMinos],
-    offsets: jlstzOffsets
+    offsets: jlstzOffsets,
   },
   {
     color: orange,
     minos: [lMinos],
-    offsets: jlstzOffsets
+    offsets: jlstzOffsets,
   },
   {
     color: purple,
     minos: [tMinos],
-    offsets: jlstzOffsets
+    offsets: jlstzOffsets,
   },
   {
     color: yellow,
     minos: [oMinos],
-    offsets: oOffsets
+    offsets: oOffsets,
   },
   {
     color: blue,
     minos: [iMinos],
-    offsets: iOffsets
-  }
+    offsets: iOffsets,
+  },
 ];
 
 const rotateCoords = (coords: [number, number][], size: number) => {

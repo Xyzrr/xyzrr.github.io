@@ -7,9 +7,9 @@ import {
   Mino,
   ServerState,
   PlayerState,
-  EnemyAnimationState
+  EnemyAnimationState,
 } from "./types";
-import { gray } from "../colors";
+import { gray } from "../common/colors";
 import * as _ from "lodash";
 import { EnemyGrid } from "./EnemyGrid";
 
@@ -21,7 +21,7 @@ const addCoords = (a: [number, number], b: [number, number]) => {
 const translate = (activePiece: ActivePiece, translation: [number, number]) => {
   return {
     ...activePiece,
-    position: addCoords(activePiece.position, translation)
+    position: addCoords(activePiece.position, translation),
   };
 };
 
@@ -304,7 +304,7 @@ export default class Renderer {
     this.renderGameField(x, y, unit, enemyState.field, enemyState.activePiece, {
       showGrid: false,
       borderCompleteness,
-      fieldOpacity
+      fieldOpacity,
     });
   }
 
@@ -344,7 +344,7 @@ export default class Renderer {
             ...serverState.playerStates[cid],
             animationType: "joining",
             animationProgress: 0,
-            tween: null
+            tween: null,
           };
           this.enemyStates[cid].tween = new TWEEN.Tween(this.enemyStates[cid])
             .to({ animationProgress: 1 }, 1001)

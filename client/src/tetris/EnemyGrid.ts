@@ -1,7 +1,7 @@
 import * as _ from "lodash";
 import * as constants from "./constants";
 import TWEEN from "@tweenjs/tween.js";
-import { array2D } from "../util/helpers";
+import { array2D } from "../common/util/helpers";
 
 /**
  * Manages positioning enemies on a grid, independent of enemy states.

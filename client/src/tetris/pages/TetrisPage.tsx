@@ -6,13 +6,13 @@ import * as constants from "../constants";
 import * as _ from "lodash";
 import produce from "immer";
 import "../wasm_exec";
-import useWindowSize from "../../util/useWindowSize";
-import { resizeCanvas } from "../../util/helpers";
+import useWindowSize from "../../common/util/useWindowSize";
+import { resizeCanvas } from "../../common/util/helpers";
 import {
   EverythingState,
   ServerState,
   PlayerState,
-  PlayerInput
+  PlayerInput,
 } from "../types";
 import Renderer from "../Renderer";
 
@@ -23,7 +23,7 @@ const keyBindings = {
   rotateCounterClockwise: 90,
   softDrop: 40,
   hardDrop: 32,
-  hold: 67
+  hold: 67,
 };
 
 const keyDown: {
@@ -72,8 +72,8 @@ export const goToJSPlayerState = (s: any) => {
     ...s,
     activePiece: {
       ...s.activePiece,
-      position: [s.activePiece.position.row, s.activePiece.position.col]
-    }
+      position: [s.activePiece.position.row, s.activePiece.position.col],
+    },
   } as PlayerState;
 };
 
@@ -85,10 +85,10 @@ export const jsToGoPlayerState = (s: PlayerState) => {
           ...s.activePiece,
           position: {
             row: s.activePiece.position[0],
-            col: s.activePiece.position[1]
-          }
+            col: s.activePiece.position[1],
+          },
         }
-      : undefined
+      : undefined,
   };
 };
 
@@ -222,7 +222,7 @@ const TetrisPage: React.FC = () => {
     actionIndex: 0,
     clientID: undefined,
     frameStartTime: 0,
-    serverTimeOffset: 0
+    serverTimeOffset: 0,
   });
   const renderer = React.useRef<Renderer | null>(null);
   const windowSize = useWindowSize();
@@ -274,7 +274,7 @@ const TetrisPage: React.FC = () => {
     // const socket = new WebSocket("ws://34.67.102.3:8080/socket");
     const socket = new WebSocket("ws://localhost:8080/socket");
     socket.onopen = () => {
-      socket.onmessage = m => {
+      socket.onmessage = (m) => {
         console.log("got message", m);
 
         let parsedData = JSON.parse(m.data);
@@ -307,14 +307,14 @@ const TetrisPage: React.FC = () => {
       const clientPlayerInput = {
         time: everythingState.current.frameStartTime,
         command,
-        index: everythingState.current.actionIndex
+        index: everythingState.current.actionIndex,
       };
       playerInputs.push(clientPlayerInput);
       everythingState.current.actionIndex++;
 
       const serverPlayerInput = {
         playerID: everythingState.current.clientID,
-        ...clientPlayerInput
+        ...clientPlayerInput,
       };
       const SIMULATE_POOR_CONNECTION = true;
       if (SIMULATE_POOR_CONNECTION) {
@@ -405,7 +405,7 @@ const TetrisPage: React.FC = () => {
         style={{
           width: "100%",
           height: "100%",
-          background: "black"
+          background: "black",
         }}
         ref={canvasRef}
       />
