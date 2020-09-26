@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/xyzrr.github.io/static/css/main.aba6d969.chunk.css",
-    "main.js": "/xyzrr.github.io/static/js/main.63fdb531.chunk.js",
-    "main.js.map": "/xyzrr.github.io/static/js/main.63fdb531.chunk.js.map",
-    "runtime~main.js": "/xyzrr.github.io/static/js/runtime~main.a5d7b2fa.js",
-    "runtime~main.js.map": "/xyzrr.github.io/static/js/runtime~main.a5d7b2fa.js.map",
-    "static/css/2.9b17ae97.chunk.css": "/xyzrr.github.io/static/css/2.9b17ae97.chunk.css",
-    "static/js/2.13e71fe3.chunk.js": "/xyzrr.github.io/static/js/2.13e71fe3.chunk.js",
-    "static/js/2.13e71fe3.chunk.js.map": "/xyzrr.github.io/static/js/2.13e71fe3.chunk.js.map",
-    "index.html": "/xyzrr.github.io/index.html",
-    "precache-manifest.54ba9f6769b8be7faf10f1abd42e4e9a.js": "/xyzrr.github.io/precache-manifest.54ba9f6769b8be7faf10f1abd42e4e9a.js",
-    "service-worker.js": "/xyzrr.github.io/service-worker.js",
-    "static/css/2.9b17ae97.chunk.css.map": "/xyzrr.github.io/static/css/2.9b17ae97.chunk.css.map",
-    "static/css/main.aba6d969.chunk.css.map": "/xyzrr.github.io/static/css/main.aba6d969.chunk.css.map"
+    "main.css": "./static/css/main.aba6d969.chunk.css",
+    "main.js": "./static/js/main.6cc7101f.chunk.js",
+    "main.js.map": "./static/js/main.6cc7101f.chunk.js.map",
+    "runtime~main.js": "./static/js/runtime~main.d8781e25.js",
+    "runtime~main.js.map": "./static/js/runtime~main.d8781e25.js.map",
+    "static/css/2.9b17ae97.chunk.css": "./static/css/2.9b17ae97.chunk.css",
+    "static/js/2.f7b9280d.chunk.js": "./static/js/2.f7b9280d.chunk.js",
+    "static/js/2.f7b9280d.chunk.js.map": "./static/js/2.f7b9280d.chunk.js.map",
+    "index.html": "./index.html",
+    "precache-manifest.fedc1827225cfe5174147f84ea0d9e24.js": "./precache-manifest.fedc1827225cfe5174147f84ea0d9e24.js",
+    "service-worker.js": "./service-worker.js",
+    "static/css/2.9b17ae97.chunk.css.map": "./static/css/2.9b17ae97.chunk.css.map",
+    "static/css/main.aba6d969.chunk.css.map": "./static/css/main.aba6d969.chunk.css.map"
   }
 }
