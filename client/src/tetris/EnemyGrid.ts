@@ -227,7 +227,7 @@ export class EnemyGrid {
     let coord = gen.next().value as number[];
     console.error("ABC attempting with grid", _.cloneDeep(this.grid));
     console.error("enemies", this.enemies, newEnemies);
-    addEnemiesLoop: for (let enemy of newEnemies) {
+    for (let enemy of newEnemies) {
       if (!this.enemies.has(enemy)) {
         while (this.grid[coord[0]][coord[1]] != null) {
           coord = gen.next().value as number[];

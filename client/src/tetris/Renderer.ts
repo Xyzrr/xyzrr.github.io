@@ -10,7 +10,6 @@ import {
   EnemyAnimationState,
 } from "./types";
 import { gray } from "../common/colors";
-import * as _ from "lodash";
 import { EnemyGrid } from "./EnemyGrid";
 
 const addCoords = (a: [number, number], b: [number, number]) => {

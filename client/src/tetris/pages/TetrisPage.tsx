@@ -47,7 +47,7 @@ async function startLocalGameEngine() {
   const go = new Go();
   console.log("fetching go");
   // @ts-ignore
-  let { instance, module } = await WebAssembly.instantiateStreaming(
+  let { instance } = await WebAssembly.instantiateStreaming(
     fetch("main.wasm"),
     go.importObject
   );
@@ -97,11 +97,11 @@ const reconcileServerState = (
   newState: ServerState
 ) => {
   if (everything.clientID == null) {
-    throw "clientID is null when reconciling server state";
+    throw new Error("clientID is null when reconciling server state");
   }
 
   if (newState.playerStates == null) {
-    throw `server state is malformed: ${newState.playerStates}`;
+    throw new Error(`server state is malformed: ${newState.playerStates}`);
   }
   everything.serverState = newState;
 
@@ -114,7 +114,9 @@ const reconcileServerState = (
   const time = newClientState.time;
 
   if ((everything.frameStartTime - time) % 17 !== 0) {
-    throw `frameStartTime ${everything.frameStartTime} and server update time ${time} misaligned`;
+    throw new Error(
+      `frameStartTime ${everything.frameStartTime} and server update time ${time} misaligned`
+    );
   }
 
   const replaceIndex =
@@ -123,7 +125,9 @@ const reconcileServerState = (
     (everything.frameStartTime - time) / 17;
 
   if (replaceIndex < 0) {
-    throw `Received server update from before the last update (index ${replaceIndex}); predictedStates is probably too short (length ${everything.predictedStates.length}).`;
+    throw new Error(
+      `Received server update from before the last update (index ${replaceIndex}); predictedStates is probably too short (length ${everything.predictedStates.length}).`
+    );
   }
 
   if (replaceIndex >= everything.predictedStates.length) {
@@ -167,7 +171,7 @@ const reconcileServerState = (
     const lastPredictedState =
       everything.predictedStates[everything.predictedStates.length - 1];
     if (lastPredictedState == null) {
-      throw `last predicted state was null while reconciling`;
+      throw new Error(`last predicted state was null while reconciling`);
     }
 
     // @ts-ignore

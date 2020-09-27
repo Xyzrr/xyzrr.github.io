@@ -5,10 +5,9 @@ import QLearningPage from "./interactive-ml/pages/QLearningPage";
 import HomePage from "./portfolio/pages/HomePage";
 import TetrisPage from "./tetris/pages/TetrisPage";
 import TestPage from "./portfolio/pages/TestPage";
-import TextPage from "./text/TextPage";
+import TextPage from "./text/pages/TextPage";
 
 function App() {
-  console.log("PROCESS ENV", process.env);
   return (
     <>
       <Router>
