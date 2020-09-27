@@ -5,7 +5,7 @@ import styled from "styled-components";
 import * as constants from "../constants";
 import * as _ from "lodash";
 import produce from "immer";
-import "../wasm_exec";
+// import "../wasm_exec";
 import useWindowSize from "../../common/util/useWindowSize";
 import { resizeCanvas } from "../../common/util/helpers";
 import {
