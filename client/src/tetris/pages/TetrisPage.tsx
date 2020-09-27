@@ -214,7 +214,7 @@ const predictState = (everything: EverythingState, inputs: PlayerInput[]) => {
   everything.inputHistory.push(inputs);
 };
 
-const TetrisPage: React.FC = () => {
+const TetrisPage: React.FC = (props) => {
   const everythingState = useRef<EverythingState>({
     serverState: { playerStates: {} },
     predictedStates: [null],

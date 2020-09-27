@@ -54,7 +54,9 @@ interface Theme {
   name: string;
 }
 
-const HomePage: React.FC = () => {
+const HomePage: React.FC = (props) => {
+  console.log("props", props);
+
   const themes: { [key: string]: Theme } = {
     snake: {
       background: <SnakeRenderer></SnakeRenderer>,
