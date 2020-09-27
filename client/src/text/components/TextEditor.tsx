@@ -6,6 +6,7 @@ const TextEditor: React.FC = () => {
   return (
     <S.Wrapper
       contentEditable
+      suppressContentEditableWarning
       onPaste={(e) => {
         console.group("Pasted:");
         const items = e.clipboardData.items;
