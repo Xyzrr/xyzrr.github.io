@@ -1,5 +1,6 @@
 import * as S from "./TextEditor.styles";
 
+import * as _ from "lodash";
 import React from "react";
 import ParagraphBlock from "./ParagraphBlock";
 import HeaderBlock from "./HeaderBlock";
@@ -21,9 +22,12 @@ export interface ParagraphBlockModel {
 
 export type BlockModel = ParagraphBlockModel | HeaderBlockModel;
 
-export const EditorContext = React.createContext<{
-  updateBlockContent: (i: number, newContent: string) => void;
-} | null>(null);
+const convertDomToModel = (html: string | undefined) => {
+  if (html == null) {
+    return "";
+  }
+  return html;
+};
 
 const TextEditor: React.FC = () => {
   const [blocks, setBlocks] = React.useState<BlockModel[]>([
@@ -39,13 +43,61 @@ const TextEditor: React.FC = () => {
       content: "another paragraph",
     },
   ]);
+  console.log("STATE", blocks);
+
+  const onContentUpdate = React.useCallback((e: React.KeyboardEvent) => {
+    console.log("step 0");
+    const selection = window.getSelection();
+    if (selection != null) {
+      console.log("step 1");
+      let anchorElement: Element | null | undefined;
+      let focusElement: Element | null | undefined;
+      if (selection.anchorNode instanceof Element) {
+        anchorElement = selection.anchorNode;
+      } else {
+        anchorElement = selection.anchorNode?.parentElement;
+      }
+      if (selection.focusNode instanceof Element) {
+        focusElement = selection.focusNode;
+      } else {
+        focusElement = selection.focusNode?.parentElement;
+      }
+      if (anchorElement != null && focusElement != null) {
+        console.log("step 2");
+
+        const anchorBlockNode = anchorElement.closest(".editor-block");
+        const focusBlockNode = focusElement.closest(".editor-block");
+        if (
+          anchorBlockNode != null &&
+          focusBlockNode != null &&
+          anchorBlockNode === focusBlockNode
+        ) {
+          console.log("step 3", anchorBlockNode, focusBlockNode);
+          const blockID = anchorBlockNode.id;
+          const blockIndex = _.findIndex(
+            blocks,
+            (block) => block.id === blockID
+          );
+          window.setTimeout(() => {
+            const html = anchorBlockNode.innerHTML;
+            setBlocks((old) => {
+              return produce(old, (draft: BlockModel[]) => {
+                draft[blockIndex].content = convertDomToModel(html);
+              });
+            });
+          });
+          return;
+        }
+      }
+    }
+    e.preventDefault();
+  }, []);
+
   return (
     <S.Wrapper
       contentEditable
+      onKeyDown={onContentUpdate}
       suppressContentEditableWarning
-      onMouseUp={() => {
-        console.log("Selection:", window.getSelection());
-      }}
       onPaste={(e) => {
         console.group("Pasted:");
         const items = e.clipboardData.items;
@@ -66,36 +118,24 @@ const TextEditor: React.FC = () => {
         console.groupEnd();
       }}
     >
-      <EditorContext.Provider
-        value={{
-          updateBlockContent: (i: number, newContent: string) => {
-            setBlocks((old) => {
-              return produce(old, (draft: BlockModel[]) => {
-                draft[i].content = newContent;
-              });
-            });
-          },
-        }}
-      >
-        {blocks.map((block, blockIndex) => {
-          let Component: React.FC<any>;
-          switch (block.type) {
-            case "header":
-              Component = HeaderBlock;
-              break;
-            case "paragraph":
-              Component = ParagraphBlock;
-              break;
-          }
-          return (
-            <Component
-              index={blockIndex}
-              block={block}
-              key={block.id}
-            ></Component>
-          );
-        })}
-      </EditorContext.Provider>
+      {blocks.map((block, blockIndex) => {
+        let Component: React.FC<any>;
+        switch (block.type) {
+          case "header":
+            Component = HeaderBlock;
+            break;
+          case "paragraph":
+            Component = ParagraphBlock;
+            break;
+        }
+        return (
+          <Component
+            index={blockIndex}
+            block={block}
+            key={block.id}
+          ></Component>
+        );
+      })}
     </S.Wrapper>
   );
 };
