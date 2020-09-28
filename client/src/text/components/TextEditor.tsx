@@ -3,15 +3,18 @@ import * as S from "./TextEditor.styles";
 import React from "react";
 import ParagraphBlock from "./ParagraphBlock";
 import HeaderBlock from "./HeaderBlock";
+import randomID from "../../common/util/randomID";
 
 export interface HeaderBlockModel {
   type: "header";
+  id: string;
   level: 1 | 2 | 3 | 4 | 5 | 6;
   content: string;
 }
 
 export interface ParagraphBlockModel {
   type: "paragraph";
+  id: string;
   content: string;
 }
 
@@ -19,9 +22,10 @@ export type BlockModel = ParagraphBlockModel | HeaderBlockModel;
 
 const TextEditor: React.FC = () => {
   const blocks: BlockModel[] = [
-    { type: "header", level: 1, content: "A good day" },
+    { type: "header", id: randomID(), level: 1, content: "A good day" },
     {
       type: "paragraph",
+      id: randomID(),
       content: "hello",
     },
   ];
@@ -59,7 +63,7 @@ const TextEditor: React.FC = () => {
             Component = ParagraphBlock;
             break;
         }
-        return <Component block={block}></Component>;
+        return <Component block={block} key={block.id}></Component>;
       })}
       Type stuff!
     </S.Wrapper>
