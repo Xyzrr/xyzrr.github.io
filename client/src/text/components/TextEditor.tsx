@@ -4,6 +4,7 @@ import React from "react";
 import ParagraphBlock from "./ParagraphBlock";
 import HeaderBlock from "./HeaderBlock";
 import randomID from "../../common/util/randomID";
+import { produce } from "immer";
 
 export interface HeaderBlockModel {
   type: "header";
@@ -20,19 +21,31 @@ export interface ParagraphBlockModel {
 
 export type BlockModel = ParagraphBlockModel | HeaderBlockModel;
 
+export const EditorContext = React.createContext<{
+  updateBlockContent: (i: number, newContent: string) => void;
+} | null>(null);
+
 const TextEditor: React.FC = () => {
-  const blocks: BlockModel[] = [
+  const [blocks, setBlocks] = React.useState<BlockModel[]>([
     { type: "header", id: randomID(), level: 1, content: "A good day" },
     {
       type: "paragraph",
       id: randomID(),
       content: "hello",
     },
-  ];
+    {
+      type: "paragraph",
+      id: randomID(),
+      content: "another paragraph",
+    },
+  ]);
   return (
     <S.Wrapper
       contentEditable
       suppressContentEditableWarning
+      onMouseUp={() => {
+        console.log("Selection:", window.getSelection());
+      }}
       onPaste={(e) => {
         console.group("Pasted:");
         const items = e.clipboardData.items;
@@ -53,19 +66,36 @@ const TextEditor: React.FC = () => {
         console.groupEnd();
       }}
     >
-      {blocks.map((block) => {
-        let Component: React.FC<any>;
-        switch (block.type) {
-          case "header":
-            Component = HeaderBlock;
-            break;
-          case "paragraph":
-            Component = ParagraphBlock;
-            break;
-        }
-        return <Component block={block} key={block.id}></Component>;
-      })}
-      Type stuff!
+      <EditorContext.Provider
+        value={{
+          updateBlockContent: (i: number, newContent: string) => {
+            setBlocks((old) => {
+              return produce(old, (draft: BlockModel[]) => {
+                draft[i].content = newContent;
+              });
+            });
+          },
+        }}
+      >
+        {blocks.map((block, blockIndex) => {
+          let Component: React.FC<any>;
+          switch (block.type) {
+            case "header":
+              Component = HeaderBlock;
+              break;
+            case "paragraph":
+              Component = ParagraphBlock;
+              break;
+          }
+          return (
+            <Component
+              index={blockIndex}
+              block={block}
+              key={block.id}
+            ></Component>
+          );
+        })}
+      </EditorContext.Provider>
     </S.Wrapper>
   );
 };

@@ -31,7 +31,7 @@
     "react-dat-gui": "^3.0.0",
     "react-dom": "^16.9.0",
     "react-router-dom": "^5.1.2",
-    "react-scripts": "3.1.1",
+    "react-scripts": "3.4.3",
     "styled-components": "^4.3.2",
     "twgl.js": "^4.14.0",
     "typescript": "^3.6.3"

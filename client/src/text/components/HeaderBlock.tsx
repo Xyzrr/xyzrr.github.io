@@ -2,6 +2,7 @@ import React from "react";
 import { HeaderBlockModel } from "./TextEditor";
 
 interface HeaderBlockProps {
+  index: number;
   block: HeaderBlockModel;
 }
 
