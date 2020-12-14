@@ -6,6 +6,7 @@ import HomePage from "./portfolio/pages/HomePage";
 import TetrisPage from "./tetris/pages/TetrisPage";
 import TestPage from "./portfolio/pages/TestPage";
 import TextPage from "./text/pages/TextPage";
+import ClipboardPage from "./clipboard/pages/ClipboardPage";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/tetris" exact component={TetrisPage}></Route>
           <Route path="/qlearning" exact component={QLearningPage}></Route>
           <Route path="/text" exact component={TextPage}></Route>
+          <Route path="/clipboard" exact component={ClipboardPage}></Route>
           <Route path="/" exact component={HomePage}></Route>
           <Route component={TestPage}></Route>
         </Switch>

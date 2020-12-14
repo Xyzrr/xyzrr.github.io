@@ -45,53 +45,56 @@ const TextEditor: React.FC = () => {
   ]);
   console.log("STATE", blocks);
 
-  const onContentUpdate = React.useCallback((e: React.KeyboardEvent) => {
-    console.log("step 0");
-    const selection = window.getSelection();
-    if (selection != null) {
-      console.log("step 1");
-      let anchorElement: Element | null | undefined;
-      let focusElement: Element | null | undefined;
-      if (selection.anchorNode instanceof Element) {
-        anchorElement = selection.anchorNode;
-      } else {
-        anchorElement = selection.anchorNode?.parentElement;
-      }
-      if (selection.focusNode instanceof Element) {
-        focusElement = selection.focusNode;
-      } else {
-        focusElement = selection.focusNode?.parentElement;
-      }
-      if (anchorElement != null && focusElement != null) {
-        console.log("step 2");
+  const onContentUpdate = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      console.log("step 0");
+      const selection = window.getSelection();
+      if (selection != null) {
+        console.log("step 1");
+        let anchorElement: Element | null | undefined;
+        let focusElement: Element | null | undefined;
+        if (selection.anchorNode instanceof Element) {
+          anchorElement = selection.anchorNode;
+        } else {
+          anchorElement = selection.anchorNode?.parentElement;
+        }
+        if (selection.focusNode instanceof Element) {
+          focusElement = selection.focusNode;
+        } else {
+          focusElement = selection.focusNode?.parentElement;
+        }
+        if (anchorElement != null && focusElement != null) {
+          console.log("step 2");
 
-        const anchorBlockNode = anchorElement.closest(".editor-block");
-        const focusBlockNode = focusElement.closest(".editor-block");
-        if (
-          anchorBlockNode != null &&
-          focusBlockNode != null &&
-          anchorBlockNode === focusBlockNode
-        ) {
-          console.log("step 3", anchorBlockNode, focusBlockNode);
-          const blockID = anchorBlockNode.id;
-          const blockIndex = _.findIndex(
-            blocks,
-            (block) => block.id === blockID
-          );
-          window.setTimeout(() => {
-            const html = anchorBlockNode.innerHTML;
-            setBlocks((old) => {
-              return produce(old, (draft: BlockModel[]) => {
-                draft[blockIndex].content = convertDomToModel(html);
+          const anchorBlockNode = anchorElement.closest(".editor-block");
+          const focusBlockNode = focusElement.closest(".editor-block");
+          if (
+            anchorBlockNode != null &&
+            focusBlockNode != null &&
+            anchorBlockNode === focusBlockNode
+          ) {
+            console.log("step 3", anchorBlockNode, focusBlockNode);
+            const blockID = anchorBlockNode.id;
+            const blockIndex = _.findIndex(
+              blocks,
+              (block) => block.id === blockID
+            );
+            window.setTimeout(() => {
+              const html = anchorBlockNode.innerHTML;
+              setBlocks((old) => {
+                return produce(old, (draft: BlockModel[]) => {
+                  draft[blockIndex].content = convertDomToModel(html);
+                });
               });
             });
-          });
-          return;
+            return;
+          }
         }
       }
-    }
-    e.preventDefault();
-  }, []);
+      e.preventDefault();
+    },
+    [blocks]
+  );
 
   return (
     <S.Wrapper
