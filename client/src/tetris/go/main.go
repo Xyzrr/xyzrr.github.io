@@ -1,5 +1,5 @@
 // +build js
-package main
+package client
 
 import (
 	"encoding/json"
