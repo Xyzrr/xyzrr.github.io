@@ -1,1 +1,1 @@
-web: bin/xyzrr.github.io
+web: server/main
