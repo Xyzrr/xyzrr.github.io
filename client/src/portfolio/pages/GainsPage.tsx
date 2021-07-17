@@ -11,6 +11,7 @@ const HoverVideo: React.FC<HoverVideoProps> = ({ src, thumbnailTime }) => {
   React.useEffect(() => {
     if (ref.current) {
       ref.current.currentTime = thumbnailTime || 0;
+      ref.current.pause();
     }
   }, []);
 
@@ -18,18 +19,28 @@ const HoverVideo: React.FC<HoverVideoProps> = ({ src, thumbnailTime }) => {
     <S.HoverVideo
       ref={ref}
       src={src}
+      autoPlay
+      // muted
       playsInline
-      onMouseEnter={() => {
-        if (ref.current) {
-          ref.current.currentTime = 0;
-          ref.current.play();
-        }
+      onTouchStart={(e) => {
+        e.currentTarget.currentTime = 0;
+        e.currentTarget.play();
       }}
-      onMouseLeave={() => {
-        if (ref.current) {
-          ref.current.currentTime = thumbnailTime || 0;
-          ref.current.pause();
-        }
+      onTouchEnd={(e) => {
+        e.currentTarget.currentTime = thumbnailTime || 0;
+        e.currentTarget.pause();
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.currentTime = 0;
+        try {
+          e.currentTarget.play();
+        } catch {}
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.currentTime = thumbnailTime || 0;
+        try {
+          e.currentTarget.pause();
+        } catch {}
       }}
     />
   );
@@ -47,7 +58,7 @@ const items = [
     thumbnailTime: 7.8,
   },
   {
-    title: "Tucked front lever",
+    title: "Tuck front lever",
     src: "https://storage.googleapis.com/john-gains/tuck%20front%20lever.mov",
     thumbnailTime: 6,
   },

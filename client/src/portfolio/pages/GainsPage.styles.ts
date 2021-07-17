@@ -11,6 +11,7 @@ export const Wrapper = styled.div`
 
 export const Items = styled.div`
   display: flex;
+  gap: 48px;
   width: min(700px, 100vw - 48px);
   margin: 0 auto;
   flex-wrap: wrap;
@@ -21,26 +22,27 @@ export const Item = styled.div`
   display: flex;
   align-items: center;
   flex-direction: column;
-  width: 33.3%;
+  width: 160px;
   video {
     width: 160px;
     height: 160px;
     object-fit: cover;
     border-radius: 4px;
   }
-  margin-bottom: 32px;
 
   @media (max-width: 768px) {
-    width: 50%;
+    width: 108px;
     video {
-      width: 100px;
-      height: 100px;
+      width: 108px;
+      height: 108px;
     }
   }
 `;
 
 export const ItemTitle = styled.div`
   margin-top: 8px;
+  margin-left: -16px;
+  margin-right: -16px;
   font-family: Quicksand;
   text-align: center;
 `;
