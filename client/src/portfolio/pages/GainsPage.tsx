@@ -18,6 +18,7 @@ const HoverVideo: React.FC<HoverVideoProps> = ({ src, thumbnailTime }) => {
     <S.HoverVideo
       ref={ref}
       src={src}
+      playsInline
       onMouseEnter={() => {
         if (ref.current) {
           ref.current.currentTime = 0;
