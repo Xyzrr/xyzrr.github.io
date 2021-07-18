@@ -275,7 +275,7 @@ const TetrisPage: React.FC = (props) => {
     };
 
     startLocalGameEngine();
-    const socket = new WebSocket("ws://tetris-io.herokuapp.com/socket");
+    const socket = new WebSocket("wss://tetris-io.herokuapp.com/socket");
     // const socket = new WebSocket("ws://34.67.102.3:8080/socket");
     // const socket = new WebSocket("ws://localhost:8080/socket");
     socket.onopen = () => {
