@@ -28,6 +28,7 @@ export const Item = styled.div`
     height: 160px;
     object-fit: cover;
     border-radius: 4px;
+    background: #f2f2f2;
   }
 
   @media (max-width: 768px) {
