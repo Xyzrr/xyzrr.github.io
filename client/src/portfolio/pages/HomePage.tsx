@@ -12,8 +12,8 @@ const HomePageDiv = styled.div`
   width: 100%;
   font-family: Quicksand;
   .bio {
-    max-width: 400px;
-    width: 100%;
+    max-width: 380px;
+    width: calc(100vw - 48px);
     padding: 16px;
     font-size: 18px;
     margin-bottom: 80px;
@@ -22,7 +22,7 @@ const HomePageDiv = styled.div`
     position: absolute;
     right: 0;
     bottom: 0;
-    padding: 16px;
+    padding: 24px;
     font-size: 14px;
     opacity: 0.6;
     p {
@@ -46,6 +46,22 @@ const HomePageBackground = styled.div`
   z-index: -1;
   width: 100%;
   height: 100%;
+`;
+
+export const Links = styled.div`
+  display: flex;
+  justify-content: space-between;
+  a {
+    font-weight: 400;
+    color: #666;
+    cursor: pointer;
+    &:hover {
+      color: black;
+    }
+  }
+  span {
+    color: #666;
+  }
 `;
 
 interface Theme {
@@ -85,18 +101,23 @@ const HomePage: React.FC = (props) => {
       <div className="bio">
         <p>Hey, I'm John. </p>
         <p>
-          I currently do swe at{" "}
+          I currently do design and eng at{" "}
           <a href="https://wandb.com/">Weights & Biases</a>. Earlier I moved
-          buttons around at Google and dropped out of UIUC. I like simplifying
-          and prettifying things,{" "}
-          <a href="https://blog.johnqian.com">writing</a>, and doing
-          calisthenics. I idolize Paul Graham and Richard Feynman to an
-          unreasonable extent.
+          buttons around at Google and dropped out of UIUC. I like making
+          powerful tools with silky user experiences.
         </p>
         <p>
-          If you like my work, we should meet up. My email is johnlongqian (at)
-          gmail.com.
+          If you might like to build something with me, let's grab burritos.
         </p>
+        <Links>
+          <a href="https://projects.johnqian.com">Projects</a>
+          <span>∙</span>
+          <a href="https://blog.johnqian.com">Blog</a>
+          <span>∙</span>
+          <a href="/gains">Gains</a>
+          <span>∙</span>
+          <a href="mailto:johnlongqian+site@gmail.com">Contact</a>
+        </Links>
       </div>
       <div className="footer">
         <p>Background:</p>
