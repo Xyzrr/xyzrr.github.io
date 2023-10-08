@@ -10,7 +10,8 @@ const HomePageDiv = styled.div`
   height: 100%;
   position: fixed;
   width: 100%;
-  font-family: Quicksand;
+  font-family: Quicksand, sans-serif;
+  line-height: 1.3;
   .bio {
     max-width: 380px;
     width: calc(100vw - 48px);
@@ -33,7 +34,7 @@ const HomePageDiv = styled.div`
     color: black;
     text-decoration: underline;
     text-decoration-color: transparent;
-    font-weight: bold;
+    font-weight: 600;
     transition: all 0.15s;
     &:hover {
       text-decoration-color: black;
@@ -101,13 +102,11 @@ const HomePage: React.FC = (props) => {
       <div className="bio">
         <p>Hey, I'm John. </p>
         <p>
-          I currently do design and eng at{" "}
-          <a href="https://wandb.com/">Weights & Biases</a>. Earlier I moved
-          buttons around at Google and dropped out of UIUC. I like making
-          powerful tools with silky user experiences.
+          I do eng and design, previously at <a href="https://www.adept.ai/">Adept</a>, <a href="https://wandb.com/">Weights & Biases</a>, and Google.
+          I like writing concisely and making silky user experiences. Currently working on various AI things.
         </p>
         <p>
-          If you might like to build something with me, let's grab burritos.
+          If you might like to build something with me, let's meet up. I'm usually in SF.
         </p>
         <Links>
           <a href="https://projects.johnqian.com">Projects</a>
