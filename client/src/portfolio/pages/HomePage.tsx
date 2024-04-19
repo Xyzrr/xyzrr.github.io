@@ -106,7 +106,7 @@ const HomePage: React.FC = (props) => {
           I like writing concisely and making silky user experiences.
         </p>
         <p>
-          Let me know if you want to meet up; I'm usually in SF. I'm most likely to respond if you provide some indication that you will extend my model of the world :)
+          Let me know if you want to meet up; I'm usually in SF. I'm most likely to respond if you provide some indication that you'll extend my model of the world :)
         </p>
         <Links>
           <a href="https://projects.johnqian.com">Projects</a>
