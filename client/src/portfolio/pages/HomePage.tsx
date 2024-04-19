@@ -102,11 +102,11 @@ const HomePage: React.FC = (props) => {
       <div className="bio">
         <p>Hey, I'm John. </p>
         <p>
-          I do eng and design, previously at <a href="https://www.adept.ai/">Adept</a>, <a href="https://wandb.com/">Weights & Biases</a>, and Google.
-          I like writing concisely and making silky user experiences. Currently working on various AI things.
+          For the foreseeable future I'll be building <a href="https://matrices.app?ref=johnqian.com" target="_blank">Matrices</a> as a cofounder. Previously I did eng and design at <a href="https://www.adept.ai/" target="_blank">Adept</a>, <a href="https://wandb.com/" target="_blank">Weights & Biases</a>, and Google.
+          I like writing concisely and making silky user experiences.
         </p>
         <p>
-          If you might like to build something with me, let's meet up. I'm usually in SF.
+          Let me know if you want to meet up; I'm usually in SF. I'm most likely to respond if you provide some indication that you will extend my model of the world :)
         </p>
         <Links>
           <a href="https://projects.johnqian.com">Projects</a>
