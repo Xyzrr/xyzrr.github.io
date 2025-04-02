@@ -10,10 +10,11 @@ const HomePageDiv = styled.div`
   height: 100%;
   position: fixed;
   width: 100%;
-  font-family: Quicksand;
+  font-family: Quicksand, sans-serif;
+  line-height: 1.3;
   .bio {
-    max-width: 400px;
-    width: 100%;
+    max-width: 380px;
+    width: calc(100vw - 48px);
     padding: 16px;
     font-size: 18px;
     margin-bottom: 80px;
@@ -22,7 +23,7 @@ const HomePageDiv = styled.div`
     position: absolute;
     right: 0;
     bottom: 0;
-    padding: 16px;
+    padding: 24px;
     font-size: 14px;
     opacity: 0.6;
     p {
@@ -33,7 +34,7 @@ const HomePageDiv = styled.div`
     color: black;
     text-decoration: underline;
     text-decoration-color: transparent;
-    font-weight: bold;
+    font-weight: 600;
     transition: all 0.15s;
     &:hover {
       text-decoration-color: black;
@@ -46,6 +47,22 @@ const HomePageBackground = styled.div`
   z-index: -1;
   width: 100%;
   height: 100%;
+`;
+
+export const Links = styled.div`
+  display: flex;
+  justify-content: space-between;
+  a {
+    font-weight: 400;
+    color: #666;
+    cursor: pointer;
+    &:hover {
+      color: black;
+    }
+  }
+  span {
+    color: #666;
+  }
 `;
 
 interface Theme {
@@ -85,18 +102,48 @@ const HomePage: React.FC = (props) => {
       <div className="bio">
         <p>Hey, I'm John. </p>
         <p>
-          I currently do swe at{" "}
-          <a href="https://wandb.com/">Weights & Biases</a>. Earlier I moved
-          buttons around at Google and dropped out of UIUC. I like simplifying
-          and prettifying things,{" "}
-          <a href="https://blog.johnqian.com">writing</a>, and doing
-          calisthenics. I idolize Paul Graham and Richard Feynman to an
-          unreasonable extent.
+          For the foreseeable future I'll be building{" "}
+          <a href="https://matrices.dev?ref=johnqian.com" target="_blank">
+            Matrices
+          </a>{" "}
+          as a cofounder. Previously I did eng and design at{" "}
+          <a href="https://www.adept.ai/" target="_blank">
+            Adept
+          </a>
+          ,{" "}
+          <a href="https://wandb.com/" target="_blank">
+            Weights & Biases
+          </a>
+          , and Google. I like writing concisely and making silky user
+          experiences.
         </p>
         <p>
-          If you like my work, we should meet up. My email is johnlongqian (at)
-          gmail.com.
+          Let me know if you want to meet up; I'm usually in SF. Am generally
+          interested in meeting people I can meaningfully help or learn from.
         </p>
+        <Links>
+          <a href="https://projects.johnqian.com">Projects</a>
+          <span>∙</span>
+          <a href="https://blog.johnqian.com">Blog</a>
+          <span>∙</span>
+          <a href="mailto:johnlongqian+site@gmail.com">Contact</a>
+          <span>∙</span>
+          <a
+            href="https://x.com/johnlqian"
+            target="_blank"
+            aria-label="X Profile"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+            </svg>
+          </a>
+        </Links>
       </div>
       <div className="footer">
         <p>Background:</p>
