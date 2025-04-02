@@ -102,11 +102,24 @@ const HomePage: React.FC = (props) => {
       <div className="bio">
         <p>Hey, I'm John. </p>
         <p>
-          For the foreseeable future I'll be building <a href="https://matrices.app?ref=johnqian.com" target="_blank">Matrices</a> as a cofounder. Previously I did eng and design at <a href="https://www.adept.ai/" target="_blank">Adept</a>, <a href="https://wandb.com/" target="_blank">Weights & Biases</a>, and Google.
-          I like writing concisely and making silky user experiences.
+          For the foreseeable future I'll be building{" "}
+          <a href="https://matrices.dev?ref=johnqian.com" target="_blank">
+            Matrices
+          </a>{" "}
+          as a cofounder. Previously I did eng and design at{" "}
+          <a href="https://www.adept.ai/" target="_blank">
+            Adept
+          </a>
+          ,{" "}
+          <a href="https://wandb.com/" target="_blank">
+            Weights & Biases
+          </a>
+          , and Google. I like writing concisely and making silky user
+          experiences.
         </p>
         <p>
-          Let me know if you want to meet up; I'm usually in SF. Am generally interested in meeting people I can meaningfully help or learn from.
+          Let me know if you want to meet up; I'm usually in SF. Am generally
+          interested in meeting people I can meaningfully help or learn from.
         </p>
         <Links>
           <a href="https://projects.johnqian.com">Projects</a>
