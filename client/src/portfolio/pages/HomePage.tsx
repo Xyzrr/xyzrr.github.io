@@ -103,7 +103,7 @@ const HomePage: React.FC = (props) => {
         <p>Hey, I'm John. </p>
         <p>
           For the foreseeable future I'll be building{" "}
-          <a href="https://matrices.dev?ref=johnqian.com" target="_blank">
+          <a href="https://matrices.ai?ref=johnqian.com" target="_blank">
             Matrices
           </a>{" "}
           as a cofounder. Previously I did eng and design at{" "}
