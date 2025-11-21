@@ -5,7 +5,7 @@ import styled from "styled-components";
 import * as constants from "../constants";
 import * as _ from "lodash";
 import produce from "immer";
-// import "../wasm_exec";
+import "../wasm_exec";
 import useWindowSize from "../../common/util/useWindowSize";
 import { resizeCanvas } from "../../common/util/helpers";
 import {
@@ -275,6 +275,7 @@ const TetrisPage: React.FC = (props) => {
     };
 
     startLocalGameEngine();
+    // const socket = new WebSocket("wss://tetris-io.herokuapp.com/socket");
     // const socket = new WebSocket("ws://34.67.102.3:8080/socket");
     const socket = new WebSocket("ws://localhost:8080/socket");
     socket.onopen = () => {
@@ -320,7 +321,7 @@ const TetrisPage: React.FC = (props) => {
         playerID: everythingState.current.clientID,
         ...clientPlayerInput,
       };
-      const SIMULATE_POOR_CONNECTION = true;
+      const SIMULATE_POOR_CONNECTION = false;
       if (SIMULATE_POOR_CONNECTION) {
         window.setTimeout(() => {
           socket.send(JSON.stringify(serverPlayerInput));

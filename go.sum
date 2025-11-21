@@ -1,0 +1,8 @@
+github.com/Xyzrr/interactive-ml v0.0.0-20210316090321-7d24b2caf02c h1:/iG2NV928+3RbJzhFSReQeJ4LulrNWE2CMw1saTEXug=
+github.com/Xyzrr/interactive-ml v0.0.0-20210316090321-7d24b2caf02c/go.mod h1:mnmBrgsJORfYcaaG4qSMSekK3g380Ebn3IvrTUpx5H8=
+github.com/gorilla/websocket v1.4.2 h1:+/TMaTYc4QFitKJxsQ7Yye35DkWvkdLcvGKqM+x0Ufc=
+github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
+github.com/rs/cors v1.7.0 h1:+88SsELBHx5r+hZ8TCkggzSstaWNbDvThkVK8H6f9ik=
+github.com/rs/cors v1.7.0/go.mod h1:gFx+x8UowdsKA9AchylcLynDq+nNFfI8FkUZdN/jGCU=
+github.com/rs/xid v1.3.0 h1:6NjYksEUlhurdVehpc7S7dk6DAmcKv8V9gG0FsVN2U4=
+github.com/rs/xid v1.3.0/go.mod h1:trrq9SKmegXys3aeAKXMUTdJsYXVwGY3RLcfgqegfbg=
